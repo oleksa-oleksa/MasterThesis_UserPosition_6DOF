@@ -55,6 +55,7 @@ from .utils import get_csv_files
 # For more readable printing
 np.set_printoptions(precision=6, suppress=True, linewidth=np.inf)
 
+
 class BaselineRunner():
     """Runs the baseline no-prediction case over all traces"""
     def __init__(self, pred_window, dataset_path, results_path):
@@ -292,6 +293,3 @@ class AutoregRunner():
         df_coefs_all = df_coefs_all.reindex(columns=coords)
         
         return df_coefs_all
-    
-    
-    

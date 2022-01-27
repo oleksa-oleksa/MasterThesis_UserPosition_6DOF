@@ -93,20 +93,13 @@ class Application:
         elif self.command == 'report':
             self.report()
 
-    def run_autoreg(self):
-        """Runs Autoregression on all traces and evaluates the results"""
-        runner = AutoregRunner(self.pred_window,
-                               self.dataset_path,
-                               self.results_path)
-        runner.run()
-
     def run_kalman(self):
         """Runs Kalman filter on all traces and evaluates the results"""
         runner = KalmanRunner(self.pred_window,
                               self.dataset_path,
                               self.results_path)
         runner.run()
-        
+
     def run_baseline(self):
         """Runs baseline (no-prediction) on all traces and evaluates the results"""
         runner = BaselineRunner(self.pred_window,
