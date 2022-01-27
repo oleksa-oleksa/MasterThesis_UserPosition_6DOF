@@ -45,7 +45,7 @@ import os
 import sys
 import numpy as np
 import toml
-from .runners import AutoregRunner, KalmanRunner, BaselineRunner
+from .runners import KalmanRunner, BaselineRunner
 from .reporter import Reporter
 from .utils import get_csv_files, preprocess_trace
 
