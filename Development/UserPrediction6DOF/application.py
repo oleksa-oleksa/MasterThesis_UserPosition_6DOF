@@ -49,6 +49,7 @@ from .runners import KalmanRunner, BaselineRunner
 from .reporter import Reporter
 from .utils import get_csv_files, preprocess_trace
 
+
 class Application:
     """Command line interface for the pred6dof application"""
 
