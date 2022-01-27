@@ -47,11 +47,14 @@ from scipy.spatial.transform import Rotation as R
 from scipy.spatial.transform import Slerp
 pd.options.mode.chained_assignment = None
 
+
 def preprocess_trace(trace_path, dt, out_dir):
     """
-    Resample and interpolate a raw Hololens trace (which contains unevenly sampled data) with a given sampling frequency (e.g. 5ms) and write the output to a csv file.
+    Resample and interpolate a raw Hololens trace
+    (which contains unevenly sampled data) with
+    a given sampling frequency (e.g. 5ms) and write the output to a csv file.
     Arguments:
-        trace_path: Path to the raw Hololens trace.
+        trace_path: Path to the raw HoloLens trace.
         dt: Desired time distance between two samples [s]
         out_dir: Output directory containing the interpolated traces.
     Outputs:
@@ -60,7 +63,9 @@ def preprocess_trace(trace_path, dt, out_dir):
 
     case = os.path.splitext(os.path.basename(trace_path))[0]
     df = pd.read_csv(trace_path, skipfooter=1, engine='python')
-    df['timestamp'] *= 100
+
+    # convert seconds of timestamp obtained with Time.time function of raw HoloLens trace to nanoseconds
+    df['timestamp'] *= 1000000000
     # Start the timestamp from 0
     df['timestamp'] -= df['timestamp'].iloc[0]
     df = df.astype(float)
