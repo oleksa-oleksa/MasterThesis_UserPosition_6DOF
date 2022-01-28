@@ -126,7 +126,7 @@ class Application:
     def parse_command_line_arguments(self):
         """Parses the cmdline arguments of the application"""
         argument_parser = argparse.ArgumentParser(
-            prog='pred6dof',
+            prog='UserPrediction6DOF',
             description='A tool for testing different 6DoF head motion prediction algorithms'
         )
 
@@ -134,7 +134,7 @@ class Application:
             '-v',
             '--version',
             action='version',
-            version='pred6dof command line interface {0}'.format(__version__),
+            version='UserPrediction6DOF command line interface {0}'.format(__version__),
             help='display the version string of the application and exit'
         )
 
