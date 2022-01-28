@@ -74,14 +74,18 @@ def preprocess_trace(trace_path, dt, out_dir):
     # Resample and interpolate the position samples (x,y,z) onto a uniform grid
     df_t = df.loc[:, 'timestamp':'z']
     df_t['timestamp'] = pd.to_timedelta(df_t['timestamp'], unit='ns')
+    # timestamp is column that is used instead of index for resampling.
     df_t_intp = df_t.resample(str(dt*1e3) + 'L', on='timestamp').mean().interpolate('linear')
+    print(df_t_intp)
     t_intp = df_t_intp.to_numpy()
+    print(t_intp)
 
     # Resample and interpolate the quaternion samples
     rots = R.from_quat(qs[:, 1:])
     times = qs[:, 0]
     slerp = Slerp(times, rots)  # Spherical Linear Interpolation of Rotations (SLERP)
     rots_intp = slerp(times)
+    # interpolated float timestamp
     t = df_t_intp.index.to_numpy().astype(float)
     rots_intp = slerp(t)
     q_intp = rots_intp.as_quat()
