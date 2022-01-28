@@ -73,18 +73,17 @@ def preprocess_trace(trace_path, dt, out_dir):
     # Quaternion samples for Slerp
     qs = df.loc[:, ['timestamp', 'qx', 'qy', 'qz', 'qw']].to_numpy()
 
+    ######################################
     # Resample and interpolate the position samples (x,y,z) onto a uniform grid
     df_t = df.loc[:, 'timestamp':'z']
-    print(df_t)
-
     df_t['timestamp'] = pd.to_timedelta(df_t['timestamp'], unit='ns')
     # timestamp is column that is used instead of index for resampling.
     df_t_intp = df_t.resample(str(dt*1e3) + 'L', on='timestamp').mean().interpolate('linear')
-    print(df_t_intp)
 
+    # interpolated position samples (x,y,z) without timestamp and index
     t_intp = df_t_intp.to_numpy()
-    print(t_intp)
 
+    ######################################
     # Resample and interpolate the quaternion samples
     rots = R.from_quat(qs[:, 1:])
     times = qs[:, 0]
@@ -93,13 +92,24 @@ def preprocess_trace(trace_path, dt, out_dir):
     # interpolated float timestamp
     t = df_t_intp.index.to_numpy().astype(float)
     rots_intp = slerp(t)
+    # interpolated quaternion samples (x,y,z,w) without timestamp and index
     q_intp = rots_intp.as_quat()
 
+    ######################################
+    # Resample and interpolate the velocities and speed samples (x,y,z) onto a uniform grid
+    df_v = df.loc[:, ['timestamp', 'velocity_x', 'velocity_y', 'velocity_z', 'speed']]
+    df_v['timestamp'] = pd.to_timedelta(df_v['timestamp'], unit='ns')
+    df_v_intp = df_v.resample(str(dt*1e3) + 'L', on='timestamp').mean().interpolate('linear')
+
+    # interpolated position samples (x,y,z) without timestamp and index
+    v_intp = df_v_intp.to_numpy()
+
+    ######################################
     # Compute Euler angles for the interpolated quaternion samples
     e_intp = rots_intp.as_euler('ZXY', degrees=True)
 
     # Combine the interpolated array and create a DataFrame
-    intp = np.hstack((t[:, np.newaxis], t_intp, q_intp, e_intp))
+    intp = np.hstack((t[:, np.newaxis], t_intp, q_intp, v_intp, e_intp))
     df_intp = pd.DataFrame(intp, columns=np.hstack((df.columns, ['roll', 'pitch', 'yaw'])))
 
     # Save interpolated DataFrame to csv
