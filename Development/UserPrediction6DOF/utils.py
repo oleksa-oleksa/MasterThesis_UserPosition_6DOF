@@ -62,6 +62,7 @@ def preprocess_trace(trace_path, dt, out_dir):
     """
 
     case = os.path.splitext(os.path.basename(trace_path))[0]
+    # A comma-separated values (csv) file is returned as two-dimensional data structure with labeled axes.
     df = pd.read_csv(trace_path, skipfooter=1, engine='python')
 
     # convert seconds of timestamp obtained with Time.time function of raw HoloLens trace to nanoseconds
@@ -69,14 +70,18 @@ def preprocess_trace(trace_path, dt, out_dir):
     # Start the timestamp from 0
     df['timestamp'] -= df['timestamp'].iloc[0]
     df = df.astype(float)
+    # Quaternion samples for Slerp
     qs = df.loc[:, ['timestamp', 'qx', 'qy', 'qz', 'qw']].to_numpy()
 
     # Resample and interpolate the position samples (x,y,z) onto a uniform grid
     df_t = df.loc[:, 'timestamp':'z']
+    print(df_t)
+
     df_t['timestamp'] = pd.to_timedelta(df_t['timestamp'], unit='ns')
     # timestamp is column that is used instead of index for resampling.
     df_t_intp = df_t.resample(str(dt*1e3) + 'L', on='timestamp').mean().interpolate('linear')
     print(df_t_intp)
+
     t_intp = df_t_intp.to_numpy()
     print(t_intp)
 
