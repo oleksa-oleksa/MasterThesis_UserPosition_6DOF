@@ -118,7 +118,7 @@ def get_csv_files(dataset_path):
             if extension == "csv" and file_name.isnumeric():
                 numerical_files.append(file_name)
             else:
-                logging.warn("Invalid file: {}. Ignoring...".format(f))
+                logging.warning("Invalid file: {}. Ignoring...".format(f))
 
     numerical_filenames_ints = [int(f) for f in numerical_files]
     numerical_filenames_ints.sort()
