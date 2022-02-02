@@ -115,13 +115,12 @@ class Application:
         logging.info("Interpolated traces written to {}".format(self.output_path))
 
     def report(self):
-        trace_path = os.path.join(self.dataset_path, "1.csv")
+        trace_path = os.path.join(self.dataset_path, "202201251454.csv")
         Reporter.plot_trace(trace_path, self.figures_path) # Fig. 5
         Reporter.plot_head_velocity(self.dataset_path, self.figures_path) # Fig. 6-7
         Reporter.compute_mean(self.results_path)
         Reporter.plot_res_per_trace(self.results_path, self.figures_path, "60") # Fig. 8
         Reporter.plot_mean(self.results_path, self.figures_path, "mae") # Fig. 9
-        Reporter.make_pdf(self.figures_path) 
 
     def parse_command_line_arguments(self):
         """Parses the cmdline arguments of the application"""

@@ -5,6 +5,7 @@ Temp/
 Obj/
 gltf/
 *.bin
+**/results/tabular
 **/mitch
 *.jpg
 *.gltf

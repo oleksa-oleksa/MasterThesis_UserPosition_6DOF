@@ -321,24 +321,4 @@ class Reporter():
         dest = os.path.join(figures_path, 'Fig9-avg_{}.pdf'.format(metric))
         fig.savefig(dest)
         logging.info("Plotting mean results for all predictors to {}".format(dest))
-        
-    @staticmethod
-    def make_pdf(figures_path):
-        if shutil.which('pdflatex') != None:
-            logging.info("Generating pdf using the reproduced results")
-            # Copy the generated plots to Latex dir
-            copy_tree(figures_path, 'acmmm20_src/figures')
-            # Create pdf
-            os.chdir('acmmm20_src')
-            os.system('pdflatex acmmm20.tex > /dev/null 2>&1')
-            os.system('bibtex acmmm20 > /dev/null 2>&1')
-            # Repeat to get the references
-            os.system('pdflatex acmmm20.tex > /dev/null 2>&1')
-            os.system('pdflatex acmmm20.tex > /dev/null 2>&1')
-            # Move pdf to the top-level folder and cleanup
-            shutil.copy('acmmm20.pdf', '../acmmm20.pdf')
-            os.remove('acmmm20.pdf')
-            os.chdir('..')
-        else:
-            logging.error("pdflatex not found on your system, cant't generate PDF!")
-        
+
