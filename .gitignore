@@ -67,10 +67,10 @@ Thumbs.db
 **/.DS_Store
 Add-Ons
 **/__pycache__
-Master_Thesis_Latex/*
 !Master_Thesis_Latex/*.pdf
 !Master_Thesis_Latex/*.tex
 !Master_Thesis_Latex/articles/*.*
+Master_Thesis_Latex/*.*
 *.toc
 *.aux
 *.bbl
