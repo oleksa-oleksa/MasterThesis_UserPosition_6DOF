@@ -201,7 +201,10 @@ class KalmanRunner():
 
 
 class LSTM():
-    """Runs the LSTM NN over all traces"""
+    """Runs the LSTM NN over all traces
+
+    Predicts the next value, X(t+n), from the previous n observations Xt, X+1, …, and X(t+n-1).
+    """
 
     def __init__(self, pred_window, dataset_path, results_path):
         config_path = os.path.join(os.getcwd(), 'config.toml')
@@ -210,7 +213,7 @@ class LSTM():
         self.pred_window = pred_window * 1e-3  # convert to seconds
         self.dataset_path = dataset_path
         self.results_path = results_path
-        self.coords = self.cfg['pos_coords'] + self.cfg['quat_coords']
+        self.features = self.cfg['pos_coords'] + self.cfg['quat_coords'] + self.cfg['velocity'] + self.cfg['speed']
         self.kf = KalmanFilter(dim_x=self.cfg['dim_x'], dim_z=self.cfg['dim_z'])
         setattr(self.kf, 'x_pred', self.kf.x)
 
@@ -241,7 +244,7 @@ class LSTM():
         # Read trace from CSV file
         df_trace = pd.read_csv(trace_path)
         xs, covs, x_preds = [], [], []
-        zs = df_trace[self.coords].to_numpy()
+        zs = df_trace[self.features].to_numpy()
         z_prev = np.zeros(7)
         for z in zs:
             sign_array = -np.sign(z_prev[3:]) * np.sign(z[3:])
