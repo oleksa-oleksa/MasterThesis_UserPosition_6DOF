@@ -266,8 +266,7 @@ class AutoregRunner():
         df_results = pd.DataFrame(results, columns=['Trace', 'LAT', 'mae_euc', 'mae_ang',
                                                     'rmse_euc', 'rmse_ang'])
         df_results.to_csv(os.path.join(self.results_path, 'res_autoreg.csv'), index=False)
-        
-        
+                
     def load_model(self):
         """
         Compute the coefficients of the AutoReg models in model_dir_path

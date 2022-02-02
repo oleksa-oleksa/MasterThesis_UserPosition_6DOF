@@ -88,7 +88,6 @@ def preprocess_trace(trace_path, dt, out_dir):
     rots = R.from_quat(qs[:, 1:])
     times = qs[:, 0]
     slerp = Slerp(times, rots)  # Spherical Linear Interpolation of Rotations (SLERP)
-    rots_intp = slerp(times)
     # interpolated float timestamp
     t = df_t_intp.index.to_numpy().astype(float)
     rots_intp = slerp(t)
