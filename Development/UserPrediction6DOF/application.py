@@ -82,8 +82,8 @@ class Application:
         
         # Check desired action
         if self.command == 'run':
-            if self.algorithm == 'autoreg':
-                self.run_autoreg()
+            if self.algorithm == 'lstm':
+                self.run_lstm()
             elif self.algorithm == 'kalman':
                 self.run_kalman()
             elif self.algorithm == 'baseline':
@@ -253,7 +253,7 @@ class Application:
             '--algorithm',
             dest='algorithm',
             type=str,
-            choices=['autoreg', 'kalman', 'baseline'],
+            choices=['lstm', 'kalman', 'baseline'],
             default='kalman',
             help='Selects which prediction algorithm is run on the data traces'
         )

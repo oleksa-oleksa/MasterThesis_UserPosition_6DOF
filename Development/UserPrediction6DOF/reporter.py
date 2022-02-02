@@ -64,6 +64,7 @@ mpl.rcParams['text.usetex'] = True
 config_path = os.path.join(os.getcwd(), 'config.toml')
 cfg = toml.load(config_path)
 
+
 class Reporter():
     """Computes and plots trace statistics, per-trace results and average results"""
     @staticmethod
@@ -286,7 +287,7 @@ class Reporter():
     
     @staticmethod
     def compute_mean(results_path):
-        for i, pred in enumerate(['Baseline', 'AutoReg', 'Kalman']):
+        for i, pred in enumerate(['Baseline', 'Kalman']):
             res_pred_path = os.path.join(results_path, 'res_{}.csv'.format(pred.lower()))
             df = pd.read_csv(res_pred_path)
             mean_df = df.groupby("LAT")[df.columns[2:]].mean()
@@ -300,7 +301,7 @@ class Reporter():
         fig, ax = plt.subplots(1, 2, figsize=(20,8))
         ax = ax.flatten()
         
-        for i, pred in enumerate(zip(['Baseline', 'AutoReg', 'Kalman'], ['s', 'o', 'H'])):
+        for i, pred in enumerate(zip(['Baseline', 'Kalman'], ['s', 'o', 'H'])):
             res_mean_path = os.path.join(results_path, 'res_{}_mean.csv'.format(pred[0].lower()))
             df_mean = pd.read_csv(res_mean_path)
             pws = (df_mean.loc[:, 'LAT'].to_numpy() * 1e3).astype(int)

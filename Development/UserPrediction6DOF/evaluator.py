@@ -79,18 +79,7 @@ class Evaluator():
         preds_rot = np.array([Quaternion(q) for q in preds_rot])
 
         self.compute_metrics(zs_pos, zs_rot, preds_pos, preds_rot)
-        
-    def eval_autoreg(self, hw):
-        zs_pos = self.zs[hw + self.pred_step - 1 :, :3]
-        zs_rot = self.zs[hw + self.pred_step - 1 :, 3:]
-        zs_rot = np.array([Quaternion(q) for q in zs_rot])
-        
-        preds_pos = self.preds[:, :3]
-        preds_rot = self.preds[:, 3:]
-        preds_rot = np.array([Quaternion(q) for q in preds_rot])
-        
-        self.compute_metrics(zs_pos, zs_rot, preds_pos, preds_rot)
-        
+
     def eval_baseline(self):
         zs_pos = self.zs[:-self.pred_step, :3]
         zs_rot = self.zs[:-self.pred_step:, 3:]
