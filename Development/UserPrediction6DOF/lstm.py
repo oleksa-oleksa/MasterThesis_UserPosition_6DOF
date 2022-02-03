@@ -3,7 +3,7 @@ import torch
 import torch.nn as nn
 
 
-class LSTMModel(nn.Module):
+class LSTMModelBase(nn.Module):
 
     """
     Implements a sequential network named Long Short Term Memory Network.
@@ -103,19 +103,14 @@ class LSTMModel(nn.Module):
         self.bias_input2 = nn.Parameter(torch.Tensor(hidden_dim))
 
         # Forget Gate
-        self.U_f = nn.Parameter(torch.Tensor(input_sz, hidden_sz))
-        self.V_f = nn.Parameter(torch.Tensor(hidden_sz, hidden_sz))
-        self.b_f = nn.Parameter(torch.Tensor(hidden_sz))
+        self.W_forget = nn.Parameter(torch.Tensor(input_dim, hidden_dim))
+        self.bias_forget = nn.Parameter(torch.Tensor(hidden_dim))
 
-        # c_t
-        self.U_c = nn.Parameter(torch.Tensor(input_sz, hidden_sz))
-        self.V_c = nn.Parameter(torch.Tensor(hidden_sz, hidden_sz))
-        self.b_c = nn.Parameter(torch.Tensor(hidden_sz))
-
-        # o_t
-        self.U_o = nn.Parameter(torch.Tensor(input_sz, hidden_sz))
-        self.V_o = nn.Parameter(torch.Tensor(hidden_sz, hidden_sz))
-        self.b_o = nn.Parameter(torch.Tensor(hidden_sz))
+        # Output Gate
+        self.W_output1 = nn.Parameter(torch.Tensor(input_dim, hidden_dim))
+        self.bias_output1 = nn.Parameter(torch.Tensor(hidden_dim))
+        self.W_output2 = nn.Parameter(torch.Tensor(input_dim, hidden_dim))
+        self.bias_output2 = nn.Parameter(torch.Tensor(hidden_dim))
 
         self.init_weights()
 
@@ -123,3 +118,5 @@ class LSTMModel(nn.Module):
             stdv = 1.0 / math.sqrt(self.hidden_size)
             for weight in self.parameters():
                 weight.data.uniform_(-stdv, stdv)
+
+        
