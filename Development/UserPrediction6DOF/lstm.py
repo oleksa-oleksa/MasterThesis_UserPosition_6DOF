@@ -1,8 +1,9 @@
+import math
 import torch
 import torch.nn as nn
 
 
-class LSTM(nn.Module):
+class LSTMModel(nn.Module):
 
     """
     Implements a sequential network named Long Short Term Memory Network.
@@ -69,7 +70,7 @@ class LSTM(nn.Module):
 
     """
 
-    def __init__(self, input_dim, hidden_dim, layer_dim, output_dim, dropout_prob):
+    def __init__(self, input_dim, hidden_dim):
 
         """
         Instantiate an LSTM layer and provides it with the necessary arguments
@@ -80,20 +81,14 @@ class LSTM(nn.Module):
                  Size of the input Xt at each iteration
             hidden_dim : integer
                  Size of the hidden state Ht and long-term memory Ct (cell state)
-
-            layer_dim  : integer
-                 the number of LSTM layers stacked on top of each other.
-                 Set how deep LSTM is.
-            output_dim : integer
-                Size of the output gate and  and new hidden state Ht
-                Ht will be used on the next iteration as Ht_1
-            dropout_prob : type
-                Description
-
         Returns
             ---------
-            speed, turn : tuple
-                predicted speed/turn after calculations mentioned above
+            position, rotation : tuple of arrays
+                Using given latency in ms the network outputs
+                the predicted future position (x, y, z)
+                and rotation in quaternion (qw, qx, qy, qz)
+                for the user in virtual reality that
+                to be reached after ms of latency
+
 
         """
-        super(RNNModel, self).__init__()
