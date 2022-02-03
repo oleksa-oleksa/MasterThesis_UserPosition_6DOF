@@ -79,6 +79,9 @@ class LSTMModelBase(nn.Module):
             ---------
             input_dim  : integer
                  Size of the input Xt at each iteration
+                 Input shape is (batch_size, sequence_length, feature_length)
+                 The weight matrix that will multiply each element of the sequence
+                 must have the shape (feature_length, output_length)
             hidden_dim : integer
                  Size of the hidden state Ht and long-term memory Ct (cell state)
         Returns
@@ -119,4 +122,44 @@ class LSTMModelBase(nn.Module):
             for weight in self.parameters():
                 weight.data.uniform_(-stdv, stdv)
 
-        
+        def forward(self, X, init_states=None):
+
+            """
+            assumes x.shape represents (batch_size, sequence_size, input_size)
+            init_states is a tuple with the (Ht, Ct) parameters, set to zero if not introduced
+            """
+            batch_size, sequence_length, _ = X.size()
+            hidden_seq = []
+
+            if init_states is None:
+                Ht, Ct = (
+                    torch.zeros(batch_size, self.hidden_size).to(X.device),
+                    torch.zeros(batch_size, self.hidden_size).to(X.device),
+                )
+                Ht_1 = Ht
+            else:
+                Ht, Ct = init_states
+                Ht_1 = Ht
+
+            for t in range(sequence_length):
+                Xt = X[:, t, :]
+
+                input_layer1 = torch.sigmoid(self.W_input1 @ Ht_1 + self.W_input1 @ Xt + self.bias_input1)
+
+                input_layer2 = torch.tanh(self.W_input2 @ Ht_1 + self.W_input2 @ Xt + self.bias_input2)
+
+                input_gate = input_layer1 @ input_layer2
+
+                i_t = torch.sigmoid(Xt @ self.U_i + Ht @ self.V_i + self.b_i)
+                f_t = torch.sigmoid(Xt @ self.U_f + Ht @ self.V_f + self.b_f)
+                g_t = torch.tanh(Xt @ self.U_c + Ht @ self.V_c + self.b_c)
+                o_t = torch.sigmoid(Xt @ self.U_o + Ht @ self.V_o + self.b_o)
+                Ct = f_t * Ct + i_t * g_t
+                Ht = o_t * torch.tanh(Ct)
+
+                hidden_seq.append(Ht.unsqueeze(0))
+
+            # reshape hidden_seq p/ retornar
+            hidden_seq = torch.cat(hidden_seq, dim=0)
+            hidden_seq = hidden_seq.transpose(0, 1).contiguous()
+            return hidden_seq, (Ht, Ct)
