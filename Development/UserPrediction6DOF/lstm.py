@@ -90,5 +90,36 @@ class LSTMModel(nn.Module):
                 for the user in virtual reality that
                 to be reached after ms of latency
 
-
         """
+
+        super().__init__()
+        self.input_dim = input_dim
+        self.hidden_dim = hidden_dim
+
+        # Input Gate
+        self.W_input1 = nn.Parameter(torch.Tensor(input_dim, hidden_dim))
+        self.bias_input1 = nn.Parameter(torch.Tensor(hidden_dim))
+        self.W_input2 = nn.Parameter(torch.Tensor(input_dim, hidden_dim))
+        self.bias_input2 = nn.Parameter(torch.Tensor(hidden_dim))
+
+        # Forget Gate
+        self.U_f = nn.Parameter(torch.Tensor(input_sz, hidden_sz))
+        self.V_f = nn.Parameter(torch.Tensor(hidden_sz, hidden_sz))
+        self.b_f = nn.Parameter(torch.Tensor(hidden_sz))
+
+        # c_t
+        self.U_c = nn.Parameter(torch.Tensor(input_sz, hidden_sz))
+        self.V_c = nn.Parameter(torch.Tensor(hidden_sz, hidden_sz))
+        self.b_c = nn.Parameter(torch.Tensor(hidden_sz))
+
+        # o_t
+        self.U_o = nn.Parameter(torch.Tensor(input_sz, hidden_sz))
+        self.V_o = nn.Parameter(torch.Tensor(hidden_sz, hidden_sz))
+        self.b_o = nn.Parameter(torch.Tensor(hidden_sz))
+
+        self.init_weights()
+
+        def init_weights(self):
+            stdv = 1.0 / math.sqrt(self.hidden_size)
+            for weight in self.parameters():
+                weight.data.uniform_(-stdv, stdv)
