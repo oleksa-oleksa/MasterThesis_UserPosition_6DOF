@@ -217,6 +217,8 @@ class LSTMBase():
         self.results_path = results_path
         self.features = self.cfg['pos_coords'] + self.cfg['quat_coords'] + self.cfg['velocity'] + self.cfg['speed']
 
+        self.
+
     def run(self):
         logging.info("LSTM Base (Long Short-Term Memory Network)")
         results = []

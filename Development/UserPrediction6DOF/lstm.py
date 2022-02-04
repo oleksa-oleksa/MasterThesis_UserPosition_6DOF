@@ -173,3 +173,22 @@ class LSTMModelBase(nn.Module):
             hidden_seq = torch.cat(hidden_seq, dim=0)
             hidden_seq = hidden_seq.transpose(0, 1).contiguous()
             return hidden_seq, (Ht, Ct)
+
+
+class LSTMNetBase(nn.Module):
+    def __init__(self):
+        """
+        LSTM Network uses LSTMModel as cell structure
+
+        input dimension dont't need to match the cell state (hidden state) dimension
+        As we're working with a time series (position, rotation, velocity, speed) we have a vector on input
+        The length of the hidden state is the summary of the history in LSTM
+        """
+        super().__init__()
+        self.lstm = LSTMModelBase(32, 32)  # nn.LSTM(32, 32, batch_first=True)
+        self.fc1 = nn.Linear(32, 2)
+
+    def forward(self, X):
+        hidden_seq, (Ht, Ct) = self.lstm(X)
+        X = self.fc1(X)
+        return X

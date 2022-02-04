@@ -146,3 +146,9 @@ def get_csv_files(dataset_path):
         numerical_files_sorted.append(os.path.join(dataset_path, file))
 
     return numerical_files_sorted
+
+
+def prepare_dataset():
+    """
+    Prepares the loaded from HoloLens dataset to by used with pytorch
+    """
