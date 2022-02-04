@@ -140,31 +140,33 @@ class LSTMModelBase(nn.Module):
                     torch.zeros(batch_size, self.hidden_size).to(X.device),
                     torch.zeros(batch_size, self.hidden_size).to(X.device),
                 )
-                Ht_1 = Ht
+
             else:
                 Ht, Ct = init_states
-                Ht_1 = Ht
 
             for t in range(sequence_length):
                 Xt = X[:, t, :]
 
-                input_layer1 = torch.sigmoid(self.W_input1 @ Ht_1 + self.W_input1 @ Xt + self.bias_input1)
+                input_layer1 = torch.sigmoid(self.W_input1 @ Ht + self.W_input1 @ Xt + self.bias_input1)
 
-                input_layer2 = torch.tanh(self.W_input2 @ Ht_1 + self.W_input2 @ Xt + self.bias_input2)
+                input_layer2 = torch.tanh(self.W_input2 @ Ht + self.W_input2 @ Xt + self.bias_input2)
 
                 input_gate = input_layer1 @ input_layer2
 
-                forget_gate = torch.sigmoid(self.W_forget @ Ht_1 + self.W_forget @ Xt + self.bias_forget)
+                forget_gate = torch.sigmoid(self.W_forget @ Ht + self.W_forget @ Xt + self.bias_forget)
 
                 #  New long-term memory is created from previous  Ct_1
                 Ct = Ct * forget_gate + input_gate
 
-                i_t = torch.sigmoid(Xt @ self.U_i + Ht @ self.V_i + self.b_i)
-                f_t = torch.sigmoid(Xt @ self.U_f + Ht @ self.V_f + self.b_f)
-                g_t = torch.tanh(Xt @ self.U_c + Ht @ self.V_c + self.b_c)
-                o_t = torch.sigmoid(Xt @ self.U_o + Ht @ self.V_o + self.b_o)
-                Ct = f_t * Ct + i_t * g_t
-                Ht = o_t * torch.tanh(Ct)
+                # Gate takes the current input Xt, the previous short-term memory Ht_1 (hidden state)
+                # and long-term memory Ct computed in current step and ouputs the new hidden state Ht
+                output_layer1 = torch.sigmoid(self.W_output1 @ Ht + self.W_output1 @ Xt + self.bias_output1)
+
+                output_layer2 = torch.tanh(self.W_output2 * Ct + self.bias_output2)
+
+                output_gate = output_layer1 @ output_layer2
+
+                Ht = output_gate
 
                 hidden_seq.append(Ht.unsqueeze(0))
 
