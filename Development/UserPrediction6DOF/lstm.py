@@ -48,7 +48,7 @@ class LSTMModelBase(nn.Module):
         Gate takes the current input Xt, the previous short-term memory Ht_1 (hidden state)
         and long-term memory Ct computed in current step and ouputs the new hidden state Ht
 
-        First layer hort-term memory and current input is passed through a sigmoid function again
+        First layer short-term memory and current input is passed through a sigmoid function again
 
             output_layer1 = sigma(W_output1 * (Ht_1, Xt) + bias_output1)
 
@@ -94,7 +94,6 @@ class LSTMModelBase(nn.Module):
                 to be reached after ms of latency
 
         """
-
         super().__init__()
         self.input_dim = input_dim
         self.hidden_dim = hidden_dim

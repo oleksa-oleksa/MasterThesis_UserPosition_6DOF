@@ -41,6 +41,7 @@ import numpy as np
 from pyquaternion import Quaternion
 import logging
 
+
 class Evaluator():
     """Compute evaluation metrics MAE and RMSE for different predictors"""
     def __init__(self, zs, preds, pred_step):
@@ -89,4 +90,15 @@ class Evaluator():
         zs_shifted_rot = self.preds[:, 3:]
         zs_shifted_rot = np.array([Quaternion(q) for q in zs_shifted_rot])
     
+        self.compute_metrics(zs_pos, zs_rot, zs_shifted_pos, zs_shifted_rot)
+
+    def eval_lstm_base(self):
+        zs_pos = self.zs[:-self.pred_step, :3]
+        zs_rot = self.zs[:-self.pred_step:, 3:]
+        zs_rot = np.array([Quaternion(q) for q in zs_rot])
+
+        zs_shifted_pos = self.preds[:, :3]
+        zs_shifted_rot = self.preds[:, 3:]
+        zs_shifted_rot = np.array([Quaternion(q) for q in zs_shifted_rot])
+
         self.compute_metrics(zs_pos, zs_rot, zs_shifted_pos, zs_shifted_rot)

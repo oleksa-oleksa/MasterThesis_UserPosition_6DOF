@@ -82,8 +82,8 @@ class Application:
         
         # Check desired action
         if self.command == 'run':
-            if self.algorithm == 'lstm':
-                self.run_lstm()
+            if self.algorithm == 'lstm_base':
+                self.run_lstm_base()
             elif self.algorithm == 'kalman':
                 self.run_kalman()
             elif self.algorithm == 'baseline':
@@ -101,6 +101,13 @@ class Application:
         runner.run()
 
     def run_baseline(self):
+        """Runs baseline (no-prediction) on all traces and evaluates the results"""
+        runner = BaselineRunner(self.pred_window,
+                                self.dataset_path,
+                                self.results_path)
+        runner.run()
+
+    def run_lstm_base(self):
         """Runs baseline (no-prediction) on all traces and evaluates the results"""
         runner = BaselineRunner(self.pred_window,
                                 self.dataset_path,
@@ -252,7 +259,7 @@ class Application:
             '--algorithm',
             dest='algorithm',
             type=str,
-            choices=['lstm', 'kalman', 'baseline'],
+            choices=['lstm_base', 'kalman', 'baseline'],
             default='kalman',
             help='Selects which prediction algorithm is run on the data traces'
         )

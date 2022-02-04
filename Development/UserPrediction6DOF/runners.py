@@ -202,7 +202,7 @@ class KalmanRunner():
         df_results.to_csv(os.path.join(self.results_path, 'res_kalman.csv'), index=False)
 
 
-class LSTM():
+class LSTMBase():
     """Runs the LSTM NN over all traces
 
     Predicts the next value, X(t+n), from the previous n observations Xt, X+1, …, and X(t+n-1).
@@ -218,7 +218,7 @@ class LSTM():
         self.features = self.cfg['pos_coords'] + self.cfg['quat_coords'] + self.cfg['velocity'] + self.cfg['speed']
 
     def run(self):
-        logging.info("LSTM (Long Short-Term Memory Network)")
+        logging.info("LSTM Base (Long Short-Term Memory Network)")
         results = []
 
         for trace_path in get_csv_files(self.dataset_path):
@@ -231,15 +231,17 @@ class LSTM():
 
                 # Read trace from CSV file
                 df_trace = pd.read_csv(trace_path)
-                zs = df_trace[self.coords].to_numpy()
+                features = df_trace[self.features].to_numpy()
 
                 pred_step = int(w / self.dt)
-                zs_shifted = zs[pred_step:, :]  # Assumption: LAT = E2E latency
+
+                # output is created from the features shifted corresponding to given latency
+                labels = features[pred_step:, :]  # Assumption: LAT = E2E latency
 
                 # Compute evaluation metrics
-                eval = Evaluator(zs, zs_shifted, pred_step)
-                eval.eval_baseline()
-                metrics = np.array(list(eval.metrics.values()))
+                evaluator = Evaluator(features, labels, pred_step)
+                evaluator.eval_lstm_base()
+                metrics = np.array(list(evaluator.metrics.values()))
                 result_one_experiment = list(np.hstack((basename, w, metrics)))
                 results.append(result_one_experiment)
                 print("--------------------------------------------------------------")
