@@ -127,6 +127,10 @@ class LSTMModelBase(nn.Module):
             """
             assumes x.shape represents (batch_size, sequence_size, input_size)
             init_states is a tuple with the (Ht, Ct) parameters, set to zero if not introduced
+
+            firstly Ht and Ct represent previous cell parameter Ht_1 and Ct_1
+            new Ct will be created with forget gate calculations
+            new Ht will be created with output gate calculations
             """
             batch_size, sequence_length, _ = X.size()
             hidden_seq = []
@@ -149,6 +153,11 @@ class LSTMModelBase(nn.Module):
                 input_layer2 = torch.tanh(self.W_input2 @ Ht_1 + self.W_input2 @ Xt + self.bias_input2)
 
                 input_gate = input_layer1 @ input_layer2
+
+                forget_gate = torch.sigmoid(self.W_forget @ Ht_1 + self.W_forget @ Xt + self.bias_forget)
+
+                #  New long-term memory is created from previous  Ct_1
+                Ct = Ct * forget_gate + input_gate
 
                 i_t = torch.sigmoid(Xt @ self.U_i + Ht @ self.V_i + self.b_i)
                 f_t = torch.sigmoid(Xt @ self.U_f + Ht @ self.V_f + self.b_f)
