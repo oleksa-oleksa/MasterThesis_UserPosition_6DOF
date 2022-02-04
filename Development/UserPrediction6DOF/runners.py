@@ -217,7 +217,8 @@ class LSTMBase():
         self.results_path = results_path
         self.features = self.cfg['pos_coords'] + self.cfg['quat_coords'] + self.cfg['velocity'] + self.cfg['speed']
 
-        self.
+        ## TODO: Prepare dataset for dataloader with tutorial
+        ## https://github.com/piEsposito/pytorch-lstm-by-hand/blob/master/nlp-naive-lstm-byhand.ipynb
 
     def run(self):
         logging.info("LSTM Base (Long Short-Term Memory Network)")
