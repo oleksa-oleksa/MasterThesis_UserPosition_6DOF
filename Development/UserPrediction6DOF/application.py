@@ -114,6 +114,13 @@ class Application:
                                 self.results_path)
         runner.run()
 
+    def run_lstm(self):
+        """Runs baseline (no-prediction) on all traces and evaluates the results"""
+        runner = BaselineRunner(self.pred_window,
+                                self.dataset_path,
+                                self.results_path)
+        runner.run()
+
     def prepare(self):
         """Resample all user traces in the given path to a common sampling time and make
         temporal spacing between samples equal"""
@@ -259,7 +266,7 @@ class Application:
             '--algorithm',
             dest='algorithm',
             type=str,
-            choices=['lstm_base', 'kalman', 'baseline'],
+            choices=['lstm_base', 'lstm' 'kalman', 'baseline'],
             default='kalman',
             help='Selects which prediction algorithm is run on the data traces'
         )
