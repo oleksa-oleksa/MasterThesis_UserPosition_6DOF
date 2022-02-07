@@ -45,7 +45,7 @@ import os
 import sys
 import numpy as np
 import toml
-from .runners import KalmanRunner, BaselineRunner
+from .runners import KalmanRunner, BaselineRunner, LSTMBaseRunner, LSTMRunner
 from .reporter import Reporter
 from .utils import get_csv_files, preprocess_trace
 
@@ -82,10 +82,12 @@ class Application:
         
         # Check desired action
         if self.command == 'run':
-            if self.algorithm == 'lstm_base':
-                self.run_lstm_base()
-            elif self.algorithm == 'kalman':
+            if self.algorithm == 'kalman':
                 self.run_kalman()
+            elif self.algorithm == 'lstm':
+                self.run_lstm()
+            elif self.algorithm == 'lstm_base':
+                self.run_lstm_base()
             elif self.algorithm == 'baseline':
                 self.run_baseline()
         elif self.command == 'prepare':
@@ -109,14 +111,14 @@ class Application:
 
     def run_lstm_base(self):
         """Runs baseline (no-prediction) on all traces and evaluates the results"""
-        runner = BaselineRunner(self.pred_window,
+        runner = LSTMBaseRunner(self.pred_window,
                                 self.dataset_path,
                                 self.results_path)
         runner.run()
 
     def run_lstm(self):
         """Runs baseline (no-prediction) on all traces and evaluates the results"""
-        runner = BaselineRunner(self.pred_window,
+        runner = LSTMRunner(self.pred_window,
                                 self.dataset_path,
                                 self.results_path)
         runner.run()

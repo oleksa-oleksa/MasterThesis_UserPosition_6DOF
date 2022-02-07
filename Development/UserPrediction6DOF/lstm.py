@@ -176,7 +176,7 @@ class LSTMModelBase(nn.Module):
 
 
 class LSTMNetBase(nn.Module):
-    def __init__(self):
+    def __init__(self, input_dim, hidden_dim, output_dim):
         """
         LSTM Network uses LSTMModel as cell structure
 
@@ -185,8 +185,8 @@ class LSTMNetBase(nn.Module):
         The length of the hidden state is the summary of the history in LSTM
         """
         super().__init__()
-        self.lstm = LSTMModelBase(32, 32)  # nn.LSTM(32, 32, batch_first=True)
-        self.fc1 = nn.Linear(32, 2)
+        self.lstm = LSTMModelBase(input_dim, hidden_dim)  # nn.LSTM(32, 32, batch_first=True)
+        self.fc1 = nn.Linear(hidden_dim, output_dim)
 
     def forward(self, X):
         hidden_seq, (Ht, Ct) = self.lstm(X)

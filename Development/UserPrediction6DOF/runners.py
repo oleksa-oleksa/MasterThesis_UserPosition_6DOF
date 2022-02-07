@@ -273,7 +273,7 @@ class LSTMRunner():
         ## https://github.com/piEsposito/pytorch-lstm-by-hand/blob/master/nlp-naive-lstm-byhand.ipynb
 
     def run(self):
-        logging.info("LSTM Base (Long Short-Term Memory Network)")
+        logging.info("LSTM PyTorch (Long Short-Term Memory Network)")
         results = []
 
         for trace_path in get_csv_files(self.dataset_path):
