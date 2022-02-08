@@ -41,6 +41,11 @@ import numpy as np
 from pyquaternion import Quaternion
 import logging
 
+# HoloLens CSV-Log parameter
+pos_size = 3
+rot_size = 4
+eval_stop = pos_size + rot_size
+
 
 class Evaluator():
     """Compute evaluation metrics MAE and RMSE for different predictors"""
@@ -93,12 +98,18 @@ class Evaluator():
         self.compute_metrics(zs_pos, zs_rot, zs_shifted_pos, zs_shifted_rot)
 
     def eval_lstm_base(self):
-        zs_pos = self.zs[:-self.pred_step, :3]
-        zs_rot = self.zs[:-self.pred_step:, 3:]
+        """
+        New HoloLens data of length 11:
+        [x, y, z] => [:, :3] three first columns
+        [qw, qx, qy, qz] => [:, 3:7] next 4 columns
+        the rest of vector is velocity + speed data that will not (!) be predicted and evaluated
+        """
+        zs_pos = self.zs[:-self.pred_step, :pos_size]
+        zs_rot = self.zs[:-self.pred_step:, pos_size:eval_stop]
         zs_rot = np.array([Quaternion(q) for q in zs_rot])
 
-        zs_shifted_pos = self.preds[:, :3]
-        zs_shifted_rot = self.preds[:, 3:]
+        zs_shifted_pos = self.preds[:, :pos_size]
+        zs_shifted_rot = self.preds[:, pos_size:eval_stop]
         zs_shifted_rot = np.array([Quaternion(q) for q in zs_shifted_rot])
 
         self.compute_metrics(zs_pos, zs_rot, zs_shifted_pos, zs_shifted_rot)
@@ -110,12 +121,12 @@ class Evaluator():
         [qw, qx, qy, qz] => [:, 3:7] next 4 columns
         the rest of vector is velocity + speed data that will not (!) be predicted and evaluated
         """
-        zs_pos = self.zs[:-self.pred_step, :3]
-        zs_rot = self.zs[:-self.pred_step:, 3:7]
+        zs_pos = self.zs[:-self.pred_step, :pos_size]
+        zs_rot = self.zs[:-self.pred_step:, pos_size:eval_stop]
         zs_rot = np.array([Quaternion(q) for q in zs_rot])
 
-        zs_shifted_pos = self.preds[:, :3]
-        zs_shifted_rot = self.preds[:, 3:7]
+        zs_shifted_pos = self.preds[:, :pos_size]
+        zs_shifted_rot = self.preds[:, pos_size:eval_stop]
         zs_shifted_rot = np.array([Quaternion(q) for q in zs_shifted_rot])
 
         self.compute_metrics(zs_pos, zs_rot, zs_shifted_pos, zs_shifted_rot)

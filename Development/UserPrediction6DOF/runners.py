@@ -48,6 +48,7 @@ import torch
 import torch.nn as nn
 from filterpy.common import Q_discrete_white_noise
 from filterpy.kalman import KalmanFilter
+from .lstm import LSTMModel
 from scipy.linalg import block_diag
 from statsmodels.iolib.smpickle import save_pickle
 from statsmodels.tsa.ar_model import AutoReg, AutoRegResults, ar_select_order
@@ -296,6 +297,11 @@ class LSTMRunner():
         self.results_path = results_path
         self.features = self.cfg['pos_coords'] + self.cfg['quat_coords'] + self.cfg['velocity'] + self.cfg['speed']
 
+        input_dim = 11
+        hidden_dim = 100
+        n_layers = 1 # the number of LSTM layers stacked on top of each other
+
+        self.lstm = nn.LSTM(input_dim, hidden_dim, n_layers, batch_first=True)
 
     def run(self):
         logging.info("LSTM PyTorch (Long Short-Term Memory Network)")
