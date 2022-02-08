@@ -258,6 +258,33 @@ class LSTMRunner():
     """Runs the LSTM NN over all traces
 
     Predicts the next value, X(t+n), from the previous n observations Xt, X+1, …, and X(t+n-1).
+
+    D - the input vector is a HoloLens data coming from log csv-file
+    as input vector x_t of length 11 at each time step
+
+    H - length of the hidden state H, the summary of the history so far.
+    can be modified for obtaining different prediction results
+
+    B - is a batch size, the number of training examples utilized in one iteration
+
+    [D x B] is input_dim parameter in LSTM => [11 x B]
+    [H x B] is hidden_dim parameter in LSTM ==> [100 x B]
+
+    These two are will be concatenated (ie x_t is tacked onto the end of h_t),
+    making a new input hx_t with dimension [(H + D ) x B].
+    In this case, hx_t is now [100 + 11 ] x B = [111 x B]
+
+    When this new input hx_t is introduced to the gates,
+    the weights are of dimension [H x (H + D)], in our case [100 x 111].
+    B isn’t here, so different batch sizes will not affect the results of LSTM output
+
+    Matrix multiply uses hx_t and the weights of each gate, [H x (H + D)] * [(H + D) x B],
+    which in our case is [100 x (100 + 11)] * [(100 + 11) x B] => [100 x 111] * [111 x B]
+    50x55 * 55x1.
+
+    This produces  [H x B] again ( 100 x B) and this is the dimension of the hidden vector
+    and the cell state that will be passed onto the next step.
+
     """
 
     def __init__(self, pred_window, dataset_path, results_path):
