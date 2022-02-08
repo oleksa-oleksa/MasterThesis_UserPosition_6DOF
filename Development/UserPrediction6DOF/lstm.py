@@ -195,17 +195,15 @@ class LSTMNetBase(nn.Module):
 
 
 class LSTMModel(nn.Module):
-    def __init__(self, input_dim, hidden_dim, layer_dim, output_dim, dropout_prob):
+    def __init__(self, input_dim, hidden_dim, output_dim, layer_dim=1):
         super(LSTMModel, self).__init__()
 
         # Defining the number of layers and the nodes in each layer
         self.hidden_dim = hidden_dim
         self.layer_dim = layer_dim
 
-        # LSTM layers
-        self.lstm = nn.LSTM(
-            input_dim, hidden_dim, layer_dim, batch_first=True, dropout=dropout_prob
-        )
+        # LSTM layers (default 1)
+        self.lstm = nn.LSTM(input_dim, hidden_dim, layer_dim, batch_first=True)
 
         # Fully connected layer maps last LSTM output (hidden dimension) to the label dimension
         self.fc = nn.Linear(hidden_dim, output_dim)

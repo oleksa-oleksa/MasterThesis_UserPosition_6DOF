@@ -312,6 +312,7 @@ class LSTMRunner():
 
         for trace_path in get_csv_files(self.dataset_path):
             basename = os.path.splitext(os.path.basename(trace_path))[0]
+            print(basename)
             print("-------------------------------------------------------------------------")
             logging.info("Trace path: %s", trace_path)
             print("-------------------------------------------------------------------------")
@@ -326,6 +327,8 @@ class LSTMRunner():
 
                 # output is created from the features shifted corresponding to given latency
                 labels = features[pred_step:, :]  # Assumption: LAT = E2E latency
+
+                # Long Short-Term Memory
 
                 # Compute evaluation metrics
                 evaluator = Evaluator(features, labels, pred_step)
