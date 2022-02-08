@@ -66,7 +66,7 @@ class LSTMModelBase(nn.Module):
     Short-term Ht and long-term memory Ct created by three gates will be passed over
     to the next iteration and the whole process will be repeated.
 
-    The output on each interation can be accessed through hidden state Ht
+    The output on each iteration can be accessed through hidden state Ht
 
     """
 
@@ -207,7 +207,7 @@ class LSTMModel(nn.Module):
             input_dim, hidden_dim, layer_dim, batch_first=True, dropout=dropout_prob
         )
 
-        # Fully connected layer
+        # Fully connected layer maps last LSTM output (hidden dimension) to the label dimension
         self.fc = nn.Linear(hidden_dim, output_dim)
 
     def forward(self, x):
