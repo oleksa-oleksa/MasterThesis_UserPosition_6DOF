@@ -102,3 +102,20 @@ class Evaluator():
         zs_shifted_rot = np.array([Quaternion(q) for q in zs_shifted_rot])
 
         self.compute_metrics(zs_pos, zs_rot, zs_shifted_pos, zs_shifted_rot)
+
+    def eval_lstm(self):
+        """
+        New HoloLens data of length 11:
+        [x, y, z] => [:, :3] three first columns
+        [qw, qx, qy, qz] => [:, 3:7] next 4 columns
+        the rest of vector is velocity + speed data that will not (!) be predicted and evaluated
+        """
+        zs_pos = self.zs[:-self.pred_step, :3]
+        zs_rot = self.zs[:-self.pred_step:, 3:7]
+        zs_rot = np.array([Quaternion(q) for q in zs_rot])
+
+        zs_shifted_pos = self.preds[:, :3]
+        zs_shifted_rot = self.preds[:, 3:7]
+        zs_shifted_rot = np.array([Quaternion(q) for q in zs_shifted_rot])
+
+        self.compute_metrics(zs_pos, zs_rot, zs_shifted_pos, zs_shifted_rot)

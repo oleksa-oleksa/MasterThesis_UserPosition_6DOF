@@ -217,8 +217,8 @@ class LSTMBaseRunner():
         self.results_path = results_path
         self.features = self.cfg['pos_coords'] + self.cfg['quat_coords'] + self.cfg['velocity'] + self.cfg['speed']
 
-        ## TODO: Prepare dataset for dataloader with tutorial
-        ## https://github.com/piEsposito/pytorch-lstm-by-hand/blob/master/nlp-naive-lstm-byhand.ipynb
+        ## TODO: Prepare dataset for dataloader
+        ## TODO: and try the custom LSTM
 
     def run(self):
         logging.info("LSTM Base (Long Short-Term Memory Network)")
@@ -296,8 +296,6 @@ class LSTMRunner():
         self.results_path = results_path
         self.features = self.cfg['pos_coords'] + self.cfg['quat_coords'] + self.cfg['velocity'] + self.cfg['speed']
 
-        ## TODO: Prepare dataset for dataloader with tutorial
-        ## https://github.com/piEsposito/pytorch-lstm-by-hand/blob/master/nlp-naive-lstm-byhand.ipynb
 
     def run(self):
         logging.info("LSTM PyTorch (Long Short-Term Memory Network)")
@@ -322,7 +320,7 @@ class LSTMRunner():
 
                 # Compute evaluation metrics
                 evaluator = Evaluator(features, labels, pred_step)
-                evaluator.eval_lstm_base()
+                evaluator.eval_lstm()
                 metrics = np.array(list(evaluator.metrics.values()))
                 result_one_experiment = list(np.hstack((basename, w, metrics)))
                 results.append(result_one_experiment)

@@ -268,7 +268,7 @@ class Application:
             '--algorithm',
             dest='algorithm',
             type=str,
-            choices=['lstm_base', 'lstm' 'kalman', 'baseline'],
+            choices=['lstm_base', 'lstm', 'kalman', 'baseline'],
             default='kalman',
             help='Selects which prediction algorithm is run on the data traces'
         )
