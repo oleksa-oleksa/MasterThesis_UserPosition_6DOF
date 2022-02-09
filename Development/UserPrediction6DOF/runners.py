@@ -53,7 +53,7 @@ from scipy.linalg import block_diag
 from statsmodels.iolib.smpickle import save_pickle
 from statsmodels.tsa.ar_model import AutoReg, AutoRegResults, ar_select_order
 from .evaluator import Evaluator
-from .utils import get_csv_files
+from .utils import get_csv_files, train_val_test_split
 
 # For more readable printing
 np.set_printoptions(precision=6, suppress=True, linewidth=np.inf)
@@ -304,6 +304,7 @@ class LSTMRunner():
 
         # If there is only one layer, dropout is not applied
         # input_dim, hidden_dim, layer_dim, output_dim, dropout_prob
+        # batch_first=True --> input is [batch_size, seq_len, input_size]
         self.lstm = LSTMModel(input_dim, hidden_dim, layer_dim, output_dim)
 
     def run(self):
@@ -312,7 +313,6 @@ class LSTMRunner():
 
         for trace_path in get_csv_files(self.dataset_path):
             basename = os.path.splitext(os.path.basename(trace_path))[0]
-            print(basename)
             print("-------------------------------------------------------------------------")
             logging.info("Trace path: %s", trace_path)
             print("-------------------------------------------------------------------------")
@@ -321,17 +321,26 @@ class LSTMRunner():
 
                 # Read trace from CSV file
                 df_trace = pd.read_csv(trace_path)
-                features = df_trace[self.features].to_numpy()
+                X = df_trace[self.features].to_numpy() # features.shape (12001, 11)
 
                 pred_step = int(w / self.dt)
 
                 # output is created from the features shifted corresponding to given latency
-                labels = features[pred_step:, :]  # Assumption: LAT = E2E latency
+                y = X[pred_step:, :]  # Assumption: LAT = E2E latency
+                # labels.shape
+                # 20 ms (11997, 11) => 12001 - 20/5
+                # 100 ms (11981, 11) => 12002 - 100/5
+
+                # Splitting the data into train, validation, and test sets
+                X_train, X_val, X_test, y_train, y_val, y_test = train_val_test_split(X, y, 0.2)
+
+                print("X_train {}, X_val {}, X_test{}, y_train {}, y_val {}, y_test {}",
+                      X_train.shape, X_val.shape, X_test.shape, y_train.shape, y_val.shape, y_test.shape)
 
                 # Long Short-Term Memory
 
                 # Compute evaluation metrics
-                evaluator = Evaluator(features, labels, pred_step)
+                evaluator = Evaluator(X, y, pred_step)
                 evaluator.eval_lstm()
                 metrics = np.array(list(evaluator.metrics.values()))
                 result_one_experiment = list(np.hstack((basename, w, metrics)))

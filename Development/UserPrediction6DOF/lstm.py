@@ -1,6 +1,7 @@
 import math
 import torch
 import torch.nn as nn
+from torchsummary import summary
 
 
 class LSTMModelBase(nn.Module):
@@ -203,7 +204,8 @@ class LSTMModel(nn.Module):
         self.layer_dim = layer_dim
 
         # LSTM layers (default 1)
-        self.lstm = nn.LSTM(input_dim, hidden_dim, layer_dim, batch_first=True)
+        # setting batch_first=True requires the input to have the shape [batch_size, seq_len, input_size]
+        self.layers = nn.LSTM(input_dim, hidden_dim, layer_dim, batch_first=True)
 
         # Fully connected layer maps last LSTM output (hidden dimension) to the label dimension
         self.fc = nn.Linear(hidden_dim, output_dim)
@@ -218,7 +220,7 @@ class LSTMModel(nn.Module):
         # We need to detach as we are doing truncated backpropagation through time (BPTT)
         # If we don't, we'll backprop all the way to the start even after going through another batch
         # Forward propagation by passing in the input, hidden state, and cell state into the model
-        out, (hn, cn) = self.lstm(x, (h0.detach(), c0.detach()))
+        out, (hn, cn) = self.layers(x, (h0.detach(), c0.detach()))
 
         # Reshaping the outputs in the shape of (batch_size, seq_length, hidden_size)
         # so that it can fit into the fully connected layer
@@ -228,3 +230,32 @@ class LSTMModel(nn.Module):
         out = self.fc(out)
 
         return out
+
+
+class LSTMOptimization:
+    def __init__(self, model, loss_fn, optimizer):
+        self.model = model
+        self.loss_fn = loss_fn
+        self.optimizer = optimizer
+        self.train_losses = []
+        self.val_losses = []
+
+    def train_step(self, x, y):
+        # Sets model to train mode
+        self.model.train()
+
+        # Makes predictions
+        yhat = self.model(x)
+
+        # Computes loss
+        loss = self.loss_fn(y, yhat)
+
+        # Computes gradients
+        loss.backward()
+
+        # Updates parameters and zeroes gradients
+        self.optimizer.step()
+        self.optimizer.zero_grad()
+
+        # Returns the loss
+        return loss.item()
