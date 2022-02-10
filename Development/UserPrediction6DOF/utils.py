@@ -42,6 +42,7 @@ import os
 import logging
 import numpy as np
 import pandas as pd
+import sys
 from matplotlib import pyplot as plt
 from scipy.spatial.transform import Rotation as R
 from scipy.spatial.transform import Slerp
@@ -153,28 +154,22 @@ def get_csv_files(dataset_path):
 def cut_dataset_lenght(X, y):
     """
     Assuming that X (features) is always bigger than created y (labels)
-    Cuts the longer X array and makes X and y arrays to have a same shape
+    Cuts the longer X array and makes X and y arrays to have a same length
     :param X: dataset contains user position, rotation, velocity and speed
     :param y: labels to be predicted: user position and rotation
     :return: features X with modified length
     """
 
-    try:
+    if X.shape[0] < y.shape[0]:
+        sys.exit("X is shorter than y, can not cut or extend X. Please check the inputs and try again. Terminated!")
+
+    if X.shape[0] == y.shape[0]:
+        print("X is of the same shape as y, will not cut X. Continued...")
+        return X
+
+    else:
         X = X[:y.shape[0], :]
-        if X.shape[0] < y.shape[]
-            raise ValueTooSmallError
-        elif i_num > number:
-            raise ValueTooLargeError
-        break
-    except ValueTooSmallError:
-        print("This value is too small, try again!")
-        print()
-    except ValueTooLargeError:
-        print("This value is too large, try again!")
-        print()
-
-
-    # print(X.shape == y.shape)
+        print("Length of X is equal of y: ", X.shape[0] == y.shape[0])
     return X
 
 
