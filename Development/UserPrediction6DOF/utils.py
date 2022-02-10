@@ -49,6 +49,10 @@ from scipy.spatial.transform import Slerp
 from sklearn.model_selection import train_test_split
 
 pd.options.mode.chained_assignment = None
+# HoloLens CSV-Log parameter
+pos_size = 3
+rot_size = 4
+labels_stop = pos_size + rot_size
 
 
 def preprocess_trace(trace_path, dt, out_dir):
@@ -149,6 +153,10 @@ def get_csv_files(dataset_path):
         numerical_files_sorted.append(os.path.join(dataset_path, file))
 
     return numerical_files_sorted
+
+
+def cut_extra_labels(y):
+    return y[:labels_stop]
 
 
 def cut_dataset_lenght(X, y):
