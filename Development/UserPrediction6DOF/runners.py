@@ -46,6 +46,7 @@ import pandas as pd
 import toml
 import torch
 import torch.nn as nn
+import torch.optim as optim
 from filterpy.common import Q_discrete_white_noise
 from filterpy.kalman import KalmanFilter
 from .lstm import LSTMModel
@@ -301,16 +302,16 @@ class LSTMRunner():
         hidden_dim = 100
         layer_dim = 1 # the number of LSTM layers stacked on top of each other
         output_dim = 7 # 3 position parameter + 4 rotation parameter
-        batch_size = 64
+        self.batch_size = 64
         dropout = 0.2
         n_epochs = 100
-        learning_rate = 1e-3
-        weight_decay = 1e-6
+        self.learning_rate = 1e-3
+        self.weight_decay = 1e-6
 
         # If there is only one layer, dropout is not applied
         # input_dim, hidden_dim, layer_dim, output_dim, dropout_prob
         # batch_first=True --> input is [batch_size, seq_len, input_size]
-        self.lstm = LSTMModel(input_dim, hidden_dim, layer_dim, output_dim, dropout)
+        self.model = LSTMModel(input_dim, hidden_dim, layer_dim, output_dim)
 
     def run(self):
         logging.info("LSTM PyTorch (Long Short-Term Memory Network)")
@@ -347,11 +348,20 @@ class LSTMRunner():
                       f"y_train {y_train.shape}, y_val {y_val.shape}, y_test {y_test.shape}")
 
                 train_loader, val_loader, test_loader = load_data(X_train, X_val, X_test,
-                                                                  y_train, y_val, y_test, batch_size=64)
-
+                                                                  y_train, y_val, y_test, batch_size=self.batch_size)
 
 
                 # Long Short-Term Memory
+
+                loss_fn = nn.MSELoss(reduction="mean")
+                optimizer = optim.Adam(self.model.parameters(), lr=self.learning_rate, weight_decay=self.weight_decay)
+
+                opt = Optimization(model=model, loss_fn=loss_fn, optimizer=optimizer)
+                opt.train(train_loader, val_loader, batch_size=batch_size, n_epochs=n_epochs, n_features=input_dim)
+                opt.plot_losses()
+
+                predictions, values = opt.evaluate(test_loader_one, batch_size=1, n_features=input_dim)
+
 
                 # Compute evaluation metrics
                 evaluator = Evaluator(X, y, pred_step)
