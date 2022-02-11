@@ -266,7 +266,7 @@ class LSTMOptimization:
         return loss.item()
 
     def train(self, train_loader, val_loader, batch_size=64, n_epochs=50, n_features=11):
-        model_path = f'./models/{self.model}_{datetime.now().strftime("%Y-%m-%d %H:%M")}'
+        model_path = f'./models/LSTM/{datetime.now().strftime("%d.%m_%H%M%S")}'
 
         for epoch in range(1, n_epochs + 1):
             batch_losses = []
