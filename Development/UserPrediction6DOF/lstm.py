@@ -1,7 +1,7 @@
 import math
 import torch
 import torch.nn as nn
-import datetime
+from datetime import datetime
 import numpy as np
 from matplotlib import pyplot as plt
 
@@ -262,7 +262,7 @@ class LSTMOptimization:
         # Returns the loss
         return loss.item()
 
-    def train(self, train_loader, val_loader, batch_size=64, n_epochs=50, n_features=1):
+    def train(self, train_loader, val_loader, batch_size=64, n_epochs=50, n_features=11):
         model_path = f'models/{self.model}_{datetime.now().strftime("%Y-%m-%d %H:%M:%S")}'
 
         for epoch in range(1, n_epochs + 1):
