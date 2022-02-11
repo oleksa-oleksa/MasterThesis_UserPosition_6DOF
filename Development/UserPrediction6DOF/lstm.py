@@ -2,6 +2,9 @@ import math
 import torch
 import torch.nn as nn
 import datetime
+import numpy as np
+from matplotlib import pyplot as plt
+
 
 class LSTMModelBase(nn.Module):
 
@@ -236,8 +239,7 @@ class LSTMModel(nn.Module):
         for epoch in range(1, n_epochs + 1):
             batch_losses = []
             for x_batch, y_batch in train_loader:
-                x_batch = x_batch.view([batch_size, -1, n_features]).to(device)
-                y_batch = y_batch.to(device)
+                x_batch = x_batch.view([batch_size, -1, n_features])
                 loss = self.train_step(x_batch, y_batch)
                 batch_losses.append(loss)
             training_loss = np.mean(batch_losses)
@@ -246,8 +248,8 @@ class LSTMModel(nn.Module):
             with torch.no_grad():
                 batch_val_losses = []
                 for x_val, y_val in val_loader:
-                    x_val = x_val.view([batch_size, -1, n_features]).to(device)
-                    y_val = y_val.to(device)
+                    x_val = x_val.view([batch_size, -1, n_features])
+                    y_val = y_val
                     self.model.eval()
                     yhat = self.model(x_val)
                     val_loss = self.loss_fn(y_val, yhat).item()
@@ -261,6 +263,28 @@ class LSTMModel(nn.Module):
                 )
 
         torch.save(self.model.state_dict(), model_path)
+
+    def evaluate(self, test_loader, batch_size=1, n_features=1):
+        with torch.no_grad():
+            predictions = []
+            values = []
+            for x_test, y_test in test_loader:
+                x_test = x_test.view([batch_size, -1, n_features])
+                y_test = y_test
+                self.model.eval()
+                yhat = self.model(x_test)
+                predictions.append(yhat.detach().numpy())
+                values.append(y_test.detach().numpy())
+
+        return predictions, values
+
+    def plot_losses(self):
+        plt.plot(self.train_losses, label="Training loss")
+        plt.plot(self.val_losses, label="Validation loss")
+        plt.legend()
+        plt.title("Losses")
+        plt.show()
+        plt.close()
 
 
 class LSTMOptimization:

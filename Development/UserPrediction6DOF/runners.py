@@ -301,11 +301,16 @@ class LSTMRunner():
         hidden_dim = 100
         layer_dim = 1 # the number of LSTM layers stacked on top of each other
         output_dim = 7 # 3 position parameter + 4 rotation parameter
+        batch_size = 64
+        dropout = 0.2
+        n_epochs = 100
+        learning_rate = 1e-3
+        weight_decay = 1e-6
 
         # If there is only one layer, dropout is not applied
         # input_dim, hidden_dim, layer_dim, output_dim, dropout_prob
         # batch_first=True --> input is [batch_size, seq_len, input_size]
-        self.lstm = LSTMModel(input_dim, hidden_dim, layer_dim, output_dim)
+        self.lstm = LSTMModel(input_dim, hidden_dim, layer_dim, output_dim, dropout)
 
     def run(self):
         logging.info("LSTM PyTorch (Long Short-Term Memory Network)")
