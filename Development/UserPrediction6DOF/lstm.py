@@ -210,7 +210,7 @@ class LSTMModel(nn.Module):
         self.layers = nn.LSTM(input_dim, hidden_dim, layer_dim, batch_first=True)
 
         # Fully connected layer maps last LSTM output (hidden dimension) to the label dimension
-        self.fc = nn.Linear(hidden_dim, output_dim)
+        self.fc = nn.Linear(hidden_dim, 7)
 
     def forward(self, x):
         # Initializing hidden state for first input with zeros
@@ -229,7 +229,9 @@ class LSTMModel(nn.Module):
         out = out[:, -1, :]
 
         # Convert the final state to our desired output shape (batch_size, output_dim)
+        # print(f"out BEFORE {out.shape}")
         out = self.fc(out)
+        # print(f"out AFTER FC {out.shape}")
 
         return out
 
@@ -248,6 +250,7 @@ class LSTMOptimization:
 
         # Makes predictions
         yhat = self.model(x)
+        #print(yhat.shape)
 
         # Computes loss
         loss = self.loss_fn(y, yhat)
@@ -263,7 +266,7 @@ class LSTMOptimization:
         return loss.item()
 
     def train(self, train_loader, val_loader, batch_size=64, n_epochs=50, n_features=11):
-        model_path = f'models/{self.model}_{datetime.now().strftime("%Y-%m-%d %H:%M:%S")}'
+        model_path = f'./models/{self.model}_{datetime.now().strftime("%Y-%m-%d %H:%M")}'
 
         for epoch in range(1, n_epochs + 1):
             batch_losses = []
@@ -286,7 +289,8 @@ class LSTMOptimization:
                 validation_loss = np.mean(batch_val_losses)
                 self.val_losses.append(validation_loss)
 
-            if (epoch <= 10) | (epoch % 50 == 0):
+            if (epoch <= 5) | (epoch % 5 == 0):
+                # print first 5 epochs and then every 5 epochs
                 print(
                     f"[{epoch}/{n_epochs}] Training loss: {training_loss:.4f}\t Validation loss: {validation_loss:.4f}"
                 )

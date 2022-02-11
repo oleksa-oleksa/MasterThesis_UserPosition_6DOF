@@ -179,7 +179,7 @@ def cut_dataset_lenght(X, y):
 
     else:
         X = X[:y.shape[0], :]
-        print("Length of X is equal of y: ", X.shape[0] == y.shape[0])
+        # print("Length of X is equal of y: ", X.shape[0] == y.shape[0])
     return X
 
 

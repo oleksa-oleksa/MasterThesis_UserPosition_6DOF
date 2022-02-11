@@ -300,11 +300,11 @@ class LSTMRunner():
 
         self.input_dim = 11
         self.hidden_dim = 100
-        self.layer_dim = 1 # the number of LSTM layers stacked on top of each other
-        self.output_dim = 7 # 3 position parameter + 4 rotation parameter
+        self.layer_dim = 1  # the number of LSTM layers stacked on top of each other
+        self.output_dim = 7  # 3 position parameter + 4 rotation parameter
         self.batch_size = 64
-        # self.dropout = 0.2 # using dropout causes pytorch unsolved issue
-        self.n_epochs = 100
+        # self.dropout = 0.2  # using dropout causes pytorch unsolved issue
+        self.n_epochs = 1
         self.learning_rate = 1e-3
         self.weight_decay = 1e-6
 
@@ -344,8 +344,8 @@ class LSTMRunner():
                 # Splitting the data into train, validation, and test sets
                 X_train, X_val, X_test, y_train, y_val, y_test = train_val_test_split(X_cut, y_cut, 0.2)
 
-                print(f"X_train {X_train.shape}, X_val {X_val.shape}, X_test{X_test.shape}, "
-                      f"y_train {y_train.shape}, y_val {y_val.shape}, y_test {y_test.shape}")
+                # print(f"X_train {X_train.shape}, X_val {X_val.shape}, X_test{X_test.shape}, "
+                #       f"y_train {y_train.shape}, y_val {y_val.shape}, y_test {y_test.shape}")
 
                 train_loader, val_loader, test_loader, test_loader_one = load_data(X_train, X_val, X_test,
                                                                   y_train, y_val, y_test, batch_size=self.batch_size)
@@ -358,7 +358,7 @@ class LSTMRunner():
 
                 opt = LSTMOptimization(model=self.model, loss_fn=loss_fn, optimizer=optimizer)
                 opt.train(train_loader, val_loader, batch_size=self.batch_size, n_epochs=self.n_epochs, n_features=self.input_dim)
-                opt.plot_losses()
+                # opt.plot_losses()
 
                 predictions, values = opt.evaluate(test_loader_one, batch_size=1, n_features=self.input_dim)
 
