@@ -85,3 +85,8 @@ main*.gz
 .idea
 **/venv/*
 !*/gfx
+
+# ======== #
+# Dev data #
+# ======= # 
+models
