@@ -233,6 +233,35 @@ class LSTMModel(nn.Module):
 
         return out
 
+
+class LSTMOptimization:
+    def __init__(self, model, loss_fn, optimizer):
+        self.model = model
+        self.loss_fn = loss_fn
+        self.optimizer = optimizer
+        self.train_losses = []
+        self.val_losses = []
+
+    def train_step(self, x, y):
+        # Sets model to train mode
+        self.model.train()
+
+        # Makes predictions
+        yhat = self.model(x)
+
+        # Computes loss
+        loss = self.loss_fn(y, yhat)
+
+        # Computes gradients
+        loss.backward()
+
+        # Updates parameters and zeroes gradients
+        self.optimizer.step()
+        self.optimizer.zero_grad()
+
+        # Returns the loss
+        return loss.item()
+
     def train(self, train_loader, val_loader, batch_size=64, n_epochs=50, n_features=1):
         model_path = f'models/{self.model}_{datetime.now().strftime("%Y-%m-%d %H:%M:%S")}'
 
@@ -286,31 +315,3 @@ class LSTMModel(nn.Module):
         plt.show()
         plt.close()
 
-
-class LSTMOptimization:
-    def __init__(self, model, loss_fn, optimizer):
-        self.model = model
-        self.loss_fn = loss_fn
-        self.optimizer = optimizer
-        self.train_losses = []
-        self.val_losses = []
-
-    def train_step(self, x, y):
-        # Sets model to train mode
-        self.model.train()
-
-        # Makes predictions
-        yhat = self.model(x)
-
-        # Computes loss
-        loss = self.loss_fn(y, yhat)
-
-        # Computes gradients
-        loss.backward()
-
-        # Updates parameters and zeroes gradients
-        self.optimizer.step()
-        self.optimizer.zero_grad()
-
-        # Returns the loss
-        return loss.item()

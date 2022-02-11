@@ -49,7 +49,7 @@ import torch.nn as nn
 import torch.optim as optim
 from filterpy.common import Q_discrete_white_noise
 from filterpy.kalman import KalmanFilter
-from .lstm import LSTMModel
+from .lstm import LSTMModel, LSTMOptimization
 from scipy.linalg import block_diag
 from statsmodels.iolib.smpickle import save_pickle
 from statsmodels.tsa.ar_model import AutoReg, AutoRegResults, ar_select_order
@@ -298,20 +298,20 @@ class LSTMRunner():
         self.results_path = results_path
         self.features = self.cfg['pos_coords'] + self.cfg['quat_coords'] + self.cfg['velocity'] + self.cfg['speed']
 
-        input_dim = 11
-        hidden_dim = 100
-        layer_dim = 1 # the number of LSTM layers stacked on top of each other
-        output_dim = 7 # 3 position parameter + 4 rotation parameter
+        self.input_dim = 11
+        self.hidden_dim = 100
+        self.layer_dim = 1 # the number of LSTM layers stacked on top of each other
+        self.output_dim = 7 # 3 position parameter + 4 rotation parameter
         self.batch_size = 64
-        dropout = 0.2
-        n_epochs = 100
+        # self.dropout = 0.2 # using dropout causes pytorch unsolved issue
+        self.n_epochs = 100
         self.learning_rate = 1e-3
         self.weight_decay = 1e-6
 
         # If there is only one layer, dropout is not applied
         # input_dim, hidden_dim, layer_dim, output_dim, dropout_prob
         # batch_first=True --> input is [batch_size, seq_len, input_size]
-        self.model = LSTMModel(input_dim, hidden_dim, layer_dim, output_dim)
+        self.model = LSTMModel(self.input_dim, self.hidden_dim, self.layer_dim, self.output_dim)
 
     def run(self):
         logging.info("LSTM PyTorch (Long Short-Term Memory Network)")
@@ -347,20 +347,20 @@ class LSTMRunner():
                 print(f"X_train {X_train.shape}, X_val {X_val.shape}, X_test{X_test.shape}, "
                       f"y_train {y_train.shape}, y_val {y_val.shape}, y_test {y_test.shape}")
 
-                train_loader, val_loader, test_loader = load_data(X_train, X_val, X_test,
+                train_loader, val_loader, test_loader, test_loader_one = load_data(X_train, X_val, X_test,
                                                                   y_train, y_val, y_test, batch_size=self.batch_size)
 
 
-                # Long Short-Term Memory
+                # Long Short-Term Memory TRAIN + EVAL
 
                 loss_fn = nn.MSELoss(reduction="mean")
                 optimizer = optim.Adam(self.model.parameters(), lr=self.learning_rate, weight_decay=self.weight_decay)
 
-                opt = Optimization(model=model, loss_fn=loss_fn, optimizer=optimizer)
-                opt.train(train_loader, val_loader, batch_size=batch_size, n_epochs=n_epochs, n_features=input_dim)
+                opt = LSTMOptimization(model=self.model, loss_fn=loss_fn, optimizer=optimizer)
+                opt.train(train_loader, val_loader, batch_size=self.batch_size, n_epochs=self.n_epochs, n_features=self.input_dim)
                 opt.plot_losses()
 
-                predictions, values = opt.evaluate(test_loader_one, batch_size=1, n_features=input_dim)
+                predictions, values = opt.evaluate(test_loader_one, batch_size=1, n_features=self.input_dim)
 
 
                 # Compute evaluation metrics

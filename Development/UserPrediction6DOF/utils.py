@@ -206,6 +206,6 @@ def load_data(X_train, X_val, X_test, y_train, y_val, y_test, batch_size=64):
     train_loader = DataLoader(train, batch_size=batch_size, shuffle=False, drop_last=True)
     val_loader = DataLoader(val, batch_size=batch_size, shuffle=False, drop_last=True)
     test_loader = DataLoader(test, batch_size=batch_size, shuffle=False, drop_last=True)
-    # test_loader_one = DataLoader(test, batch_size=1, shuffle=False, drop_last=True)
+    test_loader_one = DataLoader(test, batch_size=1, shuffle=False, drop_last=True)
 
-    return train_loader, val_loader, test_loader
+    return train_loader, val_loader, test_loader, test_loader_one
