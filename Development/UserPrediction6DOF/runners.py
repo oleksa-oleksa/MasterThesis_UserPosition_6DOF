@@ -53,7 +53,7 @@ from scipy.linalg import block_diag
 from statsmodels.iolib.smpickle import save_pickle
 from statsmodels.tsa.ar_model import AutoReg, AutoRegResults, ar_select_order
 from .evaluator import Evaluator
-from .utils import get_csv_files, train_val_test_split, cut_dataset_lenght, cut_extra_labels
+from .utils import *
 
 # For more readable printing
 np.set_printoptions(precision=6, suppress=True, linewidth=np.inf)
@@ -331,18 +331,20 @@ class LSTMRunner():
                 # 20 ms (11997, 11) => 12001 - 20/5
                 # 100 ms (11981, 11) => 12002 - 100/5
 
-                # make the features and labels to be of the same length
+                # prepare features and labels
                 X_cut = cut_dataset_lenght(X, y)
-
-                # cut the columns from labels array that are not relevant
                 y_cut = cut_extra_labels(y)
 
                 # Splitting the data into train, validation, and test sets
-                # TODO: cut 11 labels to only 7
                 X_train, X_val, X_test, y_train, y_val, y_test = train_val_test_split(X_cut, y_cut, 0.2)
 
                 print(f"X_train {X_train.shape}, X_val {X_val.shape}, X_test{X_test.shape}, "
                       f"y_train {y_train.shape}, y_val {y_val.shape}, y_test {y_test.shape}")
+
+                train_loader, val_loader, test_loader = load_data(X_train, X_val, X_test,
+                                                                  y_train, y_val, y_test, batch_size=64)
+
+
 
                 # Long Short-Term Memory
 

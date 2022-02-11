@@ -47,6 +47,8 @@ from matplotlib import pyplot as plt
 from scipy.spatial.transform import Rotation as R
 from scipy.spatial.transform import Slerp
 from sklearn.model_selection import train_test_split
+from torch.utils.data import TensorDataset, DataLoader
+import torch
 
 pd.options.mode.chained_assignment = None
 # HoloLens CSV-Log parameter
@@ -187,3 +189,24 @@ def train_val_test_split(X, y, test_ratio):
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_ratio, shuffle=False)
     X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=val_ratio, shuffle=False)
     return X_train, X_val, X_test, y_train, y_val, y_test
+
+
+def load_data(X_train, X_val, X_test, y_train, y_val, y_test, batch_size=64):
+
+    train_features = torch.Tensor(X_train)
+    train_targets = torch.Tensor(y_train)
+    val_features = torch.Tensor(X_val)
+    val_targets = torch.Tensor(y_val)
+    test_features = torch.Tensor(X_test)
+    test_targets = torch.Tensor(y_test)
+
+    train = TensorDataset(train_features, train_targets)
+    val = TensorDataset(val_features, val_targets)
+    test = TensorDataset(test_features, test_targets)
+
+    train_loader = DataLoader(train, batch_size=batch_size, shuffle=False, drop_last=True)
+    val_loader = DataLoader(val, batch_size=batch_size, shuffle=False, drop_last=True)
+    test_loader = DataLoader(test, batch_size=batch_size, shuffle=False, drop_last=True)
+    # test_loader_one = DataLoader(test, batch_size=1, shuffle=False, drop_last=True)
+
+    return train_loader, val_loader, test_loader
