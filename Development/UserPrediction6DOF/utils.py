@@ -156,7 +156,7 @@ def get_csv_files(dataset_path):
 
 
 def cut_extra_labels(y):
-    return y[:labels_stop]
+    return y[:, :labels_stop]
 
 
 def cut_dataset_lenght(X, y):
