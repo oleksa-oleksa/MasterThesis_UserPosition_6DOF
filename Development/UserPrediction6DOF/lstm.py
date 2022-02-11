@@ -298,6 +298,10 @@ class LSTMOptimization:
         torch.save(self.model.state_dict(), model_path)
 
     def evaluate(self, test_loader, batch_size=1, n_features=1):
+        """
+        predictions: list[float] The values predicted by the model
+        values: list[float] The actual values in the test set.
+        """
         with torch.no_grad():
             predictions = []
             values = []

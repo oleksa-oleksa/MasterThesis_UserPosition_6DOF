@@ -243,7 +243,7 @@ class LSTMBaseRunner():
                 # output is created from the features shifted corresponding to given latency
                 labels = features[pred_step:, :]  # Assumption: LAT = E2E latency
 
-                # Compute evaluation metrics
+                # Compute evaluation metrics BASELINE
                 evaluator = Evaluator(features, labels, pred_step)
                 evaluator.eval_lstm_base()
                 metrics = np.array(list(evaluator.metrics.values()))
@@ -304,7 +304,7 @@ class LSTMRunner():
         self.output_dim = 7  # 3 position parameter + 4 rotation parameter
         self.batch_size = 64
         # self.dropout = 0.2  # using dropout causes pytorch unsolved issue
-        self.n_epochs = 5
+        self.n_epochs = 1
         self.learning_rate = 1e-3
         self.weight_decay = 1e-6
 
@@ -363,12 +363,23 @@ class LSTMRunner():
                 predictions, values = opt.evaluate(test_loader_one, batch_size=1, n_features=self.input_dim)
 
 
-                # Compute evaluation metrics
+                # Compute evaluation metrics KALMAN
+                '''
                 evaluator = Evaluator(X, y, pred_step)
                 evaluator.eval_lstm()
                 metrics = np.array(list(evaluator.metrics.values()))
                 result_one_experiment = list(np.hstack((basename, w, metrics)))
                 results.append(result_one_experiment)
+                print("--------------------------------------------------------------")
+                '''
+
+                # Compute evaluation metrics KALMAN
+                eval = Evaluator(predictions, values, pred_step)
+                eval.eval_lstm()
+                metrics = np.array(list(eval.metrics.values()))
+                euc_dists = eval.euc_dists
+                ang_dists = np.rad2deg(eval.ang_dists)
+
                 print("--------------------------------------------------------------")
 
         df_results = pd.DataFrame(results, columns=['Trace', 'LAT', 'mae_euc', 'mae_ang',
