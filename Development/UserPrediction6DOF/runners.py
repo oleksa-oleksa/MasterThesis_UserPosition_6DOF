@@ -372,9 +372,9 @@ class LSTMRunner():
                 results.append(result_one_experiment)
                 print("--------------------------------------------------------------")
                 '''
-
-                # Compute evaluation metrics KALMAN
-                eval = Evaluator(predictions, values, pred_step)
+                # Compute evaluation metrics LSTM
+                # TODO Predictions + values causes "list indices must be integers or slices, not tuple" error
+                eval = Evaluator(X, y, pred_step)
                 eval.eval_lstm()
                 metrics = np.array(list(eval.metrics.values()))
                 euc_dists = eval.euc_dists

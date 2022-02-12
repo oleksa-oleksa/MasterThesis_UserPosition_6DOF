@@ -121,7 +121,7 @@ class Evaluator():
         [qw, qx, qy, qz] => [:, 3:7] next 4 columns
         the rest of vector is velocity + speed data that will not (!) be predicted and evaluated
         """
-        zs_pos = self.zs[:-self.pred_step, :pos_size]
+        zs_pos = self.zs[:-self.pred_step, :3]
         zs_rot = self.zs[:-self.pred_step:, pos_size:eval_stop]
         zs_rot = np.array([Quaternion(q) for q in zs_rot])
 
