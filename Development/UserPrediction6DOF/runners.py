@@ -350,7 +350,6 @@ class LSTMRunner():
                 train_loader, val_loader, test_loader, test_loader_one = load_data(X_train, X_val, X_test,
                                                                   y_train, y_val, y_test, batch_size=self.batch_size)
 
-
                 # Long Short-Term Memory TRAIN + EVAL
 
                 loss_fn = nn.MSELoss(reduction="mean")
@@ -360,7 +359,18 @@ class LSTMRunner():
                 opt.train(train_loader, val_loader, batch_size=self.batch_size, n_epochs=self.n_epochs, n_features=self.input_dim)
                 # opt.plot_losses()
 
-                predictions, values = opt.evaluate(test_loader_one, batch_size=1, n_features=self.input_dim)
+                # Compute evaluation metrics
+                xs = np.array(xs).squeeze()
+                covs = np.array(covs).squeeze()
+                x_preds = np.array(x_preds).squeeze()
+                pred_step = int(w / self.dt)
+                eval = Evaluator(zs, x_preds[:, ::2], pred_step)
+                eval.eval_kalman()
+                metrics = np.array(list(eval.metrics.values()))
+                euc_dists = eval.euc_dists
+                ang_dists = np.rad2deg(eval.ang_dists)
+
+                return metrics, euc_dists, ang_dists
 
 
                 # Compute evaluation metrics KALMAN
@@ -385,3 +395,16 @@ class LSTMRunner():
         df_results = pd.DataFrame(results, columns=['Trace', 'LAT', 'mae_euc', 'mae_ang',
                                                     'rmse_euc', 'rmse_ang'])
         df_results.to_csv(os.path.join(self.results_path, 'res_lstm.csv'), index=False)
+
+    def inverse_transform(self, scaler, df, columns):
+        for col in columns:
+            df[col] = scaler.inverse_transform(df[col])
+        return df
+
+    def format_predictions(self, predictions, values, df_test):
+        vals = np.concatenate(values, axis=0).ravel()
+        preds = np.concatenate(predictions, axis=0).ravel()
+        df_result = pd.DataFrame(data={"value": vals, "prediction": preds}, index=df_test.head(len(vals)).index)
+        df_result = df_result.sort_index()
+        # df_result = self.inverse_transform(scaler, df_result, [["value", "prediction"]])
+        return df_result
