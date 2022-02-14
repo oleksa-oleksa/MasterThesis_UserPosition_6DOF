@@ -359,29 +359,16 @@ class LSTMRunner():
                 opt.train(train_loader, val_loader, batch_size=self.batch_size, n_epochs=self.n_epochs, n_features=self.input_dim)
                 # opt.plot_losses()
 
-                # Compute evaluation metrics
-                xs = np.array(xs).squeeze()
-                covs = np.array(covs).squeeze()
-                x_preds = np.array(x_preds).squeeze()
-                pred_step = int(w / self.dt)
-                eval = Evaluator(zs, x_preds[:, ::2], pred_step)
-                eval.eval_kalman()
-                metrics = np.array(list(eval.metrics.values()))
-                euc_dists = eval.euc_dists
-                ang_dists = np.rad2deg(eval.ang_dists)
+                predictions, values = opt.evaluate(test_loader_one, batch_size=1, n_features=self.input_dim)
 
-                return metrics, euc_dists, ang_dists
+                # predictions.shape is [(2400, 1, 7)]
+                # Remove axes of length one from predictions.
+                predictions = np.array(predictions).squeeze()
+                print(f"predictions.shape: {predictions.shape}")
+                values = np.array(values).squeeze()
+                print(f"predictions.shape: {values.shape}")
 
 
-                # Compute evaluation metrics KALMAN
-                '''
-                evaluator = Evaluator(X, y, pred_step)
-                evaluator.eval_lstm()
-                metrics = np.array(list(evaluator.metrics.values()))
-                result_one_experiment = list(np.hstack((basename, w, metrics)))
-                results.append(result_one_experiment)
-                print("--------------------------------------------------------------")
-                '''
                 # Compute evaluation metrics LSTM
                 # TODO Predictions + values causes "list indices must be integers or slices, not tuple" error
                 eval = Evaluator(X, y, pred_step)
