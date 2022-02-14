@@ -371,7 +371,7 @@ class LSTMRunner():
 
                 # Compute evaluation metrics LSTM
                 # TODO Predictions + values causes "list indices must be integers or slices, not tuple" error
-                eval = Evaluator(X, y, pred_step)
+                eval = Evaluator(predictions, values, pred_step)
                 eval.eval_lstm()
                 metrics = np.array(list(eval.metrics.values()))
                 euc_dists = eval.euc_dists
