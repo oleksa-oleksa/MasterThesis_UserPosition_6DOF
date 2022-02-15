@@ -304,7 +304,7 @@ class LSTMRunner():
         self.output_dim = 7  # 3 position parameter + 4 rotation parameter
         self.batch_size = 64
         # self.dropout = 0.2  # using dropout causes pytorch unsolved issue
-        self.n_epochs = 1
+        self.n_epochs = 50
         self.learning_rate = 1e-3
         self.weight_decay = 1e-6
 

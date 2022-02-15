@@ -301,6 +301,11 @@ class LSTMOptimization:
         """
         predictions: list[float] The values predicted by the model
         values: list[float] The actual values in the test set.
+
+        Typically validation loss should be similar to but slightly higher than training loss.
+         As long as validation loss is lower than or even equal to training loss one should keep doing more training.
+        If training loss is reducing without increase in validation loss then again keep doing more training
+        If validation loss starts increasing then it is time to stop
         """
         with torch.no_grad():
             predictions = []
