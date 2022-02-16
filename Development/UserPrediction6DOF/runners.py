@@ -371,7 +371,7 @@ class LSTMRunner():
                 values = np.array(values).squeeze()
                 print(f"values.shape: {values.shape}")
 
-                df_pred_val_results = opt.format_predictions(predictions, values, test_loader)
+                df_pred_val_results = opt.format_predictions(predictions, values, X_test)
                 # TODO: print pair result/value
                 print(df_pred_val_results)
 
