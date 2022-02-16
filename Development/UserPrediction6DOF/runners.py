@@ -299,12 +299,12 @@ class LSTMRunner():
         self.features = self.cfg['pos_coords'] + self.cfg['quat_coords'] + self.cfg['velocity'] + self.cfg['speed']
 
         self.input_dim = 11
-        self.hidden_dim = 100
+        self.hidden_dim = 256
         self.layer_dim = 1  # the number of LSTM layers stacked on top of each other
         self.output_dim = 7  # 3 position parameter + 4 rotation parameter
         self.batch_size = 64
         # self.dropout = 0.2  # using dropout causes pytorch unsolved issue
-        self.n_epochs = 50
+        self.n_epochs = 10
         self.learning_rate = 1e-3
         self.weight_decay = 1e-6
 
@@ -316,6 +316,9 @@ class LSTMRunner():
     def run(self):
         logging.info("LSTM PyTorch (Long Short-Term Memory Network)")
         results = []
+        dists_path = os.path.join(self.results_path, 'distances')
+        if not os.path.exists(dists_path):
+            os.makedirs(dists_path)
 
         for trace_path in get_csv_files(self.dataset_path):
             basename = os.path.splitext(os.path.basename(trace_path))[0]
@@ -366,16 +369,26 @@ class LSTMRunner():
                 predictions = np.array(predictions).squeeze()
                 print(f"predictions.shape: {predictions.shape}")
                 values = np.array(values).squeeze()
-                print(f"predictions.shape: {values.shape}")
+                print(f"values.shape: {values.shape}")
 
 
                 # Compute evaluation metrics LSTM
                 # TODO Predictions + values causes "list indices must be integers or slices, not tuple" error
                 eval = Evaluator(predictions, values, pred_step)
                 eval.eval_lstm()
+
+                # compute same metrics as Kalman filter to compare
+
                 metrics = np.array(list(eval.metrics.values()))
                 euc_dists = eval.euc_dists
                 ang_dists = np.rad2deg(eval.ang_dists)
+
+                np.save(os.path.join(dists_path,
+                                     'euc_dists_lstm_{}_{}ms.npy'.format(basename, int(w * 1e3))), euc_dists)
+                np.save(os.path.join(dists_path,
+                                     'ang_dists_lstm_{}_{}ms.npy'.format(basename, int(w * 1e3))), ang_dists)
+                result_single = list(np.hstack((basename, w, metrics)))
+                results.append(result_single)
 
                 print("--------------------------------------------------------------")
 
