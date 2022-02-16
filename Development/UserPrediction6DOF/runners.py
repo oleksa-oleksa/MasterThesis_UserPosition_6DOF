@@ -53,7 +53,7 @@ from .lstm import LSTMModel, LSTMOptimization
 from scipy.linalg import block_diag
 from statsmodels.iolib.smpickle import save_pickle
 from statsmodels.tsa.ar_model import AutoReg, AutoRegResults, ar_select_order
-from .evaluator import Evaluator
+from .evaluator import Evaluator, DeepLearnEvaluator
 from .utils import *
 
 # For more readable printing
@@ -299,12 +299,12 @@ class LSTMRunner():
         self.features = self.cfg['pos_coords'] + self.cfg['quat_coords'] + self.cfg['velocity'] + self.cfg['speed']
 
         self.input_dim = 11
-        self.hidden_dim = 256
+        self.hidden_dim = 20
         self.layer_dim = 1  # the number of LSTM layers stacked on top of each other
         self.output_dim = 7  # 3 position parameter + 4 rotation parameter
         self.batch_size = 64
         # self.dropout = 0.2  # using dropout causes pytorch unsolved issue
-        self.n_epochs = 10
+        self.n_epochs = 1
         self.learning_rate = 1e-3
         self.weight_decay = 1e-6
 
@@ -371,17 +371,19 @@ class LSTMRunner():
                 values = np.array(values).squeeze()
                 print(f"values.shape: {values.shape}")
 
+                df_pred_val_results = opt.format_predictions(predictions, values, test_loader)
+                # TODO: print pair result/value
+                print(df_pred_val_results)
 
                 # Compute evaluation metrics LSTM
-                # TODO Predictions + values causes "list indices must be integers or slices, not tuple" error
-                eval = Evaluator(predictions, values, pred_step)
-                eval.eval_lstm()
+                deep_eval = DeepLearnEvaluator(predictions, values)
+                deep_eval.eval_lstm()
 
                 # compute same metrics as Kalman filter to compare
 
-                metrics = np.array(list(eval.metrics.values()))
-                euc_dists = eval.euc_dists
-                ang_dists = np.rad2deg(eval.ang_dists)
+                metrics = np.array(list(deep_eval.metrics.values()))
+                euc_dists = deep_eval.euc_dists
+                ang_dists = np.rad2deg(deep_eval.ang_dists)
 
                 np.save(os.path.join(dists_path,
                                      'euc_dists_lstm_{}_{}ms.npy'.format(basename, int(w * 1e3))), euc_dists)

@@ -40,6 +40,8 @@
 import numpy as np
 from pyquaternion import Quaternion
 import logging
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+
 
 # HoloLens CSV-Log parameter
 pos_size = 3
@@ -134,3 +136,44 @@ class Evaluator():
         # zs_shifted_rot = np.array([Quaternion(q) for q in zs_shifted_rot])
 
         self.compute_metrics(zs_pos, zs_rot, preds_pos, preds_rot)
+
+
+class DeepLearnEvaluator():
+    """Compute evaluation metrics MAE and RMSE for different predictors"""
+    def __init__(self, predictions, actual_values):
+        self.predictions = predictions
+        self.actual_values = actual_values
+        self.euc_dists = None
+        self.ang_dists = None
+        self.metrics = {}
+
+
+    def eval_lstm(self):
+        """
+        New HoloLens data of length 11:
+        [x, y, z] => [:, :3] three first columns
+        [qw, qx, qy, qz] => [:, 3:7] next 4 columns
+        the rest of vector is velocity + speed data that will not (!) be predicted and evaluated
+        """
+
+        # split predictions array into position and rotations
+        preds_pos = self.predictions[:, :3]
+        preds_rot = self.predictions[:, pos_size:eval_stop]
+        preds_rot = np.array([Quaternion(q) for q in preds_rot])
+
+        actual_pos = self.actual_values[:, :3]
+        actual_rot = self.actual_values[:, pos_size:eval_stop]
+        actual_rot = np.array([Quaternion(q) for q in actual_rot])
+
+        self.compute_metrics(preds_pos, preds_rot, actual_pos, actual_rot)
+
+
+    def compute_metrics(df):
+        result_metrics = {'mae': mean_absolute_error(df.value, df.prediction),
+                          'rmse': mean_squared_error(df.value, df.prediction) ** 0.5,
+                          'r2': r2_score(df.value, df.prediction)}
+
+        print("Mean Absolute Error:       ", result_metrics["mae"])
+        print("Root Mean Squared Error:   ", result_metrics["rmse"])
+        print("R^2 Score:                 ", result_metrics["r2"])
+        return result_metrics
