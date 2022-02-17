@@ -299,7 +299,7 @@ class LSTMRunner():
         self.features = self.cfg['pos_coords'] + self.cfg['quat_coords'] + self.cfg['velocity'] + self.cfg['speed']
 
         self.input_dim = 11
-        self.hidden_dim = 24
+        self.hidden_dim = 16
         self.layer_dim = 1  # the number of LSTM layers stacked on top of each other
         self.output_dim = 7  # 3 position parameter + 4 rotation parameter
         self.batch_size = 64
