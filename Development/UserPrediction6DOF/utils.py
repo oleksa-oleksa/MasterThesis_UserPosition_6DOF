@@ -226,19 +226,26 @@ def print_result(predictions, values):
     print("-------------------------------------------------------------")
 
 
-def log_parameters(dict_data):
+def log_parameters(hidden_dim, n_epochs, df_results):
     result_path = os.path.join(os.getcwd(), 'results')
     csv_file = "model_parameters_adjust_log.csv"
     log_path = os.path.join(result_path, csv_file)
     csv_columns = ['hidden_size', 'epochs', 'MSE_pos', 'MSE_rot', 'RMSE_pos', 'RMSE_rot']
+    file_exists = os.path.isfile(log_path)
+
+    dict_data = [
+        {'hidden_size': hidden_dim, 'epochs': n_epochs, 'MSE_pos': df_results.iloc[0]["mae_euc"],
+         'MSE_rot': df_results.iloc[0]["mae_ang"], 'RMSE_pos': df_results.iloc[0]["rmse_euc"],
+         'RMSE_rot': df_results.iloc[0]["rmse_ang"]}]
 
     try:
         with open(log_path, 'a') as csvfile:
             writer = csv.DictWriter(csvfile, fieldnames=csv_columns)
-            writer.writeheader()
+            if not file_exists:
+                writer.writeheader()
             for data in dict_data:
                 writer.writerow(data)
     except IOError:
         print("I/O error")
 
-    logging.info(f"Saving model parameters to file: {csv_file}")
+    logging.info(f"Saved model parameters to file: {csv_file}")
