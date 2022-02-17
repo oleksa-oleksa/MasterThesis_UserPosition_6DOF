@@ -230,13 +230,13 @@ def log_parameters(hidden_dim, n_epochs, df_results):
     result_path = os.path.join(os.getcwd(), 'results')
     csv_file = "model_parameters_adjust_log.csv"
     log_path = os.path.join(result_path, csv_file)
-    csv_columns = ['hidden_size', 'epochs', 'MSE_pos', 'MSE_rot', 'RMSE_pos', 'RMSE_rot']
+    csv_columns = ['LAT', 'hidden_size', 'epochs', 'MSE_pos', 'MSE_rot', 'RMSE_pos', 'RMSE_rot']
     file_exists = os.path.isfile(log_path)
 
     dict_data = [
-        {'hidden_size': hidden_dim, 'epochs': n_epochs, 'MSE_pos': df_results.iloc[0]["mae_euc"],
-         'MSE_rot': df_results.iloc[0]["mae_ang"], 'RMSE_pos': df_results.iloc[0]["rmse_euc"],
-         'RMSE_rot': df_results.iloc[0]["rmse_ang"]}]
+        {'LAT': df_results.iloc[0]["LAT"], 'hidden_size': hidden_dim, 'epochs': n_epochs,
+         'MSE_pos': df_results.iloc[0]["mae_euc"], 'MSE_rot': df_results.iloc[0]["mae_ang"],
+         'RMSE_pos': df_results.iloc[0]["rmse_euc"], 'RMSE_rot': df_results.iloc[0]["rmse_ang"]}]
 
     try:
         with open(log_path, 'a') as csvfile:
