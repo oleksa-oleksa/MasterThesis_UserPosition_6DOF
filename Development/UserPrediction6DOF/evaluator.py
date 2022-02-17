@@ -166,10 +166,28 @@ class DeepLearnEvaluator():
 
         self.compute_metrics(preds_pos, preds_rot, actual_pos, actual_rot)
 
-    def compute_metrics(df):
+    def compute_metrics(self, preds_pos, preds_rot, actual_pos, actual_rot):
         """
         Based on a rule of thumb, RMSE values between 0.2 and 0.5
         show that the model can relatively predict the data accurately.
+        """
+        # Compute Eucliden and angular distances
+        self.euc_dists = np.linalg.norm(preds_pos - actual_pos, axis=1)
+        self.ang_dists = np.array([Quaternion.distance(q1, q2) for q1, q2 in zip(preds_rot,
+                                                                                 actual_rot)])
+
+        # Mean Absolute Error (MAE)
+        self.metrics['mae_euc'] = np.sum(self.euc_dists) / self.euc_dists.shape[0]
+        logging.info("MAE position = %s", self.metrics['mae_euc'])
+        self.metrics['mae_ang'] = np.rad2deg(np.sum(self.ang_dists) / self.ang_dists.shape[0])
+        logging.info("MAE rotation = %s", self.metrics['mae_ang'])
+
+        # Root Mean Squared Error (RMSE)
+        self.metrics['rmse_euc'] = np.sqrt((self.euc_dists ** 2).mean())
+        logging.info("RMSE position = %s", self.metrics['rmse_euc'])
+        self.metrics['rmse_ang'] = np.rad2deg(np.sqrt((self.ang_dists ** 2).mean()))
+        logging.info("RMSE rotation = %s", self.metrics['rmse_ang'])
+
         """
         result_metrics = {'mae': mean_absolute_error(df.value, df.prediction),
                           'rmse': mean_squared_error(df.value, df.prediction) ** 0.5,
@@ -179,3 +197,4 @@ class DeepLearnEvaluator():
         print("Root Mean Squared Error:   ", result_metrics["rmse"])
         print("R^2 Score:                 ", result_metrics["r2"])
         return result_metrics
+        """
