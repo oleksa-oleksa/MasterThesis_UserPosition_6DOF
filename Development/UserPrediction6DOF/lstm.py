@@ -3,7 +3,7 @@ import torch
 import torch.nn as nn
 from datetime import datetime
 import numpy as np
-import pandas as pd
+import os
 from matplotlib import pyplot as plt
 
 
@@ -328,3 +328,17 @@ class LSTMOptimization:
         plt.title("Losses")
         plt.show()
         plt.close()
+
+    def log_parameters(self, dict_data):
+        log_path = os.path.join(os.getcwd(), 'results')
+
+        csv_file = "Names.csv"
+        try:
+            with open(csv_file, 'w') as csvfile:
+                writer = csv.DictWriter(csvfile, fieldnames=csv_columns)
+                writer.writeheader()
+                for data in dict_data:
+                    writer.writerow(data)
+        except IOError:
+            print("I/O error")
+        logging.info("Saving mean results for {} to {}".format(pred, mean_csv))

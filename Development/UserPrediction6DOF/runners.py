@@ -299,7 +299,7 @@ class LSTMRunner():
         self.features = self.cfg['pos_coords'] + self.cfg['quat_coords'] + self.cfg['velocity'] + self.cfg['speed']
 
         self.input_dim = 11
-        self.hidden_dim = 16
+        self.hidden_dim = 39
         self.layer_dim = 1  # the number of LSTM layers stacked on top of each other
         self.output_dim = 7  # 3 position parameter + 4 rotation parameter
         self.batch_size = 64
@@ -394,16 +394,3 @@ class LSTMRunner():
         df_results = pd.DataFrame(results, columns=['Trace', 'LAT', 'mae_euc', 'mae_ang',
                                                     'rmse_euc', 'rmse_ang'])
         df_results.to_csv(os.path.join(self.results_path, 'res_lstm.csv'), index=False)
-
-    def inverse_transform(self, scaler, df, columns):
-        for col in columns:
-            df[col] = scaler.inverse_transform(df[col])
-        return df
-
-    def format_predictions(self, predictions, values, df_test):
-        vals = np.concatenate(values, axis=0).ravel()
-        preds = np.concatenate(predictions, axis=0).ravel()
-        df_result = pd.DataFrame(data={"value": vals, "prediction": preds}, index=df_test.head(len(vals)).index)
-        df_result = df_result.sort_index()
-        # df_result = self.inverse_transform(scaler, df_result, [["value", "prediction"]])
-        return df_result
