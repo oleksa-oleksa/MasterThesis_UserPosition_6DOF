@@ -299,12 +299,12 @@ class LSTMRunner():
         self.features = self.cfg['pos_coords'] + self.cfg['quat_coords'] + self.cfg['velocity'] + self.cfg['speed']
 
         self.input_dim = 11
-        self.hidden_dim = 20
+        self.hidden_dim = 30
         self.layer_dim = 1  # the number of LSTM layers stacked on top of each other
         self.output_dim = 7  # 3 position parameter + 4 rotation parameter
         self.batch_size = 64
         # self.dropout = 0.2  # using dropout causes pytorch unsolved issue
-        self.n_epochs = 1
+        self.n_epochs = 10
         self.learning_rate = 1e-3
         self.weight_decay = 1e-6
 
@@ -355,7 +355,7 @@ class LSTMRunner():
 
                 # Long Short-Term Memory TRAIN + EVAL
 
-                loss_fn = nn.MSELoss(reduction="mean")
+                loss_fn = nn.MSELoss(reduction="sum")
                 optimizer = optim.Adam(self.model.parameters(), lr=self.learning_rate, weight_decay=self.weight_decay)
 
                 opt = LSTMOptimization(model=self.model, loss_fn=loss_fn, optimizer=optimizer)
@@ -371,6 +371,7 @@ class LSTMRunner():
                 values = np.array(values).squeeze()
                 print(f"values.shape: {values.shape}")
 
+                print_result(predictions, values)
 
                 # Compute evaluation metrics LSTM
                 deep_eval = DeepLearnEvaluator(predictions, values)

@@ -167,8 +167,11 @@ class DeepLearnEvaluator():
 
         self.compute_metrics(preds_pos, preds_rot, actual_pos, actual_rot)
 
-
     def compute_metrics(df):
+        """
+        Based on a rule of thumb, RMSE values between 0.2 and 0.5
+        show that the model can relatively predict the data accurately.
+        """
         result_metrics = {'mae': mean_absolute_error(df.value, df.prediction),
                           'rmse': mean_squared_error(df.value, df.prediction) ** 0.5,
                           'r2': r2_score(df.value, df.prediction)}

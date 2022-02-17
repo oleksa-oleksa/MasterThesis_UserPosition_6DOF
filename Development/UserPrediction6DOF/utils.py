@@ -209,3 +209,15 @@ def load_data(X_train, X_val, X_test, y_train, y_val, y_test, batch_size=64):
     test_loader_one = DataLoader(test, batch_size=1, shuffle=False, drop_last=True)
 
     return train_loader, val_loader, test_loader, test_loader_one
+
+
+def print_result(predictions, values):
+    """
+    prints on terminal 10 elements of array near the end of prediction.
+    we expect the model predicts better on the end of the dataset
+    """
+    print("---------------- PREDICTIONS ---------------------------------")
+    print(predictions[2000:2010, :])
+    print("------------------- VALUES -----------------------------------")
+    print(values[2000:2010, :])
+    print("-------------------------------------------------------------")
