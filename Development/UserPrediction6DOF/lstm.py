@@ -328,12 +328,3 @@ class LSTMOptimization:
         plt.title("Losses")
         plt.show()
         plt.close()
-
-    def format_predictions(self, predictions, values, df_test, scaler=1):
-        vals = np.concatenate(values, axis=0).ravel()
-        preds = np.concatenate(predictions, axis=0).ravel()
-        df_result = pd.DataFrame(data={"value": vals, "prediction": preds})
-        df_result = df_result.sort_index()
-        # df_result = inverse_transform(scaler, df_result, [["value", "prediction"]])
-        return df_result
-
