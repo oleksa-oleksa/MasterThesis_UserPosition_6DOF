@@ -299,7 +299,7 @@ class LSTMRunner():
         self.features = self.cfg['pos_coords'] + self.cfg['quat_coords'] + self.cfg['velocity'] + self.cfg['speed']
 
         self.input_dim = 11
-        self.hidden_dim = 64
+        self.hidden_dim = 48
         self.layer_dim = 1  # the number of LSTM layers stacked on top of each other
         self.output_dim = 7  # 3 position parameter + 4 rotation parameter
         self.batch_size = 64
@@ -314,7 +314,7 @@ class LSTMRunner():
         self.model = LSTMModel(self.input_dim, self.hidden_dim, self.layer_dim, self.output_dim)
 
     def run(self):
-        logging.info("LSTM PyTorch (Long Short-Term Memory Network)")
+        logging.info(f"LSTM PyTorch (Long Short-Term Memory Network): hidden_dim: {self.hidden_dim}, n_epochs: {self.n_epochs}.")
         results = []
         dists_path = os.path.join(self.results_path, 'distances')
         if not os.path.exists(dists_path):
