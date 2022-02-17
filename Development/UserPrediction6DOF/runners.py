@@ -304,7 +304,7 @@ class LSTMRunner():
         self.output_dim = 7  # 3 position parameter + 4 rotation parameter
         self.batch_size = 64
         # self.dropout = 0.2  # using dropout causes pytorch unsolved issue
-        self.n_epochs = 1
+        self.n_epochs = 130
         self.learning_rate = 1e-3
         self.weight_decay = 1e-6
 
@@ -369,15 +369,13 @@ class LSTMRunner():
                 predictions = np.array(predictions).squeeze()
                 values = np.array(values).squeeze()
 
-                print_result(predictions, values)
-                print(f"y_test is close to values? {np.allclose(y_test, values, atol=1e-08)}")
+                # Debug info
+                # print_result(predictions, values)
+                # print(f"y_test is close to values? {np.allclose(y_test, values, atol=1e-08)}")
 
                 # Compute evaluation metrics LSTM
                 deep_eval = DeepLearnEvaluator(predictions, values)
                 deep_eval.eval_lstm()
-
-                # compute same metrics as Kalman filter to compare
-
                 metrics = np.array(list(deep_eval.metrics.values()))
                 euc_dists = deep_eval.euc_dists
                 ang_dists = np.rad2deg(deep_eval.ang_dists)
@@ -397,4 +395,8 @@ class LSTMRunner():
 
         # log model parameters
         log_parameters(self.hidden_dim, self.n_epochs, df_results)
+
+        # TODO: PCA
+        # TODO: Outliers
+        # TODO: Without velocity and speed -> same dataset as Kalman
 
