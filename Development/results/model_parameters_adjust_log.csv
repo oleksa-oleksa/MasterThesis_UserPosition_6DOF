@@ -1,0 +1,6 @@
+hidden_size,epochs,MSE_pos,MSE_rot,RMSE_pos,RMSE_rot
+39,10,"0    0.9283429972330729
+Name: mae_euc, dtype: object","0    18.26499879602038
+Name: mae_ang, dtype: object","0    1.035677433013916
+Name: rmse_euc, dtype: object","0    24.43461059960547
+Name: rmse_ang, dtype: object"

@@ -304,7 +304,7 @@ class LSTMRunner():
         self.output_dim = 7  # 3 position parameter + 4 rotation parameter
         self.batch_size = 64
         # self.dropout = 0.2  # using dropout causes pytorch unsolved issue
-        self.n_epochs = 100
+        self.n_epochs = 10
         self.learning_rate = 1e-3
         self.weight_decay = 1e-6
 
@@ -394,3 +394,11 @@ class LSTMRunner():
         df_results = pd.DataFrame(results, columns=['Trace', 'LAT', 'mae_euc', 'mae_ang',
                                                     'rmse_euc', 'rmse_ang'])
         df_results.to_csv(os.path.join(self.results_path, 'res_lstm.csv'), index=False)
+
+        print(df_results)
+        # log model parameters
+        dict_data = [
+            {'hidden_size': self.hidden_dim, 'epochs': self.n_epochs, 'MSE_pos': df_results["mae_euc"],
+             'MSE_rot': df_results["mae_ang"], 'RMSE_pos': df_results["rmse_euc"], 'RMSE_rot': df_results["rmse_ang"]}]
+        log_parameters(dict_data)
+

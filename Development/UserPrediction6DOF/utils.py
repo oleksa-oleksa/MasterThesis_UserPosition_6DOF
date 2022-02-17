@@ -37,18 +37,17 @@
 # NON-INFRINGEMENT WITH RESPECT TO THIS SOFTWARE.
 # '''
 
-import pickle
 import os
 import logging
 import numpy as np
 import pandas as pd
 import sys
-from matplotlib import pyplot as plt
 from scipy.spatial.transform import Rotation as R
 from scipy.spatial.transform import Slerp
 from sklearn.model_selection import train_test_split
 from torch.utils.data import TensorDataset, DataLoader
 import torch
+import csv
 
 pd.options.mode.chained_assignment = None
 # HoloLens CSV-Log parameter
@@ -223,5 +222,23 @@ def print_result(predictions, values):
     print("------------------- VALUES -----------------------------------")
     print(f"values.shape: {values.shape}")
     print(values[2000:2010, :])
-    
+
     print("-------------------------------------------------------------")
+
+
+def log_parameters(dict_data):
+    result_path = os.path.join(os.getcwd(), 'results')
+    csv_file = "model_parameters_adjust_log.csv"
+    log_path = os.path.join(result_path, csv_file)
+    csv_columns = ['hidden_size', 'epochs', 'MSE_pos', 'MSE_rot', 'RMSE_pos', 'RMSE_rot']
+
+    try:
+        with open(log_path, 'a') as csvfile:
+            writer = csv.DictWriter(csvfile, fieldnames=csv_columns)
+            writer.writeheader()
+            for data in dict_data:
+                writer.writerow(data)
+    except IOError:
+        print("I/O error")
+
+    logging.info(f"Saving model parameters to file: {csv_file}")
