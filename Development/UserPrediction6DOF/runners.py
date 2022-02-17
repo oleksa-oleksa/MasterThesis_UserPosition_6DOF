@@ -304,7 +304,7 @@ class LSTMRunner():
         self.output_dim = 7  # 3 position parameter + 4 rotation parameter
         self.batch_size = 64
         # self.dropout = 0.2  # using dropout causes pytorch unsolved issue
-        self.n_epochs = 10
+        self.n_epochs = 1
         self.learning_rate = 1e-3
         self.weight_decay = 1e-6
 
@@ -367,11 +367,11 @@ class LSTMRunner():
                 # predictions.shape is [(2400, 1, 7)]
                 # Remove axes of length one from predictions.
                 predictions = np.array(predictions).squeeze()
-                print(f"predictions.shape: {predictions.shape}")
                 values = np.array(values).squeeze()
-                print(f"values.shape: {values.shape}")
 
                 print_result(predictions, values)
+
+                print(f"y_test is close to values? {np.allclose(y_test, values, atol=1e-08)}")
 
                 # Compute evaluation metrics LSTM
                 deep_eval = DeepLearnEvaluator(predictions, values)

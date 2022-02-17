@@ -217,7 +217,11 @@ def print_result(predictions, values):
     we expect the model predicts better on the end of the dataset
     """
     print("---------------- PREDICTIONS ---------------------------------")
+    print(f"predictions.shape: {predictions.shape}")
     print(predictions[2000:2010, :])
+
     print("------------------- VALUES -----------------------------------")
+    print(f"values.shape: {values.shape}")
     print(values[2000:2010, :])
+    
     print("-------------------------------------------------------------")
