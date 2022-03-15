@@ -296,15 +296,18 @@ class LSTMRunner():
         self.pred_window = pred_window * 1e-3  # convert to seconds
         self.dataset_path = dataset_path
         self.results_path = results_path
-        self.features = self.cfg['pos_coords'] + self.cfg['quat_coords'] + self.cfg['velocity'] + self.cfg['speed']
+        # features with velocity
+        # self.features = self.cfg['pos_coords'] + self.cfg['quat_coords'] + self.cfg['velocity'] + self.cfg['speed']
+        # only position and rotation without velocity and speed
+        self.features = self.cfg['pos_coords'] + self.cfg['quat_coords']
 
-        self.input_dim = 11
-        self.hidden_dim = 39
+        self.input_dim = 7 # 11 features with velocity and speed
+        self.hidden_dim = 32
         self.layer_dim = 1  # the number of LSTM layers stacked on top of each other
         self.output_dim = 7  # 3 position parameter + 4 rotation parameter
         self.batch_size = 64
         # self.dropout = 0.2  # using dropout causes pytorch unsolved issue
-        self.n_epochs = 130
+        self.n_epochs = 250
         self.learning_rate = 1e-3
         self.weight_decay = 1e-6
 
@@ -399,4 +402,9 @@ class LSTMRunner():
         # TODO: PCA
         # TODO: Outliers
         # TODO: Without velocity and speed -> same dataset as Kalman
+        # TODO Learning rate
+        #       1e-9 NO decrease/improvement in training and validation loss (0.4582 0.3841)
+        #       1e-6 Very high training loss 0.46, very slow decreasing speed
+        #       1e-2 First epoch very low 0.08 and then rises up to 0.4 and fluctuates on the same level
+        # TODO Weight decay
 
