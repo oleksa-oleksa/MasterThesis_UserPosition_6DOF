@@ -153,6 +153,7 @@ style=alphabetic,
 \begin{document}
 
 
+
 % --------------------------
 % rename document parts
 % --------------------------
@@ -192,9 +193,11 @@ style=alphabetic,
 \input{chapter5_experiments}
 \input{chapter6_conclusion_future}
 \input{chapter7_appendix}
+
 \pagenumbering{Roman}
 \setcounter{page}{1}
-
+% the IEEE Bibloigraphy style
+%\input{thebibliography}
 \cleardoublepage
 
 
@@ -207,8 +210,13 @@ style=alphabetic,
 % End of Document CONTENT
 % **************************************************
 
+
+
+% next two lines are bibl from bachelor with letters instead of numbers.
+
 \printbibliography
 \addcontentsline{toc}{chapter}{Bibliography}
+
 %\lstlistoflistings
 
 \end{document}
