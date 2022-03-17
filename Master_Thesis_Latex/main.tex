@@ -99,20 +99,20 @@
 % Information and Commands for Reuse
 % **************************************************
 
-\newcommand{\thesisTitle}{\Huge Master thesis}
-\newcommand{\thesisTitleEng}{\Large User position prediction in 6-DoF mixed reality applications}
-\newcommand{\thesisTitleDe}{\large Vorhersage der Benutzerposition in 6-DoF-Mixed-Reality-Anwendungen}
+\newcommand{\thesisTitle}{\Huge MASTER THESIS}
+\newcommand{\thesisTitleEng}{\Large \uppercase{User position prediction in 6-DoF mixed reality applications using artificial recurrent neural network}}
+\newcommand{\thesisTitleDe}{\large \uppercase {Vorhersage der Benutzerposition in 6-DoF-Mixed-Reality-Anwendungen unter Verwendung eines künstlichen rekurrenten neuronalen Netzwerks}}
 \newcommand{\thesisName}{Oleksandra Baga}
 \newcommand{\thesisDate}{29.06.2022}
 %\newcommand{\thesisVersion}{Final}
 
-\newcommand{\thesisFirstReviewer}{Prof. Dr. Christian Forler}
-\newcommand{\thesisFirstReviewerUniversity}{\protect{Beuth Hochschule für Technik Berlin}}
-\newcommand{\thesisFirstReviewerDepartment}{Fachbereich VI - Informatik und Medien}
+\newcommand{\thesisFirstReviewer}{Prof. Dr. First Supervisor}
+\newcommand{\thesisFirstReviewerUniversity}{\protect{Freie Universität Berlin}}
+\newcommand{\thesisFirstReviewerDepartment}{Fachbereich Mathematik und Informati}
 
-\newcommand{\thesisSecondReviewer}{Prof. Dr. René Görlich}
-\newcommand{\thesisSecondReviewerUniversity}{\protect{Beuth Hochschule für Technik Berlin}}
-\newcommand{\thesisSecondReviewerDepartment}{Fachbereich VI - Informatik und Medien}
+\newcommand{\thesisSecondReviewer}{Prof. Dr. Second Supervisor}
+\newcommand{\thesisSecondReviewerUniversity}{\protect{Freie Universität Berlin}}
+\newcommand{\thesisSecondReviewerDepartment}{Fachbereich Mathematik und Informati}
 
 
 % **************************************************
@@ -170,6 +170,9 @@ style=alphabetic,
 %\setcounter{secnumdepth}{4}
 \clearpage
 
+\input{chapter00_erklaerung}
+\input{chapter00_dank}
+\clearpage
 \tableofcontents				% display table of contents
 \cleardoublepage
 
@@ -178,15 +181,19 @@ style=alphabetic,
 % --------------------------
 \pagenumbering{arabic}			% arabic page numbering
 \setcounter{page}{1}			% set page counter
+
 \pagestyle{maincontentstyle} 	% fancy header and footer
 
 \input{chapter0_bib_pic_abb}
 \input{chapter1_introduction}
-\input{chapter2_theorie}
-\input{chapter3_design}
-\input{chapter4_Implementation}
-\input{chapter5_results_conclusion}
+\input{chapter2_background}
+\input{chapter3_related_work}
+\input{chapter4_model}
+\input{chapter5_experiments}
+\input{chapter6_conclusion_future}
 \input{chapter7_appendix}
+\pagenumbering{Roman}
+\setcounter{page}{1}
 
 \cleardoublepage
 
@@ -199,10 +206,9 @@ style=alphabetic,
 % **************************************************
 % End of Document CONTENT
 % **************************************************
-\pagenumbering{Roman}
-\setcounter{page}{1}
-\printbibliography[title={Literaturverzeichnis}]
-\addcontentsline{toc}{chapter}{Literaturverzeichnis}
+
+\printbibliography
+\addcontentsline{toc}{chapter}{Bibliography}
 %\lstlistoflistings
 
 \end{document}
