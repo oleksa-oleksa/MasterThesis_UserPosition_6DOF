@@ -1,25 +1,20 @@
 % !TeX spellcheck = en
 \chapter{Introduction}
 \label{sec:intro}
-investigate diff nn architectures head motion prediction improvement in MR 
-data collection is not a goal
-
-method cathogeries: time series, NN.. 
-explain why rnn 
-data analisys AVG linear velocity position, plots? -  data exploration
-
-This thesis is focusing on designing and evaluation of the approach for the prediction of human head position in a 6-dimensional degree of freedom (6-DoF) of Extended Reality (XR) applications for a given look-ahead time (LAT) in order to reduce the Motion-to-Photon (M2P) latency of the network and computational delays. At the beginning of the work the existing 3-DoF as well as 6-DoF methods were analyzed, and their similarities differences were taken into account when a proposed Recurrent Neural Network-based predictor was developed. The presentation of a new developed approach, a neural network architecture and the way in which the data was collected and preprocessed is the main goal of this thesis. Proposed approach was evaluated and at the end of the work the obtained results were discussed and the suggestions for future work were done.\\
+This thesis is focusing on designing and evaluation of the approach for the prediction of human head position in a 6-dimensional degree of freedom (6-DoF) of Extended Reality (XR) applications for a given look-ahead time (LAT) in order to reduce the Motion-to-Photon (M2P) latency of the network and computational delays. At the beginning of the work the existing 3-DoF as well as 6-DoF methods were analyzed, and their similarities differences were taken into account when a proposed Recurrent Neural Network-based predictor was developed. The investigation of different neural network architectures and the improvement of head motion prediction is the main goal of this thesis. Proposed approach was evaluated and at the end of the work the obtained results were discussed and the suggestions for future work were done.\\
 The correct and fast head movement prediction is a key to provide a smooth and comfortable user experience in VR environment during head-mounted display (HDM) usage. The recent improvements in computer graphics, connectivity and the computational power of mobile devices simplified the progress in Virtual Reality (VR) technology. The way users can interact with their devices changed dramatically. With new technologies of VR environment user becomes the main driving force in deciding which portion of media content is being displayed to them at any time of interaction with VR Applications \cite{new_challenge}. Until recently the high-quality experiences with modern Augmented Reality (AR) and VR systems were not widely presented in home usage and were mainly used in research labs or commercial setups. The hardware for displaying the VR environment was once extremely expensive but recent years became more broadly accessible and the 6-DoF VR headset designed for the end-user were released\footnote{https://medium.com/@DAQRI/motion-to-photon-latency-in-mobile-ar-and-vr-99f82c480926}. It is possible now to experience virtual reality scenes and watch new type of volumetric media at home and the market interest for development VR and AR applications expected to be huge next years.\\
 Although all mentioned above improvements, rendering of volumetric content remains very demanding task for existing devices. It is possible to decrease the computational load on the client device by offloading of the task to a server infrastructure and than by sending the rendered 2D content instead of volumetric data \cite{serhan_cloud_streaming}. The 2D view must correspond the current position and orientation of a user. Due to the added in this approach network latency and processing delays the rendered 2D image can appear even later on the display than with usage of local rendering system. The reducing the Motion-to-Photon (M2P) latency by prediction the future user position and orientation for a look-ahead time (LAT) at remote server and sending the corresponding rendered view to a client could be very effective solution for 6-DoF XR application with immersive media. 
 
 
 \section{Problem statement}
 \label{sec:intro:problem}
-The existing on this moment virtual environments can be divided into two main groups. Depending on position of the user and their ability to move inside the VR environment all the 3-DoF and 6-DoF. 
+The existing on this moment virtual environments can be divided into two main groups. Depending on position of the user and their ability to move inside the VR environment the 3-DoF and 6-DoF. 
+
+While some efforts to reduce the computational latency on the client side are being already made, the new technique of the rendering on a cloud server was recently presented and covered in this thesis. However, cloud-based streaming further increases the delay and M2P latency. Thus it is important to create the method of the viewer's head pose and orientation for a look-ahead time (LAT) equal or larger to the M2P latency of the network round-trip time (RTT) the new challenges of the head motion prediction arises 
 
 \section{Motivation for the research}
 \label{sec:intro:motivation}
-The following chapter introduces the preprocessing pipeline, architecture, and evaluation process used to develop ahead motion prediction algorithm.
+
 
 
 \section{Structure of the thesis}
