@@ -86,7 +86,7 @@ main*.gz
 .idea
 **/venv/*
 !*/gfx
-
+!*.tex
 # ======== #
 # Dev data #
 # ======= # 
