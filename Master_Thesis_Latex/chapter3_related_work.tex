@@ -6,6 +6,11 @@ This chapter presents the overview of previous research in the field of the pred
 
 \section{Time series methods}
 \label{sec:related:timeseries}
+HMDs now being more widely available to general users last years and the using of algorithms of head motion prediction has been an indispensable component even in 360-degree video streaming systems. A lot of previous approaches uses basic processing of head movement history to predict the future movement, such as simple average, linear regression, and weighted linear regression \cite{attention_saliency}. Work of \textit{Corbillon et al., 2017} calculates the region that receives from server the video data with a better quality than the remaining of part the video. With simple average researchers determine the distance to the center of viewpoint. The bit-rate of of the biggest part of the delivered video will be thus lower than the original full-quality video because video parts distant from the center will be encoded at low quality \cite{simple_average}.\\
+The work of \textit{Duanmu et al., 2017} proposes prediction of the viewing direction for segment n + 1 through linear regression based on the past 30 view samples \cite{linreg1}. The 360 video is divided into twelve segments horizontally and into three vertically. Thus it is able to obtain the actual rates of the low-quality, medium-quality and the high-quality versions based on calculated position of a chunk n + 1 \cite{linreg1}.\\
+Approach of \textit{Xie et al., 2017} uses user’s orientation in Euler angle and leverage Linear Regression model to do prediction \cite{linreg2}. The historical samples in window are used to apply Least Square Method and calculate the trends of head movements. The slope over yaw, pitch and roll is denoted and thus an estimated value of yaw, pitch and roll can be predicted using Linear Regression model \cite{linreg2}. 
+
+Here LINGERG 3
 
 \section{Kalman Filter}
 \label{sec:related:kalman}
