@@ -302,12 +302,12 @@ class LSTMRunner():
         self.features = self.cfg['pos_coords'] + self.cfg['quat_coords']
 
         self.input_dim = 7 # 11 features with velocity and speed
-        self.hidden_dim = 32
+        self.hidden_dim = 21
         self.layer_dim = 1  # the number of LSTM layers stacked on top of each other
         self.output_dim = 7  # 3 position parameter + 4 rotation parameter
-        self.batch_size = 64
+        self.batch_size = 50
         # self.dropout = 0.2  # using dropout causes pytorch unsolved issue
-        self.n_epochs = 250
+        self.n_epochs = 10
         self.learning_rate = 1e-3
         self.weight_decay = 1e-6
 
@@ -350,8 +350,8 @@ class LSTMRunner():
                 # Splitting the data into train, validation, and test sets
                 X_train, X_val, X_test, y_train, y_val, y_test = train_val_test_split(X_cut, y_cut, 0.2)
 
-                # print(f"X_train {X_train.shape}, X_val {X_val.shape}, X_test{X_test.shape}, "
-                #       f"y_train {y_train.shape}, y_val {y_val.shape}, y_test {y_test.shape}")
+                print(f"X_train {X_train.shape}, X_val {X_val.shape}, X_test{X_test.shape}, "
+                      f"y_train {y_train.shape}, y_val {y_val.shape}, y_test {y_test.shape}")
 
                 train_loader, val_loader, test_loader, test_loader_one = load_data(X_train, X_val, X_test,
                                                                   y_train, y_val, y_test, batch_size=self.batch_size)
