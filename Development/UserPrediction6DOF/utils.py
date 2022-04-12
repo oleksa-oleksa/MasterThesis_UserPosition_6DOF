@@ -54,6 +54,7 @@ pd.options.mode.chained_assignment = None
 pos_size = 3
 rot_size = 4
 labels_stop = pos_size + rot_size
+data_lenght = 50501
 
 
 def preprocess_trace(trace_path, dt, out_dir):
@@ -122,7 +123,7 @@ def preprocess_trace(trace_path, dt, out_dir):
     # Save interpolated DataFrame to csv
     if not os.path.exists(out_dir):
         os.makedirs(out_dir)
-    df_intp = df_intp.iloc[:12001]   # Make length of all traces the same.
+    # df_intp = df_intp.iloc[:data_lenght]   # Make length of all traces the same.
     df_intp.to_csv(os.path.join(out_dir, case + '.csv'), index=False)
     
     return df_intp
