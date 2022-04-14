@@ -207,10 +207,10 @@ class LSTMModel(nn.Module):
 
         # LSTM layers (default 1)
         # setting batch_first=True requires the input to have the shape [batch_size, seq_len, input_size]
-        self.layers = nn.LSTM(input_dim, hidden_dim, layer_dim, batch_first=True)
+        self.lstm = nn.LSTM(input_dim, hidden_dim, layer_dim, batch_first=True)
 
         # Fully connected layer maps last LSTM output (hidden dimension) to the label dimension
-        self.fc = nn.Linear(hidden_dim, 7)
+        self.fc = nn.Linear(hidden_dim, output_dim)
 
     def forward(self, x):
         # Initializing hidden state for first input with zeros
@@ -222,7 +222,7 @@ class LSTMModel(nn.Module):
         # We need to detach as we are doing truncated backpropagation through time (BPTT)
         # If we don't, we'll backprop all the way to the start even after going through another batch
         # Forward propagation by passing in the input, hidden state, and cell state into the model
-        out, (hn, cn) = self.layers(x, (h0.detach(), c0.detach()))
+        out, (hn, cn) = self.lstm(x, (h0.detach(), c0.detach()))
 
         # Reshaping the outputs in the shape of (batch_size, seq_length, hidden_size)
         # so that it can fit into the fully connected layer
@@ -245,6 +245,7 @@ class LSTMOptimization:
         self.val_losses = []
 
     def train_step(self, x, y):
+        #print(x.shape)
         # Sets model to train mode
         self.model.train()
 
@@ -271,7 +272,9 @@ class LSTMOptimization:
         for epoch in range(1, n_epochs + 1):
             batch_losses = []
             for x_batch, y_batch in train_loader:
-                x_batch = x_batch.view([batch_size, -1, n_features])
+                print(x_batch.shape)
+                # x_batch = x_batch.view([batch_size, -1, n_features])
+                print(x_batch.shape)
                 loss = self.train_step(x_batch, y_batch)
                 batch_losses.append(loss)
             training_loss = np.mean(batch_losses)

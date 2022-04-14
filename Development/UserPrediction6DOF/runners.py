@@ -297,21 +297,22 @@ class LSTMRunner():
         self.dataset_path = dataset_path
         self.results_path = results_path
         # features with velocity
-        # self.features = self.cfg['pos_coords'] + self.cfg['quat_coords'] + self.cfg['velocity'] + self.cfg['speed']
-        # only position and rotation without velocity and speed
-        self.features = self.cfg['pos_coords'] + self.cfg['quat_coords']
+        self.features = self.cfg['pos_coords'] + self.cfg['quat_coords'] + self.cfg['velocity'] + self.cfg['speed']
 
-        self.input_dim = 7 # 11 features with velocity and speed
+        # only position and rotation without velocity and speed
+        # self.features = self.cfg['pos_coords'] + self.cfg['quat_coords']
+
+        self.input_dim = 11  # 11 features with velocity and speed
         self.hidden_dim = 128
         self.layer_dim = 1  # the number of LSTM layers stacked on top of each other
         self.output_dim = 7  # 3 position parameter + 4 rotation parameter
-        self.batch_size = 50
-        self.dropout = 0.4  # using dropout causes pytorch unsolved issue
+        self.batch_size = 64
+        # If there is only one layer, dropout is not applied
+        # self.dropout = 0.4  # using dropout causes pytorch unsolved issue
         self.n_epochs = 10
         self.learning_rate = 1e-3
         self.weight_decay = 1e-6
 
-        # If there is only one layer, dropout is not applied
         # input_dim, hidden_dim, layer_dim, output_dim, dropout_prob
         # batch_first=True --> input is [batch_size, seq_len, input_size]
         self.model = LSTMModel(self.input_dim, self.hidden_dim, self.layer_dim, self.output_dim)
