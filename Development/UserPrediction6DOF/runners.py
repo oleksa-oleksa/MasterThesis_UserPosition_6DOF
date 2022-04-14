@@ -303,13 +303,13 @@ class LSTMRunner():
         # self.features = self.cfg['pos_coords'] + self.cfg['quat_coords']
 
         self.input_dim = 11  # 11 features with velocity and speed
-        self.hidden_dim = 128
+        self.hidden_dim = 550
         self.layer_dim = 1  # the number of LSTM layers stacked on top of each other
         self.output_dim = 7  # 3 position parameter + 4 rotation parameter
-        self.batch_size = 64
+        self.batch_size = 1024
         # If there is only one layer, dropout is not applied
         # self.dropout = 0.4  # using dropout causes pytorch unsolved issue
-        self.n_epochs = 10
+        self.n_epochs = 50
         self.learning_rate = 1e-3
         self.weight_decay = 1e-6
 
@@ -318,7 +318,7 @@ class LSTMRunner():
         self.model = LSTMModel(self.input_dim, self.hidden_dim, self.output_dim, self.layer_dim)
 
     def run(self):
-        logging.info(f"LSTM PyTorch (Long Short-Term Memory Network): hidden_dim: {self.hidden_dim}, n_epochs: {self.n_epochs}.")
+        logging.info(f"LSTM Pure PyTorch: hidden_dim: {self.hidden_dim}, n_epochs: {self.n_epochs}, batch_size: {self.batch_size}.")
         results = []
         dists_path = os.path.join(self.results_path, 'distances')
         if not os.path.exists(dists_path):
@@ -404,7 +404,7 @@ class LSTMRunner():
         df_results.to_csv(os.path.join(self.results_path, 'res_lstm.csv'), index=False)
 
         # log model parameters
-        log_parameters(self.hidden_dim, self.n_epochs, df_results)
+        log_parameters(self.hidden_dim, self.n_epochs, self.batch_size, df_results)
 
         # TODO: PCA
         # TODO: Outliers
