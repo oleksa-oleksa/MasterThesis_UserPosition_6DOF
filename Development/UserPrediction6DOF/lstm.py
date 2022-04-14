@@ -245,13 +245,15 @@ class LSTMOptimization:
         self.val_losses = []
 
     def train_step(self, x, y):
-        #print(x.shape)
         # Sets model to train mode
         self.model.train()
 
         # Makes predictions
         yhat = self.model(x)
-        #print(yhat.shape)
+        # DEBUG
+        # print(f"step x: {x.shape}")
+        # print(f"step y: {y.shape}")
+        # print(f"step yhat: {yhat.shape}")
 
         # Computes loss
         loss = self.loss_fn(y, yhat)
@@ -272,9 +274,9 @@ class LSTMOptimization:
         for epoch in range(1, n_epochs + 1):
             batch_losses = []
             for x_batch, y_batch in train_loader:
-                print(x_batch)
-                # x_batch = x_batch.view([batch_size, -1, n_features])
-                print(x_batch.shape)
+                # creates 3D Tensor
+                x_batch = x_batch.view([batch_size, -1, n_features])
+                # print(f"x_batch: {x_batch.shape}")
                 loss = self.train_step(x_batch, y_batch)
                 batch_losses.append(loss)
             training_loss = np.mean(batch_losses)
