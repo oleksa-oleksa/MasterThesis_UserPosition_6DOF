@@ -359,8 +359,13 @@ class LSTMRunner():
 
                 # Long Short-Term Memory TRAIN + EVAL
 
-                # loss_fn = nn.MSELoss(reduction="mean")
-                loss_fn = nn.L1Loss()
+                # Mean Squared Error Loss Function
+                # average of the squared differences between actual values and predicted values
+                loss_fn = nn.MSELoss(reduction="mean")
+
+                # Mean Absolute Error (L1 Loss Function)
+                # average of the sum of absolute differences between actual values and predicted values
+                # loss_fn = nn.L1Loss()
                 optimizer = optim.Adam(self.model.parameters(), lr=self.learning_rate, weight_decay=self.weight_decay)
 
                 opt = LSTMOptimization(model=self.model, loss_fn=loss_fn, optimizer=optimizer)

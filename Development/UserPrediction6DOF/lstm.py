@@ -231,7 +231,7 @@ class LSTMModel(nn.Module):
         # Convert the final state to our desired output shape (batch_size, output_dim)
         # print(f"out BEFORE {out.shape}")
         out = self.fc(out)
-        # print(f"out AFTER FC {out.shape}")
+        print(f"out AFTER FC {out.shape}")
 
         return out
 
@@ -253,7 +253,7 @@ class LSTMOptimization:
         # DEBUG
         # print(f"step x: {x.shape}")
         # print(f"step y: {y.shape}")
-        # print(f"step yhat: {yhat.shape}")
+        print(f"step yhat: {yhat.shape}")
 
         # Computes loss
         loss = self.loss_fn(y, yhat)
