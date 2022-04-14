@@ -227,11 +227,12 @@ class LSTMModel(nn.Module):
         # Reshaping the outputs in the shape of (batch_size, seq_length, hidden_size)
         # so that it can fit into the fully connected layer
         out = out[:, -1, :]
+        # print(f"out BEFORE FC {out.shape}")
 
         # Convert the final state to our desired output shape (batch_size, output_dim)
         # print(f"out BEFORE {out.shape}")
         out = self.fc(out)
-        print(f"out AFTER FC {out.shape}")
+        # print(f"out AFTER FC {out.shape}")
 
         return out
 
@@ -253,7 +254,7 @@ class LSTMOptimization:
         # DEBUG
         # print(f"step x: {x.shape}")
         # print(f"step y: {y.shape}")
-        print(f"step yhat: {yhat.shape}")
+        # print(f"step yhat: {yhat.shape}")
 
         # Computes loss
         loss = self.loss_fn(y, yhat)
