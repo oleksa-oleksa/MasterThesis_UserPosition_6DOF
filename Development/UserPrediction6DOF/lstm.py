@@ -272,7 +272,7 @@ class LSTMOptimization:
         for epoch in range(1, n_epochs + 1):
             batch_losses = []
             for x_batch, y_batch in train_loader:
-                print(x_batch.shape)
+                print(x_batch)
                 # x_batch = x_batch.view([batch_size, -1, n_features])
                 print(x_batch.shape)
                 loss = self.train_step(x_batch, y_batch)
