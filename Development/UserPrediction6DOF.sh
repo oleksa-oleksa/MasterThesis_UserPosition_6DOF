@@ -24,5 +24,8 @@
 # Launch the singularity image with --nv for nvidia support.
 # The job writes its results to stdout which is directed to the output which starts with the job number file. Check it.
 
+# to build container write from ssh terminal
+# singularity build --force --fakeroot UserPrediction6DOF.sif UserPrediction6DOF.def
 singularity run --nv ./UserPrediction6DOF.sif
+
 
