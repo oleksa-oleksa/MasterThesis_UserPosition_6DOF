@@ -1,0 +1,17 @@
+Bootstrap: docker
+From: pytorch/pytorch:1.9.1-cuda11.1-cudnn8-runtime
+
+%files
+    # Copies the source code for the LeNet5 training scripts from the local machine to the container image
+    ./UserPrediction6DOF /opt/UserPrediction6DOF
+    ./data/interpolated  /opt/data/interpolated
+
+%post
+    # Python lives in a Anaconda environment in the container, so the PATH must be adjusted before conda can be called
+    export "PATH=/opt/conda/bin:$PATH"
+
+
+%runscript
+    # Start the training of LeNet5 on the Cifar10 dataset
+    cd /opt
+    python -m UserPrediction6DOF run -a lstm -w 100
