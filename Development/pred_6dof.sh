@@ -4,7 +4,7 @@
 #SBATCH --mail-user=oleksandra.baga@hhi.fraunhofer.de
 
 # stdout and stderr of this job will go into a file named like the job (%x) with SLURM_JOB_ID (5j)
-#SBATCH --output=%j_%x.out
+#SBATCH --output=gpu_outputs/%j_%x.out
 
 #SBATCH --nodes=1
 
@@ -22,5 +22,5 @@
 # Launch the singularity image with --nv for nvidia support.
 # The job writes its results to stdout which is directed to the output which starts with the job number file. Check it.
 
-singularity build --force --fakeroot ./pred_6dof.sif pred_6dof.def
-singularity run --nv ./pred_6dof.sif -e
+singularity run --nv ./UserPrediction6DOF.sif
+
