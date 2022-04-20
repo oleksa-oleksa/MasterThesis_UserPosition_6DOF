@@ -1,0 +1,16 @@
+Bootstrap: docker
+
+From: pytorch/pytorch:1.9.1-cuda11.1-cudnn8-runtime
+
+%files
+  ./lenet5_single_gpu /opt/lenet5_single_gpu
+
+%post
+  export PATH="/opt/conda/bin:$PATH"
+  pip install termcolor
+
+%runscript
+  cd /opt
+
+  # while in example lenet5_single_gpu the dataset is installed to /opt/lenet5_single_gpu in the container, in this case the dataset is expected on the host file system mounted(bind) to /mnt/datasets in the singularity call. see slurm batch_... file
+  python -m lenet5_single_gpu train /mnt/datasets "$@"
