@@ -5,11 +5,15 @@ From: pytorch/pytorch:1.9.1-cuda11.1-cudnn8-runtime
     # Copies the source code for the from the local machine to the container image
     ./UserPrediction6DOF /opt/UserPrediction6DOF
     ./data/interpolated  /opt/data/interpolated
+    ./results /opt/results
+    requirements.txt /opt
+    config.toml /opt
 
 %post
     # Python lives in a Anaconda environment in the container, so the PATH must be adjusted before conda can be called
     # export "PATH=/opt/conda/bin:$PATH"
-    pip install -r ./requirements.txt
+    conda install pip
+    pip install -r /opt/requirements.txt
     
 %runscript
     # Start the training of LeNet5 on the Cifar10 dataset
