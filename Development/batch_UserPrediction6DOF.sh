@@ -3,6 +3,8 @@
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=oleksandra.baga@hhi.fraunhofer.de
 
+#SBATCH --job-name=UserPrediction6DOF
+
 # stdout and stderr of this job will go into a file named like the job (%x) with SLURM_JOB_ID (5j)
 #SBATCH --output=gpu_outputs/%j_%x.out
 
