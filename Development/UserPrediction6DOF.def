@@ -6,6 +6,7 @@ From: pytorch/pytorch:1.9.1-cuda11.1-cudnn8-runtime
     ./UserPrediction6DOF /opt/UserPrediction6DOF
     ./data/interpolated  /opt/data/interpolated
     ./results /opt/results
+    chmod -R 777 /opt/results
     requirements.txt /opt
     config.toml /opt
 
