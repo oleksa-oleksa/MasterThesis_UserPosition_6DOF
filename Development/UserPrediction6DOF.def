@@ -10,7 +10,7 @@ From: pytorch/pytorch:1.9.1-cuda11.1-cudnn8-runtime
     # Python lives in a Anaconda environment in the container, so the PATH must be adjusted before conda can be called
     # export "PATH=/opt/conda/bin:$PATH"
     pip install -r ./requirements.txt
-    
+
 %runscript
     # Start the training of LeNet5 on the Cifar10 dataset
     cd /opt
