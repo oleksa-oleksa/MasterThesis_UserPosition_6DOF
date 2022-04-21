@@ -93,4 +93,4 @@ main*.gz
 models
 # HHI GPU Singularity Container
 *.sif
-*stats*.out
+*stats*

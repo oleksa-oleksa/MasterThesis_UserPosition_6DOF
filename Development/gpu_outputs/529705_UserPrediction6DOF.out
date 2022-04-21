@@ -1,0 +1,28 @@
+INFO:root:LSTM Pure PyTorch: hidden_dim: 550, n_epochs: 1, batch_size: 512.
+INFO:root:Trace path: ./data/interpolated/1556.csv
+INFO:root:Prediction window = 100.0 ms
+INFO:root:MAE position = 0.7549663899739584
+INFO:root:MAE rotation = 40.600520722437786
+INFO:root:RMSE position = 0.83217114
+INFO:root:RMSE rotation = 44.8665642760961
+Traceback (most recent call last):
+  File "/opt/conda/lib/python3.7/runpy.py", line 193, in _run_module_as_main
+    "__main__", mod_spec)
+  File "/opt/conda/lib/python3.7/runpy.py", line 85, in _run_code
+    exec(code, run_globals)
+  File "/opt/UserPrediction6DOF/__main__.py", line 45, in <module>
+    APPLICATION.run()
+  File "/opt/UserPrediction6DOF/application.py", line 88, in run
+    self.run_lstm()
+  File "/opt/UserPrediction6DOF/application.py", line 124, in run_lstm
+    runner.run()
+  File "/opt/UserPrediction6DOF/runners.py", line 394, in run
+    'euc_dists_lstm_{}_{}ms.npy'.format(basename, int(w * 1e3))), euc_dists)
+  File "<__array_function__ internals>", line 6, in save
+  File "/opt/conda/lib/python3.7/site-packages/numpy/lib/npyio.py", line 525, in save
+    file_ctx = open(file, "wb")
+OSError: [Errno 30] Read-only file system: './results/tabular/distances/euc_dists_lstm_1556_100ms.npy'
+-------------------------------------------------------------------------
+-------------------------------------------------------------------------
+X_train (72000, 11), X_val (24000, 11), X_test(24000, 11), y_train (72000, 7), y_val (24000, 7), y_test (24000, 7)
+[1/1] Training loss: 2.1880	 Validation loss: 0.1915

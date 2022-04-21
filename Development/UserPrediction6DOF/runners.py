@@ -309,7 +309,7 @@ class LSTMRunner():
         self.batch_size = 512
         # If there is only one layer, dropout is not applied
         # self.dropout = 0.4  # using dropout causes pytorch unsolved issue
-        self.n_epochs = 500
+        self.n_epochs = 1
         self.learning_rate = 1e-3
         self.weight_decay = 1e-6
 
