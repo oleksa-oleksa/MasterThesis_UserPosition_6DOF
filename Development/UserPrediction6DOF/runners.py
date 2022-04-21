@@ -306,10 +306,10 @@ class LSTMRunner():
         self.hidden_dim = 550
         self.layer_dim = 1  # the number of LSTM layers stacked on top of each other
         self.output_dim = 7  # 3 position parameter + 4 rotation parameter
-        self.batch_size = 1024
+        self.batch_size = 512
         # If there is only one layer, dropout is not applied
         # self.dropout = 0.4  # using dropout causes pytorch unsolved issue
-        self.n_epochs = 200
+        self.n_epochs = 500
         self.learning_rate = 1e-3
         self.weight_decay = 1e-6
 
