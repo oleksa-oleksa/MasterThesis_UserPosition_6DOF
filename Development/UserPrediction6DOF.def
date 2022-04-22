@@ -13,7 +13,7 @@ From: pytorch/pytorch:1.9.1-cuda11.1-cudnn8-runtime
     # Python lives in a Anaconda environment in the container, so the PATH must be adjusted before conda can be called
     # export "PATH=/opt/conda/bin:$PATH"
     # chmod -R 777 /opt/results
-    -B /opt/results
+    # -B /opt/results
     conda install pip
     pip install -r /opt/requirements.txt
     
