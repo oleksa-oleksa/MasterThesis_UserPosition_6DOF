@@ -64,7 +64,7 @@ class DataPlotter():
             df = pd.read_csv(trace_path)
             ts = np.arange(0, dataset_lengh_sec + cfg['dt'], cfg['dt'])
 
-            fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(18, 8), sharex=True)
+            fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(18, 12), sharex=True)
 
             # Plot position
             ax1.plot(ts, df.loc[:len(ts) - 1, 'x'], label='x')
@@ -76,16 +76,35 @@ class DataPlotter():
             ax1.yaxis.grid(which='major', linestyle='dotted', linewidth=1)
             ax1.xaxis.set_major_locator(MultipleLocator(10))
 
-            # Plot orientation
-            ax2.plot(ts, df.loc[:len(ts) - 1, 'yaw'], label='yaw')
-            ax2.plot(ts, df.loc[:len(ts) - 1, 'pitch'], label='pitch', linestyle='--')
-            ax2.plot(ts, df.loc[:len(ts) - 1, 'roll'], label='roll', linestyle='-.')
+            # Plot orientation in Quaternions
+            '''
+            Q =  [qx, qy, qz, qw] = qv + qw, where 
+            qw is the real part  and 
+            qv = iqx + jqy + kqz= (qx, qy, qz) 
+            is the imaginary part 
+            x, y and z represent a vector. w is a scalar that stores the rotation around the vector.
+            '''
+            ax2.plot(ts, df.loc[:len(ts) - 1, 'qx'], label='qx', linestyle='solid')
+            ax2.plot(ts, df.loc[:len(ts) - 1, 'qy'], label='qy', linestyle='--')
+            ax2.plot(ts, df.loc[:len(ts) - 1, 'qz'], label='qz', linestyle='-.')
+            ax2.plot(ts, df.loc[:len(ts) - 1, 'qw'], label='real qw', linestyle='solid')
             ax2.set_xlabel('seconds')
             ax2.set_ylabel('degrees')
             ax2.set_xlim(0, dataset_lengh_sec)
             ax2.legend(loc='upper left')
             ax2.yaxis.grid(which='major', linestyle='dotted', linewidth=1)
             ax2.xaxis.set_major_locator(MultipleLocator(10))
+
+            # Plot orientation in Euler angles
+            ax3.plot(ts, df.loc[:len(ts) - 1, 'yaw'], label='yaw')
+            ax3.plot(ts, df.loc[:len(ts) - 1, 'pitch'], label='pitch', linestyle='--')
+            ax3.plot(ts, df.loc[:len(ts) - 1, 'roll'], label='roll', linestyle='-.')
+            ax3.set_xlabel('seconds')
+            ax3.set_ylabel('degrees')
+            ax3.set_xlim(0, dataset_lengh_sec)
+            ax3.legend(loc='upper left')
+            ax3.yaxis.grid(which='major', linestyle='dotted', linewidth=1)
+            ax3.xaxis.set_major_locator(MultipleLocator(10))
 
             trace_id = os.path.splitext(os.path.basename(trace_path))[0]
             dest = os.path.join(output_path, "Fig_interpolated_{}.pdf".format(trace_id))
