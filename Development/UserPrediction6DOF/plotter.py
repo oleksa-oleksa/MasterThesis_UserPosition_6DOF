@@ -3,7 +3,7 @@
 # Copyright License. This software may be subject to other third party and
 # contributor rights, including patent rights, and no such rights are
 # granted under this license.
-# Copyright (c) 1995 - 2021 Fraunhofer-Gesellschaft zur Förderung der
+# Copyright (c) 1995 - 2022 Fraunhofer-Gesellschaft zur Förderung der
 # angewandten Forschung e.V. (Fraunhofer)
 # All rights reserved.
 # Redistribution and use in source and binary forms, with or without
@@ -54,5 +54,5 @@ class DataPlotter():
     """Plots interpolated dataset traces"""
     @staticmethod
     def plot_interpolated_dataset(trace_path, figures_path):
-        pass
+        print("plot_interpolated_dataset hallo world!")
 

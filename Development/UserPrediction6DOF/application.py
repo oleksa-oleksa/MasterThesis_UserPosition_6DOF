@@ -70,8 +70,7 @@ class Application:
         self.results_path = None
         self.figures_path = None
         self.pred_window = None
-        self.plot_path = None
-        self.plot_data = None
+        self.plot_command = None
 
     def run(self):
         """Runs the application"""
@@ -98,11 +97,11 @@ class Application:
         elif self.command == 'report':
             self.report()
         elif self.command == 'plot':
-            if self.plot_data == 'dataset':
+            if self.plot_command == 'dataset':
                 self.plot_interpolated_dataset()
-            elif self.plot_data == 'raw':
+            elif self.plot_command == 'raw':
                 self.plot_raw_dataset()
-            elif self.plot_data == 'normalised':
+            elif self.plot_command == 'normalised':
                 self.plot_normalised_dataset()
 
     def run_kalman(self):
@@ -214,7 +213,12 @@ class Application:
             self.figures_path = args.figures_path
             if not os.path.exists(self.figures_path):
                 os.makedirs(self.figures_path)
-            
+        elif self.command == 'plot':
+            self.dataset_path = args.dataset_path
+            self.results_path = args.results_path
+            self.figures_path = args.figures_path
+            if not os.path.exists(self.figures_path):
+                os.makedirs(self.figures_path)
     @staticmethod
     def add_prepare_command(sub_parsers):
         """"
@@ -394,11 +398,42 @@ def add_plot_command(sub_parsers):
 
     plot_command_parser.add_argument(
         '-d',
-        '--dataset',
-        dest='dataset',
+        '--dataset-path',
+        dest='dataset_path',
         type=str,
-        choices=['dataset', 'raw', 'normalised'],
+        metavar='',
+        default='./data/interpolated',
+        help='Dataset path'
+    )
+
+    plot_command_parser.add_argument(
+        '-p',
+        '--dataset',
+        dest='plot_command',
+        type=str,
+        choices=['dataset', 'raw', 'normalised', 'train_val'],
         default='dataset',
         help='Visualises and plots the input datasets'
     )
+
+    plot_command_parser.add_argument(
+        '-o',
+        '--output-path',
+        dest='results_path',
+        type=str,
+        metavar='',
+        default='./results/data_exploration',
+        help='Path where plotted figures are stored'
+    )
+
+    plot_command_parser.add_argument(
+        '-r',
+        '--raw-dataset-path',
+        dest='raw_dataset_path',
+        type=str,
+        metavar='',
+        default='./data/raw',
+        help='Path to the raw head motion traces collected from the headset'
+    )
+
 
