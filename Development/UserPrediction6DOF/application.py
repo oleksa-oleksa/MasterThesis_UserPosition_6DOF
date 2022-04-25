@@ -48,6 +48,7 @@ import toml
 from .runners import KalmanRunner, BaselineRunner, LSTMBaseRunner, LSTMRunner
 from .reporter import Reporter
 from .utils import get_csv_files, preprocess_trace
+from .plotter import DataPlotter
 
 
 class Application:
@@ -69,6 +70,8 @@ class Application:
         self.results_path = None
         self.figures_path = None
         self.pred_window = None
+        self.plot_path = None
+        self.plot_data = None
 
     def run(self):
         """Runs the application"""
@@ -94,6 +97,13 @@ class Application:
             self.prepare()
         elif self.command == 'report':
             self.report()
+        elif self.command == 'plot':
+            if self.plot_data == 'dataset':
+                self.plot_interpolated_dataset()
+            elif self.plot_data == 'raw':
+                self.plot_raw_dataset()
+            elif self.plot_data == 'normalised':
+                self.plot_normalised_dataset()
 
     def run_kalman(self):
         """Runs Kalman filter on all traces and evaluates the results"""
@@ -122,6 +132,13 @@ class Application:
                                 self.dataset_path,
                                 self.results_path)
         runner.run()
+
+    def plot_interpolated_dataset(self):
+        """Plots interpolated trace"""
+        for trace_path in get_csv_files('./data/interpolated'):
+            pass
+        plotter = DataPlotter()
+        plotter.plot_data()
 
     def prepare(self):
         """Resample all user traces in the given path to a common sampling time and make
@@ -167,6 +184,8 @@ class Application:
         Application.add_prepare_command(sub_parsers)
         Application.add_run_command(sub_parsers)
         Application.add_report_command(sub_parsers)
+        Application.add_plot_command(sub_parsers)
+
 
         # Parses the arguments
         args = argument_parser.parse_args()
@@ -352,3 +371,34 @@ class Application:
             default='./results/tabular',
             help='Path where results are stored as CSV'
         )
+
+
+@staticmethod
+def add_plot_command(sub_parsers):
+    """"
+    Plots and visualise data
+
+    Parameters
+    ----------
+        sub_parsers: Data to be plotted
+            The sub-parser to which the command is to be
+            added.
+
+    """
+
+    plot_command_parser = sub_parsers.add_parser(
+        'plot',
+        help='Visualise datasets and generates plots',
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter
+    )
+
+    plot_command_parser.add_argument(
+        '-d',
+        '--dataset',
+        dest='dataset',
+        type=str,
+        choices=['dataset', 'raw', 'normalised'],
+        default='dataset',
+        help='Visualises and plots the input datasets'
+    )
+
