@@ -41,6 +41,8 @@ import json
 import os
 import pandas as pd
 import numpy as np
+import toml
+import logging
 from matplotlib import pyplot as plt
 from matplotlib.ticker import MultipleLocator, FormatStrFormatter
 from scipy.signal import savgol_filter
@@ -48,11 +50,45 @@ from .utils import get_csv_files
 
 style_path = os.path.join(os.getcwd(), 'UserPrediction6DOF/style.json')
 style = json.load(open(style_path))
+config_path = os.path.join(os.getcwd(), 'config.toml')
+cfg = toml.load(config_path)
 
 
 class DataPlotter():
     """Plots interpolated dataset traces"""
     @staticmethod
-    def plot_interpolated_dataset(trace_path, output_path):
-        print(f"plot_interpolated_dataset: {trace_path} and {output_path}")
+    def plot_interpolated_dataset(dataset_path, output_path):
+        print(f"Plot interpolated dataset from: {dataset_path}")
+        for trace_path in get_csv_files(dataset_path):
+            df = pd.read_csv(trace_path)
+            ts = np.arange(0, 60 + cfg['dt'], cfg['dt'])
+
+            fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(18, 8), sharex=True)
+
+            # Plot position
+            ax1.plot(ts, df.loc[:len(ts) - 1, 'x'], label='x')
+            ax1.plot(ts, df.loc[:len(ts) - 1, 'y'], label='y', linestyle='--')
+            ax1.plot(ts, df.loc[:len(ts) - 1, 'z'], label='z', linestyle='-.')
+            ax1.set_ylabel('meters')
+            ax1.set_xlim(0, 60)
+            ax1.legend(loc='upper left')
+            ax1.yaxis.grid(which='major', linestyle='dotted', linewidth=1)
+            ax1.xaxis.set_major_locator(MultipleLocator(10))
+
+            # Plot orientation
+            ax2.plot(ts, df.loc[:len(ts) - 1, 'yaw'], label='yaw')
+            ax2.plot(ts, df.loc[:len(ts) - 1, 'pitch'], label='pitch', linestyle='--')
+            ax2.plot(ts, df.loc[:len(ts) - 1, 'roll'], label='roll', linestyle='-.')
+            ax2.set_xlabel('seconds')
+            ax2.set_ylabel('degrees')
+            ax2.set_xlim(0, 60)
+            ax2.legend(loc='upper left')
+            ax2.yaxis.grid(which='major', linestyle='dotted', linewidth=1)
+            ax2.xaxis.set_major_locator(MultipleLocator(10))
+
+            trace_id = os.path.splitext(os.path.basename(trace_path))[0]
+            dest = os.path.join(output_path, "Fig_interpolated_dataset{}.pdf".format(trace_id))
+            fig.savefig(dest)
+            logging.info("Plotting trace {} and saving to file {}".format(trace_path, dest))
+
 
