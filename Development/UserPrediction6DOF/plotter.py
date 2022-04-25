@@ -53,6 +53,6 @@ style = json.load(open(style_path))
 class DataPlotter():
     """Plots interpolated dataset traces"""
     @staticmethod
-    def plot_interpolated_dataset(trace_path, figures_path):
-        print("plot_interpolated_dataset hallo world!")
+    def plot_interpolated_dataset(trace_path, output_path):
+        print(f"plot_interpolated_dataset: {trace_path} and {output_path}")
 

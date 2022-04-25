@@ -71,6 +71,7 @@ class Application:
         self.figures_path = None
         self.pred_window = None
         self.plot_command = None
+        self.normalised_dataset_path = None
 
     def run(self):
         """Runs the application"""
@@ -134,10 +135,8 @@ class Application:
 
     def plot_interpolated_dataset(self):
         """Plots interpolated trace"""
-        for trace_path in get_csv_files('./data/interpolated'):
-            pass
         plotter = DataPlotter()
-        plotter.plot_data()
+        plotter.plot_interpolated_dataset(self.dataset_path, self.results_path)
 
     def prepare(self):
         """Resample all user traces in the given path to a common sampling time and make
@@ -185,7 +184,6 @@ class Application:
         Application.add_report_command(sub_parsers)
         Application.add_plot_command(sub_parsers)
 
-
         # Parses the arguments
         args = argument_parser.parse_args()
         self.command = args.command
@@ -214,11 +212,13 @@ class Application:
             if not os.path.exists(self.figures_path):
                 os.makedirs(self.figures_path)
         elif self.command == 'plot':
+            self.normalised_dataset_path = args.normalised_dataset_path
+            self.raw_dataset_path = args.raw_dataset_path
+            self.plot_command = args.plot_command
             self.dataset_path = args.dataset_path
             self.results_path = args.results_path
-            self.figures_path = args.figures_path
-            if not os.path.exists(self.figures_path):
-                os.makedirs(self.figures_path)
+            if not os.path.exists(self.results_path):
+                os.makedirs(self.results_path)
     @staticmethod
     def add_prepare_command(sub_parsers):
         """"
@@ -377,63 +377,72 @@ class Application:
         )
 
 
-@staticmethod
-def add_plot_command(sub_parsers):
-    """"
-    Plots and visualise data
+    @staticmethod
+    def add_plot_command(sub_parsers):
+        """"
+        Plots and visualise data
 
-    Parameters
-    ----------
-        sub_parsers: Data to be plotted
-            The sub-parser to which the command is to be
-            added.
+        Parameters
+        ----------
+            sub_parsers: Data to be plotted
+                The sub-parser to which the command is to be
+                added.
 
-    """
+        """
 
-    plot_command_parser = sub_parsers.add_parser(
-        'plot',
-        help='Visualise datasets and generates plots',
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter
-    )
+        plot_command_parser = sub_parsers.add_parser(
+            'plot',
+            help='Visualise datasets and generates plots',
+            formatter_class=argparse.ArgumentDefaultsHelpFormatter
+        )
 
-    plot_command_parser.add_argument(
-        '-d',
-        '--dataset-path',
-        dest='dataset_path',
-        type=str,
-        metavar='',
-        default='./data/interpolated',
-        help='Dataset path'
-    )
+        plot_command_parser.add_argument(
+            '-d',
+            '--dataset-path',
+            dest='dataset_path',
+            type=str,
+            metavar='',
+            default='./data/interpolated',
+            help='Dataset path'
+        )
 
-    plot_command_parser.add_argument(
-        '-p',
-        '--dataset',
-        dest='plot_command',
-        type=str,
-        choices=['dataset', 'raw', 'normalised', 'train_val'],
-        default='dataset',
-        help='Visualises and plots the input datasets'
-    )
+        plot_command_parser.add_argument(
+            '-n',
+            '--normalised-path',
+            dest='normalised_dataset_path',
+            type=str,
+            metavar='',
+            default='./data/normalised',
+            help='Normalised dataset path'
+        )
 
-    plot_command_parser.add_argument(
-        '-o',
-        '--output-path',
-        dest='results_path',
-        type=str,
-        metavar='',
-        default='./results/data_exploration',
-        help='Path where plotted figures are stored'
-    )
+        plot_command_parser.add_argument(
+            '-o',
+            '--output-path',
+            dest='results_path',
+            type=str,
+            metavar='',
+            default='./results/plotter',
+            help='Path where plotted figures are stored'
+        )
 
-    plot_command_parser.add_argument(
-        '-r',
-        '--raw-dataset-path',
-        dest='raw_dataset_path',
-        type=str,
-        metavar='',
-        default='./data/raw',
-        help='Path to the raw head motion traces collected from the headset'
-    )
+        plot_command_parser.add_argument(
+            '-p',
+            '--plot-command',
+            dest='plot_command',
+            type=str,
+            choices=['dataset', 'raw', 'normalised', 'train_val'],
+            default='dataset',
+            help='Visualises and plots the input datasets'
+        )
 
+        plot_command_parser.add_argument(
+            '-r',
+            '--raw-dataset-path',
+            dest='raw_dataset_path',
+            type=str,
+            metavar='',
+            default='./data/raw',
+            help='Path to the raw head motion traces collected from the headset'
+        )
 
