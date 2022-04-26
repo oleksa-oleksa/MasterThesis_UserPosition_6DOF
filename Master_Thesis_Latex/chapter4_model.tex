@@ -1,6 +1,7 @@
 % !TeX spellcheck = en
 \chapter{Data and Model}
 \label{sec:design}
+This chapter presents the steps of development and implementation of the proposed approach. The Unity Application for HoloLens was deployed on HMD and a raw data with measures and dimension columns was obtained. This data than was analyzed and preprocessed to ensure that the captured data can be used in corresponding machine learning models. The model architecture was implemented and experimentally improved during training and evaluation steps. 
 
 \section{6-DoF Dataset}
 \label{sec:design:dataset}
@@ -8,7 +9,10 @@ This section describes how the dataset was obtained, analyzed and presents the v
 
 \subsection{Data collection from HMD}
 \label{sec:design:dataset:HL}
-The low-cost IMU is sometimes unstable in frame rate during collecting data. In the experiments, we set the frame rate of IMU with 50 Hz which means that data will be collected per 0.02 second. Unfortunately, sometimes IMU could occur delay, and the time gap of two samples may be reduced to 0.01 second or increased to 0.05 second. To deal with above situation,
+In this master thesis HoloLens 2, the second iteration of Microsoft's head-mounted mixed reality device, was used for data collection. The user position and orientation were obtained with Unity application developed for this purpose. Main Camera in Unity is automatically configured to track head movements. Thus user position $(x, y, z)$ and orientation in quaternion $(qx, qy, qz, qw)$ were logged as $csv$-file. More details about Unity application can be found in section \ref{sec:imp:programming:unity}.
+Even the high-cost HMD, like used in this research HoloLens 2, is sometimes unstable in frame rate during collecting data. In the Unity Application, we set the frame rate of IMU with 50 Hz which means that data will be collected per 0.02 second. Unfortunately, sometimes IMU could occur delay, and the time gap of two samples may be reduced to 0.01 second or increased to 0.05 second. To deal with above situation,
+
+\footnote{https://docs.microsoft.com/en-us/windows/mixed-reality/develop/advanced-concepts/hologram-stability}
 
 \subsection{Data Exploration}
 \label{sec:design:dataset:explor}

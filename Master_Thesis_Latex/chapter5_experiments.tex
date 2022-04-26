@@ -26,6 +26,14 @@ You might already know that you want to apply an established theory or set of th
 \section{Implementation}
 \label{sec:imp:programming}
 
+\subsection{Unity application}
+\label{sec:imp:programming:unity}
+An application was developed in Unity with the Mixed Reality Toolkit and deployed on HoloLens 2. The goal of the application is to obtain the user position and orientation during the time a user wears a HMD. As this research aims to find an approach to reduce the M2P latency during rendering and delivering the volumetric content to end-user device, the volumetric animated object was placed three meters ahead of the user in Unity application. Users wearing HMD thus were asked to look on animated volumetric object and to move freely inside the laboratory space.\\
+In Unity, the Main Camera is always the primary stereo rendering component attached to HMD and it is rendering everything the user sees \footnote{https://docs.microsoft.com/en-us/windows/mixed-reality/develop/unity/camera-in-unity}. The starting position of the user is set to $(0, 0, 0)$ during the application launch and the Main Camera tracks movement of the user's head. Although HoloLens allows to build a world-scale application, the room-scale experience was selected for spatial coordinate system. This lets users to walk around within the 5-meter boundary what is quite enough for user's movements inside the laboratory space and simultaneously watching the volumetric video object. 
+
+\subsection{LSTM Model}
+\label{sec:imp:programming:model}
+
 \section{Experiments}
 \label{sec:imp:experiments}
 
