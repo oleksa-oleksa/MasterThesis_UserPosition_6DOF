@@ -9,7 +9,8 @@ This section describes how the dataset was obtained, analyzed and presents the v
 
 \subsection{Data collection from HMD}
 \label{sec:design:dataset:HL}
-In this master thesis HoloLens 2, the second iteration of Microsoft's head-mounted mixed reality device, was used for data collection. The user position and orientation were obtained with Unity application developed for this purpose. Main Camera in Unity is automatically configured to track head movements. Thus user position $(x, y, z)$ and orientation in quaternion $(qx, qy, qz, qw)$ were logged as $csv$-file. More details about Unity application can be found in section \ref{sec:imp:programming:unity}.
+In this master thesis HoloLens 2, the second iteration of Microsoft's head-mounted mixed reality device, was used for data collection. The user position and orientation were obtained with Unity application developed for this purpose. Main Camera in Unity is automatically configured to track head movements. More details about Unity application can be found in section \ref{sec:imp:programming:unity}.\\
+Using the Main Camera, a user position $(x, y, z)$ and orientation in quaternion $(qx, qy, qz, qw)$ were logged in a $csv$-file. Also additional parameters were recorded from the Main Camera in order to add more information during training processes. Thus the rotation as Euler angles in degrees and world-space speed of the camera in units per second and were added into dataset.\\
 Even the high-cost HMD, like used in this research HoloLens 2, is sometimes unstable in frame rate during collecting data. In the Unity Application, we set the frame rate of IMU with 50 Hz which means that data will be collected per 0.02 second. Unfortunately, sometimes IMU could occur delay, and the time gap of two samples may be reduced to 0.01 second or increased to 0.05 second. To deal with above situation,
 
 \footnote{https://docs.microsoft.com/en-us/windows/mixed-reality/develop/advanced-concepts/hologram-stability}
