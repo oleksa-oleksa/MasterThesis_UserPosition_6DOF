@@ -106,6 +106,8 @@ class Application:
                 self.plot_raw_datasets()
             elif self.plot_command == 'flipped':
                 self.plot_flipped_datasets()
+            elif self.plot_command == 'flipped_quaternions':
+                self.plot_flipped_quaternions()
 
     def run_kalman(self):
         """Runs Kalman filter on all traces and evaluates the results"""
@@ -148,6 +150,10 @@ class Application:
         """Plots interpolated trace"""
         plotter = DataPlotter()
         plotter.plot_datasets(self.flipped_dataset_path, self.results_path, 'flipped')
+
+    def plot_flipped_quaternions(self):
+        plotter = DataPlotter()
+        plotter.plot_datasets_quaternions_flipped(self.flipped_dataset_path, self.results_path, 'quaternions_flipped')
 
     def prepare(self):
         """Resample all user traces in the given path to a common sampling time and make
@@ -330,8 +336,6 @@ class Application:
             help='Path to the dataset with flipped quaternions'
         )
 
-
-
     @staticmethod
     def add_run_command(sub_parsers):
         """"
@@ -496,7 +500,7 @@ class Application:
             '--plot-command',
             dest='plot_command',
             type=str,
-            choices=['dataset', 'raw', 'flipped', 'train_val'],
+            choices=['dataset', 'raw', 'flipped_', 'flipped_quaternions', 'train_val'],
             default='dataset',
             help='Visualises and plots the input datasets'
         )

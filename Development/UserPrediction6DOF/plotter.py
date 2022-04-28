@@ -56,7 +56,7 @@ dataset_lengh_sec = 600
 
 
 class DataPlotter():
-    """Plots interpolated dataset traces"""
+    """Plots dataset traces"""
     @staticmethod
     def plot_datasets(dataset_path, output_path, dataset_type):
         logging.info(f"Plotting from {dataset_path} and saving to {output_path}")
@@ -105,6 +105,42 @@ class DataPlotter():
             ax3.legend(loc='upper left')
             ax3.yaxis.grid(which='major', linestyle='dotted', linewidth=1)
             ax3.xaxis.set_major_locator(MultipleLocator(10))
+
+            trace_id = os.path.splitext(os.path.basename(trace_path))[0]
+            dest = os.path.join(output_path, f"Fig-{trace_id}-{dataset_type}.pdf")
+            fig.savefig(dest)
+            logging.info("Plotting trace {} and saving to file {}".format(trace_path, dest))
+
+
+    """Plots dataset traces"""
+    @staticmethod
+    def plot_datasets_quaternions_flipped(dataset_path, output_path, dataset_type):
+        logging.info(f"Plotting from {dataset_path} and saving to {output_path}")
+        for trace_path in get_csv_files(dataset_path):
+            df = pd.read_csv(trace_path)
+            ts = np.arange(0, dataset_lengh_sec + cfg['dt'], cfg['dt'])
+
+            fig, (ax) = plt.subplots(1, 1, figsize=(18, 4), sharex=True)
+
+
+            # Plot orientation in Quaternions
+            '''
+            Q =  [qx, qy, qz, qw] = qv + qw, where 
+            qw is the real part  and 
+            qv = iqx + jqy + kqz= (qx, qy, qz) 
+            is the imaginary part 
+            x, y and z represent a vector. w is a scalar that stores the rotation around the vector.
+            '''
+            ax.plot(ts, df.loc[:len(ts) - 1, 'qx'], label='qx', linestyle='solid')
+            ax.plot(ts, df.loc[:len(ts) - 1, 'qy'], label='qy', linestyle='--')
+            ax.plot(ts, df.loc[:len(ts) - 1, 'qz'], label='qz', linestyle='-.')
+            ax.plot(ts, df.loc[:len(ts) - 1, 'qw'], label='real qw', linestyle='solid')
+            ax.set_xlabel('seconds')
+            ax.set_ylabel('degrees')
+            ax.set_xlim(0, dataset_lengh_sec)
+            ax.legend(loc='upper left')
+            ax.yaxis.grid(which='major', linestyle='dotted', linewidth=1)
+            ax.xaxis.set_major_locator(MultipleLocator(10))
 
             trace_id = os.path.splitext(os.path.basename(trace_path))[0]
             dest = os.path.join(output_path, f"Fig-{trace_id}-{dataset_type}.pdf")
