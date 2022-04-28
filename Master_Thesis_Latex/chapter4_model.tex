@@ -83,18 +83,19 @@ As was mentioned in section \ref*{sec:design:dataset:HL}, the raw sensor data ob
 \end{table}
 
 
-After the interpolated dataset was plotted as figure \ref{fig:inter_data}, the important observations based on the sample trace could be done. While the user position data plots look appropriate for machine learning algorithms, the two graphs with orientation show data that is not suitable for use with machine learning technologies and will decrease the prediction rate. The real part $qw$ and the component $qy$ of quaternion and $yaw$ of Euler angles are obviously discontinuous making it hard for a predictor to learn. A orientation on quaternions is used in training, thus this data requires a few additionally preprocessing steps. First, in order to represent valid rotations, quaternions must be normalized to a unit length \cite{principles_robot_motion_book}. The normalized quaternion can be calculated using formula:
+After the interpolated dataset was plotted as figure \ref{fig:inter_data}, the important observations based on the sample trace could be done. While the user position data plots look appropriate for machine learning algorithms, the two graphs with orientation show data that is not suitable for use with machine learning technologies and will decrease the prediction rate. The real part $qw$ and the component $qy$ of quaternion and $yaw$ of Euler angles are obviously discontinuous making it hard for a predictor to learn. A orientation on quaternions is used in training, thus this data requires a few additionally preprocessing steps. Usually, when doing calculation with quaternions, quaternions must be normalized to a unit length in order to represent valid rotations \cite{principles_robot_motion_book}. The normalized quaternion can be calculated using formula:
 \begin{equation}
 U_g = \frac{q}{|| q ||} = \frac{w}{|| q ||} + i \cdot \frac{x}{|| q ||} + j \cdot \frac{y}{|| q ||} + k \cdot \frac{z}{|| q ||}
 \end{equation}
 
-where
-
+where $|| q || $ is a magnitude and can be found with formula:
 \begin{equation}
 || q || = \sqrt{w^2 + x^2 + y^2 + z^2 }
 \end{equation}
 
-Second, real part $qw$ and the component $qy$ present in the middle graph on figure \ref{fig:inter_data} the same orientation regardless the discontinuity of their graphs. 
+During experiments with quaternions in dataset obtained from HoloLens was found that quaternion magnitudes $|| q ||$ in HoloLens dataset are equal to 1. Thus data came from HMD already normalized, so that a quaternion in dataset kept the same orientation as it was during user's movement but its magnitude is 1.0.
+
+
 
 \begin{figure}[htb]
 	\begin{center}
@@ -102,9 +103,8 @@ Second, real part $qw$ and the component $qy$ present in the middle graph on fig
 		\caption{\label{fig:inter_data}Interpolated 6-DoF dataset's user position and orientation in quaternions and Euler angles.}
 	\end{center}
 \end{figure}
-
-Flipping the sign will not affect the rotation, but it will ensure that there are no large jumps in 4D vector space when the rotation difference in rotation space (SO(3)) is small. If negative component of quaternions will be flipped into positive then the dataset representing same rotation without creating an artificial discontinuity in the space will be available for model training. Thus after normalization step, the two representations of quaternions are blended into one data set, omitting to discontinuities in the time series as can be seen in \ref{fig:norm_data} 
-
+Next, real part $qw$ and the component $qy$ present in the middle graph on figure \ref{fig:inter_data} the same orientation regardless the discontinuity of their graphs. Flipping the sign will not affect the rotation, but it will ensure that there are no large jumps in 4D vector space when the rotation difference in rotation space (SO(3)) is small. If negative component of quaternions will be flipped into positive then the dataset representing same rotation without creating an artificial discontinuity in the space will be available for model training. Thus after normalization step, the two representations of quaternions are blended into one data set, omitting to discontinuities in the time series as can be seen in \ref{fig:norm_data} 
+%
 
 
 \subsection{Data Exploration}

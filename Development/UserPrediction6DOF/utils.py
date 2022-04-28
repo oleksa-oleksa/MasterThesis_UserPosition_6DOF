@@ -146,10 +146,12 @@ def normalize_trace(trace_path, out_dir):
     df = pd.read_csv(trace_path, skipfooter=1, engine='python')
 
     qs = df.loc[:, ['timestamp', 'qx', 'qy', 'qz', 'qw']].to_numpy()
+    q_length = np.empty([qs.shape[0], 1])
 
-    print(qs.shape)
-    q_length = math.sqrt(qx**2 + qy**2 + qz**2 + qw**2)
-    print(q_length)
+    for idx in range(qs.shape[0]):
+        q_length[idx][0] = math.sqrt(qs[idx][1]**2 + qs[idx][2]**2 + qs[idx][3]**2 + qs[idx][4]**2)
+        print(q_length[idx][0])
+
 
 
     return
