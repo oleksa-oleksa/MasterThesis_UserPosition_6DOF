@@ -145,12 +145,9 @@ def normalize_trace(trace_path, out_dir):
     # A comma-separated values (csv) file is returned as two-dimensional data structure with labeled axes.
     df = pd.read_csv(trace_path, skipfooter=1, engine='python')
 
-    qx = df['qx'].to_numpy()
-    qy = df['qy'].to_numpy()
-    qz = df['qz'].to_numpy()
-    qw = df['qw'].to_numpy()
+    qs = df.loc[:, ['timestamp', 'qx', 'qy', 'qz', 'qw']].to_numpy()
 
-    print(qx.shape)
+    print(qs.shape)
     q_length = math.sqrt(qx**2 + qy**2 + qz**2 + qw**2)
     print(q_length)
 
