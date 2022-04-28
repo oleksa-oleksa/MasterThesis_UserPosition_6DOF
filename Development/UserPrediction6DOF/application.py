@@ -221,8 +221,8 @@ class Application:
         elif self.command == 'normalize':
             self.dataset_path = args.dataset_path
             self.normalised_dataset_path = args.normalised_dataset_path
-            if not os.path.exists(self.output_path):
-                os.makedirs(self.output_path)
+            if not os.path.exists(self.normalised_dataset_path):
+                os.makedirs(self.normalised_dataset_path)
         elif self.command == 'run':
             self.algorithm = args.algorithm
             self.dataset_path = args.dataset_path
