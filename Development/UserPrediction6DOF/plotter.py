@@ -58,7 +58,7 @@ dataset_lengh_sec = 600
 class DataPlotter():
     """Plots interpolated dataset traces"""
     @staticmethod
-    def plot_dataset(dataset_path, output_path, dataset_type):
+    def plot_datasets(dataset_path, output_path, dataset_type):
         logging.info(f"Plotting from {dataset_path} and saving to {output_path}")
         for trace_path in get_csv_files(dataset_path):
             df = pd.read_csv(trace_path)

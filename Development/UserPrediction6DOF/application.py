@@ -47,7 +47,7 @@ import numpy as np
 import toml
 from .runners import KalmanRunner, BaselineRunner, LSTMBaseRunner, LSTMRunner
 from .reporter import Reporter
-from .utils import get_csv_files, preprocess_trace
+from .utils import get_csv_files, preprocess_trace, normalize_trace
 from .plotter import DataPlotter
 
 
@@ -95,15 +95,17 @@ class Application:
                 self.run_baseline()
         elif self.command == 'prepare':
             self.prepare()
+        elif self.command == 'normalize':
+            self.normalize()
         elif self.command == 'report':
             self.report()
         elif self.command == 'plot':
             if self.plot_command == 'dataset':
-                self.plot_interpolated_dataset()
+                self.plot_interpolated_datasets()
             elif self.plot_command == 'raw':
-                self.plot_raw_dataset()
+                self.plot_raw_datasets()
             elif self.plot_command == 'normalised':
-                self.plot_normalised_dataset()
+                self.plot_normalised_datasets()
 
     def run_kalman(self):
         """Runs Kalman filter on all traces and evaluates the results"""
@@ -133,19 +135,19 @@ class Application:
                                 self.results_path)
         runner.run()
 
-    def plot_interpolated_dataset(self):
+    def plot_interpolated_datasets(self):
         """Plots interpolated trace"""
         plotter = DataPlotter()
-        plotter.plot_dataset(self.dataset_path, self.results_path, 'interpolated')
+        plotter.plot_datasets(self.dataset_path, self.results_path, 'interpolated')
 
-    def plot_raw_dataset(self):
+    def plot_raw_datasets(self):
         """Plots raw trace"""
         logging.info('Plot of raw dataset is not supported. TBA')
 
-    def plot_normalised_dataset(self):
+    def plot_normalised_datasets(self):
         """Plots interpolated trace"""
         plotter = DataPlotter()
-        plotter.plot_dataset(self.dataset_path, self.results_path, 'normalised')
+        plotter.plot_datasets(self.normalised_dataset_path, self.results_path, 'normalised')
 
     def prepare(self):
         """Resample all user traces in the given path to a common sampling time and make
@@ -153,6 +155,13 @@ class Application:
         for trace_path in get_csv_files(self.raw_dataset_path):
             preprocess_trace(trace_path, self.sampling_time, self.output_path)
         logging.info("Interpolated traces written to {}".format(self.output_path))
+
+    def normalize(self):
+        """Resample all user traces in the given path to a common sampling time and make
+        temporal spacing between samples equal"""
+        for trace_path in get_csv_files(self.dataset_path):
+            normalize_trace(trace_path, self.normalised_dataset_path)
+        logging.info(f"Normalized traces written to {self.normalised_dataset_path}")
 
     def report(self):
         trace_path = os.path.join(self.dataset_path, "202201251454.csv")
@@ -192,6 +201,8 @@ class Application:
         Application.add_run_command(sub_parsers)
         Application.add_report_command(sub_parsers)
         Application.add_plot_command(sub_parsers)
+        Application.add_normalize_command(sub_parsers)
+
 
         # Parses the arguments
         args = argument_parser.parse_args()
@@ -207,6 +218,11 @@ class Application:
             if not os.path.exists(self.output_path):
                 os.makedirs(self.output_path)
             self.sampling_time = args.sampling_time
+        elif self.command == 'normalize':
+            self.dataset_path = args.dataset_path
+            self.normalised_dataset_path = args.normalised_dataset_path
+            if not os.path.exists(self.output_path):
+                os.makedirs(self.output_path)
         elif self.command == 'run':
             self.algorithm = args.algorithm
             self.dataset_path = args.dataset_path
@@ -275,6 +291,46 @@ class Application:
             default=0.005,
             help='Sampling time [s]'
         )
+
+    @staticmethod
+    def add_normalize_command(sub_parsers):
+        """"
+        Adds the process command which samples the raw data traces with
+        even temporal spacing.
+
+        Parameters
+        ----------
+            sub_parsers: Action
+                The sub-parser to which the command is to be added.
+
+        """
+        prepare_command_parser = sub_parsers.add_parser(
+            'normalize',
+            help='normalizes the interpolated data traces and flips negative quaternions',
+            formatter_class=argparse.ArgumentDefaultsHelpFormatter
+        )
+
+        prepare_command_parser.add_argument(
+            '-i',
+            '--interpolated-dataset-path',
+            dest='dataset_path',
+            type=str,
+            metavar='',
+            default='./data/interpolated',
+            help='Path to the interpolated head motion traces collected from the headset'
+        )
+
+        prepare_command_parser.add_argument(
+            '-o',
+            '--output-path',
+            dest='normalised_dataset_path',
+            type=str,
+            metavar='',
+            default='./data/normalized',
+            help='Path to the normalized dataset with flipped quaternions'
+        )
+
+
 
     @staticmethod
     def add_run_command(sub_parsers):

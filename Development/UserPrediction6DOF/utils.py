@@ -48,6 +48,7 @@ from sklearn.model_selection import train_test_split
 from torch.utils.data import TensorDataset, DataLoader
 import torch
 import csv
+import math
 
 pd.options.mode.chained_assignment = None
 # HoloLens CSV-Log parameter
@@ -127,6 +128,28 @@ def preprocess_trace(trace_path, dt, out_dir):
     df_intp.to_csv(os.path.join(out_dir, case + '.csv'), index=False)
     
     return df_intp
+
+
+def normalize_trace(trace_path, out_dir):
+    """
+    Normalizes interpolated Hololens trace
+    Writes csv-files into out_dir
+        trace_path: Path to the raw HoloLens trace.
+        out_dir: Output directory containing the interpolated traces.
+    Outputs:
+        df_norm: Dataframe containing untouched position (x,y,z) and Euler angles
+        as they were passed into function
+        and normalized rotation values (quaternions).
+    """
+    case = os.path.splitext(os.path.basename(trace_path))[0]
+    # A comma-separated values (csv) file is returned as two-dimensional data structure with labeled axes.
+    df = pd.read_csv(trace_path, skipfooter=1, engine='python')
+
+    q_length = math.sqrt(df['qx']**2 + df['qy']**2 + df['qz']**2 + df['qq']**2)
+    print(q_length)
+
+
+    return
 
 
 def get_csv_files(dataset_path):
