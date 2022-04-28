@@ -10,17 +10,99 @@ This section describes how the dataset was obtained, analyzed and presents the v
 \subsection{Data collection from HMD}
 \label{sec:design:dataset:HL}
 In this master thesis HoloLens 2, the second iteration of Microsoft's head-mounted mixed reality device, was used for data collection. The user position and orientation were obtained with Unity application developed for this purpose. Main Camera in Unity is automatically configured to track head movements. More details about Unity application can be found in section \ref{sec:imp:programming:unity}.\\
-Using the Main Camera, a user position $(x, y, z)$ and orientation in quaternion $(qx, qy, qz, qw)$ were logged in a $csv$-file. Also additional parameters were recorded from the Main Camera in order to add more information during training processes. Thus the rotation as Euler angles in degrees and world-space speed of the camera in units per second and were added into dataset.\\
-Even the high-cost HMD, like used in this research HoloLens 2, is sometimes unstable in frame rate during collecting data. In the Unity Application, we set the frame rate of IMU with 50 Hz which means that data will be collected per 0.02 second. Unfortunately, sometimes IMU could occur delay, and the time gap of two samples may be reduced to 0.01 second or increased to 0.05 second. To deal with above situation,
+Using the Main Camera, a user position $(x, y, z)$ and orientation in quaternion $(qx, qy, qz, qw)$ were logged in a $csv$-file. Also additional parameters were recorded from the Main Camera in order to add more information during training processes. Thus the world-space speed of the camera in meters per second was recorded.Unity velocity has the speed in $(x, y, z)$ defining the direction. Additionally, the absolute speed was calculated from 3D $(x, y, z)$ values with Pythagorus' theorem.\\
+Thus, the 6-DoF dataset has 11 features used in training process: position $(x, y, z)$, orientation  $(qx, qy, qz, qw)$, velocity $(x, y, z)$ and speed $s$.
+The datasets were recorded in the laboratory space. HMD was presented to users and the basic functions were explained. During data recording, users freely walked wearing HMD in laboratory space. The Unity application, running on HMD, not only recorded the mentioned before parameters but also had a volumetric animated object placed placed 3 meters ahead of the user in the Mixed Reality environment. No personal data was recorded during these sessions and all traces are obtained anonymously. Thus, after an Unity application was launched, user could immediately see the animated object. The several traces were recorded at least for 10 minutes each. It allows to have enough data after splitting the dataset into training, test and validation partitions. Table \ref{tab:raw_data} show the first 20 rows from raw dataset obtained from HoloLens 2 and used in training. As mentioned above, 6-DoF dataset has 11 columns, thus the table \ref{tab:raw_data} presents only $timestamp$ and position $(x, y, z)$ columns. 
 
-\footnote{https://docs.microsoft.com/en-us/windows/mixed-reality/develop/advanced-concepts/hologram-stability}
+\begin{table}[!ht]
+		\footnotesize
+		\centering
+	\begin{tabular}{|l|l|l|l|}
+		\hline
+		timestamp & x & y & z \\ [0.5ex] 
+		\hline\hline
+		2.649431 & 0.004954389 & 0.003402365 & 0.01010712 \\ \hline
+		2.66943 & 0.00459053 & 0.003120769 & 0.01130438 \\ \hline
+		2.698009 & 0.003960807 & 0.002990472 & 0.01276976 \\ \hline
+		2.719285 & 0.003730714 & 0.003037783 & 0.01305151 \\ \hline
+		2.746641 & 0.003252693 & 0.003489003 & 0.01368421 \\ \hline
+		2.764094 & 0.003153284 & 0.003518121 & 0.01400959 \\ \hline
+		2.780033 & 0.003087142 & 0.003409061 & 0.01435899 \\ \hline
+		2.802086 & 0.003021815 & 0.00314023 & 0.01473305 \\ \hline
+		2.815575 & 0.002789935 & 0.003551113 & 0.01506916 \\ \hline
+		2.832602 & 0.002527435 & 0.003542757 & 0.01534094 \\ \hline
+		2.848514 & 0.002212256 & 0.003605011 & 0.01565307 \\ \hline
+		2.863769 & 0.001921757 & 0.003369405 & 0.01590317 \\ \hline
+		2.879648 & 0.001668522 & 0.00348538 & 0.01607716 \\ \hline
+		2.89686 & 0.001501704 & 0.003624826 & 0.01627397 \\ \hline
+		2.913541 & 0.001487849 & 0.00359472 & 0.01643924 \\ \hline
+		2.930006 & 0.001501501 & 0.003769569 & 0.01669565 \\ \hline
+		2.948201 & 0.001617525 & 0.004252479 & 0.01697758 \\ \hline
+		2.964302 & 0.001755987 & 0.004224311 & 0.01721937 \\ \hline
+		2.97978 & 0.001838901 & 0.004487753 & 0.01747578 \\ \hline
+		2.997117 & 0.002005509 & 0.005007531 & 0.01782864 \\ \hline
+	\end{tabular}
+\caption{\label{tab:raw_data}Raw data from HoloLens 2}
+\end{table}
+
+The first column in dataset is $timestamp$. It is obviously, that timestamp appears in row dataset not linearly and comes with different pauses. Even the high-cost HMD, like used in this research HoloLens 2, is sometimes unstable in frame rate during collecting data\footnote{https://docs.microsoft.com/en-us/windows/mixed-reality/develop/advanced-concepts/hologram-stability}.  In the Unity Application, the frame rate is  60 Hz which means that data will be collected per 0.016(6) second. Unfortunately, HMD could have delays, and the time gap of two samples may be reduced or increased, as we can observe on raw dataset. Data on some expected timestamps may be unavailable in HMS for recording. Those sequences with fewer timesteps may be considered to have missing values. To deal with above situation, the preprocessing steps must be done. They are described in a section \ref{sec:design:dataset:preprocessing} below. 
+
+\subsection{Data preprocessing}
+\label{sec:design:dataset:preprocessing}
+As was mentioned in section \ref*{sec:design:dataset:HL}, the raw sensor data obtained from the HoloLens was unevenly sampled at 60 Hz and had different temporal distances between consecutive samples. \textit{Gül et al., 2020} obtained the similar raw dataset from same HMD and interpolated it to obtain temporally equidistant samples. Same as it was done in work \cite{serhan_kalman}, the position and velocity data were upsampled using linear interpolation and for quaternions SLEP was used. During preprocessing step Euler angles (yaw, pitch, roll) were calculated from quaternions and these parameters are used for visualization purposes. Although the interpolated $csv$-file contains additional Euler angles columns, only described in section \ref{sec:design:dataset:HL} parameters were used for training and prediction. The table \ref{tab:inter_data} lists first 20 rows for columns $timestamp$ and position $(x, y, z)$ from interpolated dataset. This interpolated dataset is created with linear interpolation and SLEP mathematical methods from raw dataset shown in table \ref{tab:raw_data}. 
+
+\begin{table}[!ht]
+	\footnotesize
+	\centering
+	\begin{tabular}{|l|l|l|l|}
+		\hline
+		timestamp & x & y & z \\ [0.5ex] 
+		\hline\hline
+		0.0 & 0.004954389 & 0.003402365 & 0.01010712 \\ \hline
+		5000000.0 & 0.004833102666666667 & 0.0033084996666666667 & 0.010506206666666667 \\ \hline
+		10000000.0 & 0.004711816333333333 & 0.0032146343333333332 & 0.010905293333333333 \\ \hline
+		15000000.0 & 0.00459053 & 0.003120769 & 0.01130438 \\ \hline
+		20000000.0 & 0.004485576166666666 & 0.003099052833333333 & 0.011548609999999999 \\ \hline
+		25000000.0 & 0.004380622333333333 & 0.0030773366666666667 & 0.011792839999999999 \\ \hline
+		30000000.0 & 0.0042756685 & 0.0030556205 & 0.01203707 \\ \hline
+		35000000.0 & 0.004170714666666667 & 0.003033904333333333 & 0.0122813 \\ \hline
+		40000000.0 & 0.004065760833333334 & 0.003012188166666667 & 0.01252553 \\ \hline
+		45000000.0 & 0.003960807 & 0.002990472 & 0.01276976 \\ \hline
+		50000000.0 & 0.00390328375 & 0.00300229975 & 0.0128401975 \\ \hline
+		55000000.0 & 0.0038457605 & 0.0030141275 & 0.012910635 \\ \hline
+		60000000.0 & 0.00378823725 & 0.00302595525 & 0.0129810725 \\ \hline
+		65000000.0 & 0.003730714 & 0.003037783 & 0.01305151 \\ \hline
+		70000000.0 & 0.0036510438333333334 & 0.0031129863333333335 & 0.01315696 \\ \hline
+		75000000.0 & 0.003571373666666667 & 0.003188189666666667 & 0.01326241 \\ \hline
+		80000000.0 & 0.0034917035000000003 & 0.003263393 & 0.01336786 \\ \hline
+		85000000.0 & 0.0034120333333333332 & 0.0033385963333333333 & 0.01347331 \\ \hline
+		90000000.0 & 0.0033323631666666667 & 0.0034137996666666667 & 0.01357876 \\ \hline
+		95000000.0 & 0.003252693 & 0.003489003 & 0.01368421 \\ \hline
+	\end{tabular}
+	\caption{\label{tab:inter_data}Interpolated data from HoloLens 2}
+\end{table}
+
+
+The figure \ref{fig:inter_data} below visualizes the interpolated datasets. After the interpolated dataset was plotted, the important observations based on the sample trace could be done. While the user position data plots looks as usual for machine learning algorithms, the two graphs with orientation is not suitable for use with machine learning technologies and will decrease the prediction rate. The real part $qw$ of quaternion and $yaw$ of Euler angles are obviously discontinuous making it hard for a predictor to learn. A orientation on quaternions is used in training, thus this data data requires a few additionally preprocessing steps: in order to represent valid rotations, quaternions must be normalized to a unit length. To avoid problem with discontinuity it is worth to mention that if $qw$ denotes a particular orientation, then $-qw$ (antipodal representation) represents the same orientation. Because from a dataset it is possible to read the previous and the current quaternion, the sign of the current quaternion can be flipped and it will make the distance between the quaternions in the vector space smaller.
+
+ The two representations are blended into one data set, leading to discontinuities in the time series as can be seen in Figure 4.3.
+
+\begin{figure}[htb]
+	\begin{center}
+		\includegraphics[width=1\textwidth, keepaspectratio]{gfx/Fig-1556-interpolated.pdf}
+		\caption{\label{fig:inter_data}Interpolated 6-DoF dataset's user position and orientation in quaternions and Euler angles.}
+	\end{center}
+\end{figure}
+
+Thus after normalization step, the two representations are blended into one data set, leading to discontinuities in the time series as can be seen in \ref{fig:norm_data} 
+
+
 
 \subsection{Data Exploration}
 \label{sec:design:dataset:explor}
 !! Data analysis AVG linear velocity position, plots 
 
-\subsection{Data preprocessing}
-\label{sec:design:dataset:preprocessing}
+We can make two important observations based on the sample trace: firstly, the viewer rarely moves along the y-axis (except for the time period between 38-42 s during which the viewer probably sat down and stood back up), which is understandable since it requires more effort to crouch down and stand up. Secondly, the orientation changes are typically due to yaw movements, whereas the magnitude of changes due to roll and pitch movements are much smaller. Our observations are also confirmed by visual inspection of the other recorded traces.
 
 
 \section{Neural Network}

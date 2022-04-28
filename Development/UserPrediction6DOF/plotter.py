@@ -58,7 +58,7 @@ dataset_lengh_sec = 600
 class DataPlotter():
     """Plots interpolated dataset traces"""
     @staticmethod
-    def plot_interpolated_dataset(dataset_path, output_path):
+    def plot_dataset(dataset_path, output_path, dataset_type):
         logging.info(f"Plotting from {dataset_path} and saving to {output_path}")
         for trace_path in get_csv_files(dataset_path):
             df = pd.read_csv(trace_path)
@@ -107,7 +107,7 @@ class DataPlotter():
             ax3.xaxis.set_major_locator(MultipleLocator(10))
 
             trace_id = os.path.splitext(os.path.basename(trace_path))[0]
-            dest = os.path.join(output_path, "Fig_interpolated_{}.pdf".format(trace_id))
+            dest = os.path.join(output_path, f"Fig-{trace_id}-{dataset_type}.pdf")
             fig.savefig(dest)
             logging.info("Plotting trace {} and saving to file {}".format(trace_path, dest))
 

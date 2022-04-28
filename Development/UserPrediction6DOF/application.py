@@ -136,7 +136,16 @@ class Application:
     def plot_interpolated_dataset(self):
         """Plots interpolated trace"""
         plotter = DataPlotter()
-        plotter.plot_interpolated_dataset(self.dataset_path, self.results_path)
+        plotter.plot_dataset(self.dataset_path, self.results_path, 'interpolated')
+
+    def plot_raw_dataset(self):
+        """Plots raw trace"""
+        logging.info('Plot of raw dataset is not supported. TBA')
+
+    def plot_normalised_dataset(self):
+        """Plots interpolated trace"""
+        plotter = DataPlotter()
+        plotter.plot_dataset(self.dataset_path, self.results_path, 'normalised')
 
     def prepare(self):
         """Resample all user traces in the given path to a common sampling time and make
