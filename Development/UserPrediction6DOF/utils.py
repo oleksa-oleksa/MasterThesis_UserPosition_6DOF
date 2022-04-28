@@ -130,7 +130,7 @@ def preprocess_trace(trace_path, dt, out_dir):
     return df_intp
 
 
-def normalize_trace(trace_path, out_dir):
+def flip_negative_quaternions(trace_path, out_dir):
     """
     Normalizes interpolated Hololens trace
     Writes csv-files into out_dir
@@ -145,16 +145,15 @@ def normalize_trace(trace_path, out_dir):
     # A comma-separated values (csv) file is returned as two-dimensional data structure with labeled axes.
     df = pd.read_csv(trace_path, skipfooter=1, engine='python')
 
-    qs = df.loc[:, ['timestamp', 'qx', 'qy', 'qz', 'qw']].to_numpy()
-    q_length = np.empty([qs.shape[0], 1])
+    df['qy'] = abs(df['qy'])
+    df['qw'] = abs(df['qw'])
 
-    for idx in range(qs.shape[0]):
-        q_length[idx][0] = math.sqrt(qs[idx][1]**2 + qs[idx][2]**2 + qs[idx][3]**2 + qs[idx][4]**2)
-        print(q_length[idx][0])
+    # Save flipped DataFrame to csv
+    if not os.path.exists(out_dir):
+        os.makedirs(out_dir)
+    df.to_csv(os.path.join(out_dir, case + '.csv'), index=False)
 
-
-
-    return
+    return df
 
 
 def get_csv_files(dataset_path):

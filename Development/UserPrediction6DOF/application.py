@@ -47,7 +47,7 @@ import numpy as np
 import toml
 from .runners import KalmanRunner, BaselineRunner, LSTMBaseRunner, LSTMRunner
 from .reporter import Reporter
-from .utils import get_csv_files, preprocess_trace, normalize_trace
+from .utils import get_csv_files, preprocess_trace, flip_negative_quaternions
 from .plotter import DataPlotter
 
 
@@ -71,7 +71,7 @@ class Application:
         self.figures_path = None
         self.pred_window = None
         self.plot_command = None
-        self.normalised_dataset_path = None
+        self.flipped_dataset_path = None
 
     def run(self):
         """Runs the application"""
@@ -95,8 +95,8 @@ class Application:
                 self.run_baseline()
         elif self.command == 'prepare':
             self.prepare()
-        elif self.command == 'normalize':
-            self.normalize()
+        elif self.command == 'flip':
+            self.flip()
         elif self.command == 'report':
             self.report()
         elif self.command == 'plot':
@@ -104,8 +104,8 @@ class Application:
                 self.plot_interpolated_datasets()
             elif self.plot_command == 'raw':
                 self.plot_raw_datasets()
-            elif self.plot_command == 'normalised':
-                self.plot_normalised_datasets()
+            elif self.plot_command == 'flipped':
+                self.plot_flipped_datasets()
 
     def run_kalman(self):
         """Runs Kalman filter on all traces and evaluates the results"""
@@ -144,10 +144,10 @@ class Application:
         """Plots raw trace"""
         logging.info('Plot of raw dataset is not supported. TBA')
 
-    def plot_normalised_datasets(self):
+    def plot_flipped_datasets(self):
         """Plots interpolated trace"""
         plotter = DataPlotter()
-        plotter.plot_datasets(self.normalised_dataset_path, self.results_path, 'normalised')
+        plotter.plot_datasets(self.flipped_dataset_path, self.results_path, 'flipped')
 
     def prepare(self):
         """Resample all user traces in the given path to a common sampling time and make
@@ -156,12 +156,12 @@ class Application:
             preprocess_trace(trace_path, self.sampling_time, self.output_path)
         logging.info("Interpolated traces written to {}".format(self.output_path))
 
-    def normalize(self):
+    def flip(self):
         """Resample all user traces in the given path to a common sampling time and make
         temporal spacing between samples equal"""
         for trace_path in get_csv_files(self.dataset_path):
-            normalize_trace(trace_path, self.normalised_dataset_path)
-        logging.info(f"Normalized traces written to {self.normalised_dataset_path}")
+            flip_negative_quaternions(trace_path, self.flipped_dataset_path)
+        logging.info(f"Flipped traces written to {self.flipped_dataset_path}")
 
     def report(self):
         trace_path = os.path.join(self.dataset_path, "202201251454.csv")
@@ -201,7 +201,7 @@ class Application:
         Application.add_run_command(sub_parsers)
         Application.add_report_command(sub_parsers)
         Application.add_plot_command(sub_parsers)
-        Application.add_normalize_command(sub_parsers)
+        Application.add_flip_command(sub_parsers)
 
 
         # Parses the arguments
@@ -218,11 +218,11 @@ class Application:
             if not os.path.exists(self.output_path):
                 os.makedirs(self.output_path)
             self.sampling_time = args.sampling_time
-        elif self.command == 'normalize':
+        elif self.command == 'flip':
             self.dataset_path = args.dataset_path
-            self.normalised_dataset_path = args.normalised_dataset_path
-            if not os.path.exists(self.normalised_dataset_path):
-                os.makedirs(self.normalised_dataset_path)
+            self.flipped_dataset_path = args.flipped_dataset_path
+            if not os.path.exists(self.flipped_dataset_path):
+                os.makedirs(self.flipped_dataset_path)
         elif self.command == 'run':
             self.algorithm = args.algorithm
             self.dataset_path = args.dataset_path
@@ -237,7 +237,7 @@ class Application:
             if not os.path.exists(self.figures_path):
                 os.makedirs(self.figures_path)
         elif self.command == 'plot':
-            self.normalised_dataset_path = args.normalised_dataset_path
+            self.flipped_dataset_path = args.flipped_dataset_path
             self.raw_dataset_path = args.raw_dataset_path
             self.plot_command = args.plot_command
             self.dataset_path = args.dataset_path
@@ -293,7 +293,7 @@ class Application:
         )
 
     @staticmethod
-    def add_normalize_command(sub_parsers):
+    def add_flip_command(sub_parsers):
         """"
         Adds the process command which samples the raw data traces with
         even temporal spacing.
@@ -304,13 +304,13 @@ class Application:
                 The sub-parser to which the command is to be added.
 
         """
-        prepare_command_parser = sub_parsers.add_parser(
-            'normalize',
-            help='normalizes the interpolated data traces and flips negative quaternions',
+        flip_command_parser = sub_parsers.add_parser(
+            'flip',
+            help='flips negative quaternions',
             formatter_class=argparse.ArgumentDefaultsHelpFormatter
         )
 
-        prepare_command_parser.add_argument(
+        flip_command_parser.add_argument(
             '-i',
             '--interpolated-dataset-path',
             dest='dataset_path',
@@ -320,14 +320,14 @@ class Application:
             help='Path to the interpolated head motion traces collected from the headset'
         )
 
-        prepare_command_parser.add_argument(
+        flip_command_parser.add_argument(
             '-o',
             '--output-path',
-            dest='normalised_dataset_path',
+            dest='flipped_dataset_path',
             type=str,
             metavar='',
-            default='./data/normalized',
-            help='Path to the normalized dataset with flipped quaternions'
+            default='./data/flipped',
+            help='Path to the dataset with flipped quaternions'
         )
 
 
@@ -472,13 +472,13 @@ class Application:
         )
 
         plot_command_parser.add_argument(
-            '-n',
-            '--normalised-path',
-            dest='normalised_dataset_path',
+            '-f',
+            '--flipped-path',
+            dest='flipped_dataset_path',
             type=str,
             metavar='',
-            default='./data/normalised',
-            help='Normalised dataset path'
+            default='./data/flipped',
+            help='Flipped dataset path'
         )
 
         plot_command_parser.add_argument(
@@ -496,7 +496,7 @@ class Application:
             '--plot-command',
             dest='plot_command',
             type=str,
-            choices=['dataset', 'raw', 'normalised', 'train_val'],
+            choices=['dataset', 'raw', 'flipped', 'train_val'],
             default='dataset',
             help='Visualises and plots the input datasets'
         )
