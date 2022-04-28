@@ -10,7 +10,7 @@ This section describes how the dataset was obtained, analyzed and presents the v
 \subsection{Data collection from HMD}
 \label{sec:design:dataset:HL}
 In this master thesis HoloLens 2, the second iteration of Microsoft's head-mounted mixed reality device, was used for data collection. The user position and orientation were obtained with Unity application developed for this purpose. Main Camera in Unity is automatically configured to track head movements. More details about Unity application can be found in section \ref{sec:imp:programming:unity}.\\
-Using the Main Camera, a user position $(x, y, z)$ and orientation in quaternion $(qx, qy, qz, qw)$ were logged in a $csv$-file. Also additional parameters were recorded from the Main Camera in order to add more information during training processes. Thus the world-space speed of the camera in meters per second was recorded.Unity velocity has the speed in $(x, y, z)$ defining the direction. Additionally, the absolute speed was calculated from 3D $(x, y, z)$ values with Pythagorus' theorem.\\
+Using the Main Camera, a user position $(x, y, z)$ and orientation in quaternion $(qx, qy, qz, qw)$ were logged in a $csv$-file. Quaternions obtained from HMD will be used to define a rotation by four numbers. Quaternions representations are very convenient for operations such as composition or rotations and coordinate transformation \cite{principles_robot_motion_book}. For these reasons quaternions are chosen for the representation of user head's rotation in three dimensions. Also additional parameters were recorded from the Main Camera in order to add more information during training processes. Thus the world-space speed of the camera in meters per second was recorded.Unity velocity has the speed in $(x, y, z)$ defining the direction. Additionally, the absolute speed was calculated from 3D $(x, y, z)$ values with Pythagorus' theorem.\\
 Thus, the 6-DoF dataset has 11 features used in training process: position $(x, y, z)$, orientation  $(qx, qy, qz, qw)$, velocity $(x, y, z)$ and speed $s$.
 The datasets were recorded in the laboratory space. HMD was presented to users and the basic functions were explained. During data recording, users freely walked wearing HMD in laboratory space. The Unity application, running on HMD, not only recorded the mentioned before parameters but also had a volumetric animated object placed placed 3 meters ahead of the user in the Mixed Reality environment. No personal data was recorded during these sessions and all traces are obtained anonymously. Thus, after an Unity application was launched, user could immediately see the animated object. The several traces were recorded at least for 10 minutes each. It allows to have enough data after splitting the dataset into training, test and validation partitions. Table \ref{tab:raw_data} show the first 20 rows from raw dataset obtained from HoloLens 2 and used in training. As mentioned above, 6-DoF dataset has 11 columns, thus the table \ref{tab:raw_data} presents only $timestamp$ and position $(x, y, z)$ columns. 
 
@@ -83,9 +83,18 @@ As was mentioned in section \ref*{sec:design:dataset:HL}, the raw sensor data ob
 \end{table}
 
 
-The figure \ref{fig:inter_data} below visualizes the interpolated datasets. After the interpolated dataset was plotted, the important observations based on the sample trace could be done. While the user position data plots looks as usual for machine learning algorithms, the two graphs with orientation is not suitable for use with machine learning technologies and will decrease the prediction rate. The real part $qw$ of quaternion and $yaw$ of Euler angles are obviously discontinuous making it hard for a predictor to learn. A orientation on quaternions is used in training, thus this data data requires a few additionally preprocessing steps: in order to represent valid rotations, quaternions must be normalized to a unit length. To avoid problem with discontinuity it is worth to mention that if $qw$ denotes a particular orientation, then $-qw$ (antipodal representation) represents the same orientation. Because from a dataset it is possible to read the previous and the current quaternion, the sign of the current quaternion can be flipped and it will make the distance between the quaternions in the vector space smaller.
+After the interpolated dataset was plotted as figure \ref{fig:inter_data}, the important observations based on the sample trace could be done. While the user position data plots look appropriate for machine learning algorithms, the two graphs with orientation show data that is not suitable for use with machine learning technologies and will decrease the prediction rate. The real part $qw$ and the component $qy$ of quaternion and $yaw$ of Euler angles are obviously discontinuous making it hard for a predictor to learn. A orientation on quaternions is used in training, thus this data requires a few additionally preprocessing steps. First, in order to represent valid rotations, quaternions must be normalized to a unit length \cite{principles_robot_motion_book}. The normalized quaternion can be calculated using formula:
+\begin{equation}
+U_g = \frac{q}{|| q ||} = \frac{w}{|| q ||} + i \cdot \frac{x}{|| q ||} + j \cdot \frac{y}{|| q ||} + k \cdot \frac{z}{|| q ||}
+\end{equation}
 
- The two representations are blended into one data set, leading to discontinuities in the time series as can be seen in Figure 4.3.
+where
+
+\begin{equation}
+|| q || = \sqrt{w^2 + x^2 + y^2 + z^2 }
+\end{equation}
+
+Second, real part $qw$ and the component $qy$ present in the middle graph on figure \ref{fig:inter_data} the same orientation regardless the discontinuity of their graphs. 
 
 \begin{figure}[htb]
 	\begin{center}
@@ -94,7 +103,7 @@ The figure \ref{fig:inter_data} below visualizes the interpolated datasets. Afte
 	\end{center}
 \end{figure}
 
-Thus after normalization step, the two representations are blended into one data set, leading to discontinuities in the time series as can be seen in \ref{fig:norm_data} 
+Flipping the sign will not affect the rotation, but it will ensure that there are no large jumps in 4D vector space when the rotation difference in rotation space (SO(3)) is small. If negative component of quaternions will be flipped into positive then the dataset representing same rotation without creating an artificial discontinuity in the space will be available for model training. Thus after normalization step, the two representations of quaternions are blended into one data set, omitting to discontinuities in the time series as can be seen in \ref{fig:norm_data} 
 
 
 
