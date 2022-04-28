@@ -142,6 +142,7 @@ class Application:
         plotter = DataPlotter()
         plotter.plot_datasets(self.dataset_path, self.results_path, 'interpolated')
 
+    @staticmethod
     def plot_raw_datasets(self):
         """Plots raw trace"""
         logging.info('Plot of raw dataset is not supported. TBA')
