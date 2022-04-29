@@ -1,0 +1,3 @@
+INFO:root:LSTM Pure PyTorch: hidden_dim: 110, n_epochs: 740, batch_size: 20.
+INFO:root:Trace path: data/flipped/1556.csv
+INFO:root:Prediction window = 100.0 ms
