@@ -103,7 +103,7 @@ During experiments with quaternions in dataset obtained from HoloLens was found 
 	\end{center}
 \end{figure}
 
-Next, real part $qw$ and the component $qy$ present in the middle graph on figure \ref{fig:inter_data} the same orientation regardless the discontinuity of their graphs. Flipping the sign will not affect the rotation, but it will ensure that there are no large jumps in 4D vector space when the rotation difference in rotation space (SO(3)) is small. If negative component of quaternions will be flipped into positive then the dataset representing same rotation without creating an artificial discontinuity in the space will be available for model training. Thus after normalization step, the two representations of quaternions are blended into one data set, omitting to discontinuities in the time series as can be seen in \ref{fig:norm_data} 
+Next, quaternions between 2 neighboring points (the middle graph on figure \ref{fig:inter_data}) represent the same orientation regardless the discontinuity of their graphs. Flipping the sign will not affect the rotation, but it will ensure that there are no large jumps in 4D vector space when the rotation difference in rotation space (SO(3)) is small. If negative component of quaternions will be flipped into positive then the dataset representing same rotation without creating an artificial discontinuity in the space will be available for model training. Thus after normalization step, the two representations of quaternions are blended into one data set, omitting to discontinuities in the time series as can be seen in \ref{fig:norm_data} 
 
 \begin{figure}[htb]
 	\begin{center}
@@ -111,6 +111,8 @@ Next, real part $qw$ and the component $qy$ present in the middle graph on figur
 		\caption{\label{fig:norm_data}Quaternions traces from 6-DoF dataset's with flipped qy and qw components.}
 	\end{center}
 \end{figure}
+
+
 
 \subsection{Data Exploration}
 \label{sec:design:dataset:explor}

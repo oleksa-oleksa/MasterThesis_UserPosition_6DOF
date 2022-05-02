@@ -145,7 +145,9 @@ def flip_negative_quaternions(trace_path, out_dir):
     # A comma-separated values (csv) file is returned as two-dimensional data structure with labeled axes.
     df = pd.read_csv(trace_path, skipfooter=1, engine='python')
 
+    df['qx'] = abs(df['qx'])
     df['qy'] = abs(df['qy'])
+    df['qz'] = abs(df['qz'])
     df['qw'] = abs(df['qw'])
 
     # Save flipped DataFrame to csv
