@@ -1,3 +1,179 @@
 INFO:root:LSTM Pure PyTorch: hidden_dim: 110, n_epochs: 740, batch_size: 20.
 INFO:root:Trace path: data/flipped/1556.csv
 INFO:root:Prediction window = 100.0 ms
+INFO:root:MAE position = 4.252588541666666
+INFO:root:MAE rotation = 25.379394784280443
+INFO:root:RMSE position = 4.643774
+INFO:root:RMSE rotation = 30.078277766802504
+Traceback (most recent call last):
+  File "/opt/conda/lib/python3.7/runpy.py", line 193, in _run_module_as_main
+    "__main__", mod_spec)
+  File "/opt/conda/lib/python3.7/runpy.py", line 85, in _run_code
+    exec(code, run_globals)
+  File "/opt/UserPrediction6DOF/__main__.py", line 45, in <module>
+    APPLICATION.run()
+  File "/opt/UserPrediction6DOF/application.py", line 91, in run
+    self.run_lstm()
+  File "/opt/UserPrediction6DOF/application.py", line 138, in run_lstm
+    runner.run()
+  File "/opt/UserPrediction6DOF/runners.py", line 394, in run
+    'euc_dists_lstm_{}_{}ms.npy'.format(basename, int(w * 1e3))), euc_dists)
+  File "<__array_function__ internals>", line 6, in save
+  File "/opt/conda/lib/python3.7/site-packages/numpy/lib/npyio.py", line 525, in save
+OSError: [Errno 30] Read-only file system: './results/tabular/distances/euc_dists_lstm_1556_100ms.npy'
+-------------------------------------------------------------------------
+-------------------------------------------------------------------------
+X_train (71999, 11), X_val (24000, 11), X_test(24000, 11), y_train (71999, 7), y_val (24000, 7), y_test (24000, 7)
+[1/740] Training loss: 0.0073	 Validation loss: 3.0005
+[2/740] Training loss: 0.0107	 Validation loss: 2.8371
+[3/740] Training loss: 0.0037	 Validation loss: 2.8116
+[4/740] Training loss: 0.0034	 Validation loss: 2.9157
+[5/740] Training loss: 0.0044	 Validation loss: 2.8287
+[10/740] Training loss: 0.0048	 Validation loss: 2.8656
+[15/740] Training loss: 0.0052	 Validation loss: 2.7545
+[20/740] Training loss: 0.0063	 Validation loss: 3.0124
+[25/740] Training loss: 0.0046	 Validation loss: 2.8197
+[30/740] Training loss: 0.0056	 Validation loss: 2.8094
+[35/740] Training loss: 0.0055	 Validation loss: 2.8734
+[40/740] Training loss: 0.0060	 Validation loss: 2.8781
+[45/740] Training loss: 0.0061	 Validation loss: 2.8107
+[50/740] Training loss: 0.0055	 Validation loss: 2.8318
+[55/740] Training loss: 0.0074	 Validation loss: 2.8300
+[60/740] Training loss: 0.0083	 Validation loss: 2.7831
+[65/740] Training loss: 0.0064	 Validation loss: 2.8347
+[70/740] Training loss: 0.0063	 Validation loss: 2.7800
+[75/740] Training loss: 0.0082	 Validation loss: 2.7771
+[80/740] Training loss: 0.0061	 Validation loss: 2.8236
+[85/740] Training loss: 0.0056	 Validation loss: 2.8587
+[90/740] Training loss: 0.0053	 Validation loss: 2.8147
+[95/740] Training loss: 0.0069	 Validation loss: 2.8448
+[100/740] Training loss: 0.0061	 Validation loss: 2.8682
+[105/740] Training loss: 0.0059	 Validation loss: 3.1950
+[110/740] Training loss: 0.0106	 Validation loss: 2.3820
+[115/740] Training loss: 0.0096	 Validation loss: 3.7180
+[120/740] Training loss: 0.0084	 Validation loss: 4.8508
+[125/740] Training loss: 0.0051	 Validation loss: 3.5059
+[130/740] Training loss: 0.0080	 Validation loss: 2.6444
+[135/740] Training loss: 0.0102	 Validation loss: 3.0602
+[140/740] Training loss: 0.0057	 Validation loss: 2.8077
+[145/740] Training loss: 0.0151	 Validation loss: 2.8364
+[150/740] Training loss: 0.0049	 Validation loss: 2.8398
+[155/740] Training loss: 0.0064	 Validation loss: 2.8120
+[160/740] Training loss: 0.0076	 Validation loss: 2.8315
+[165/740] Training loss: 0.0072	 Validation loss: 2.6003
+[170/740] Training loss: 0.0070	 Validation loss: 3.1390
+[175/740] Training loss: 0.0097	 Validation loss: 2.8736
+[180/740] Training loss: 0.0072	 Validation loss: 2.8225
+[185/740] Training loss: 0.0061	 Validation loss: 2.7968
+[190/740] Training loss: 0.0064	 Validation loss: 2.8409
+[195/740] Training loss: 0.0085	 Validation loss: 2.8487
+[200/740] Training loss: 0.0087	 Validation loss: 2.7821
+[205/740] Training loss: 0.0074	 Validation loss: 2.8214
+[210/740] Training loss: 0.0059	 Validation loss: 2.8692
+[215/740] Training loss: 0.0123	 Validation loss: 2.8031
+[220/740] Training loss: 0.0061	 Validation loss: 2.5671
+[225/740] Training loss: 0.0075	 Validation loss: 2.8311
+[230/740] Training loss: 0.0108	 Validation loss: 2.7071
+[235/740] Training loss: 0.0067	 Validation loss: 2.7720
+[240/740] Training loss: 0.0063	 Validation loss: 2.8805
+[245/740] Training loss: 0.0071	 Validation loss: 3.1762
+[250/740] Training loss: 0.0061	 Validation loss: 3.2520
+[255/740] Training loss: 0.0089	 Validation loss: 2.8425
+[260/740] Training loss: 0.0072	 Validation loss: 4.2993
+[265/740] Training loss: 0.0076	 Validation loss: 2.8705
+[270/740] Training loss: 0.0082	 Validation loss: 2.8690
+[275/740] Training loss: 0.0073	 Validation loss: 3.0893
+[280/740] Training loss: 0.0101	 Validation loss: 2.9441
+[285/740] Training loss: 0.0063	 Validation loss: 2.8400
+[290/740] Training loss: 0.0124	 Validation loss: 2.8375
+[295/740] Training loss: 0.0110	 Validation loss: 2.8197
+[300/740] Training loss: 0.0071	 Validation loss: 2.9764
+[305/740] Training loss: 0.0074	 Validation loss: 3.1283
+[310/740] Training loss: 0.0059	 Validation loss: 2.7970
+[315/740] Training loss: 0.0062	 Validation loss: 2.7591
+[320/740] Training loss: 0.0062	 Validation loss: 2.9482
+[325/740] Training loss: 0.0098	 Validation loss: 2.8245
+[330/740] Training loss: 0.0053	 Validation loss: 2.6754
+[335/740] Training loss: 0.0104	 Validation loss: 3.0633
+[340/740] Training loss: 0.0062	 Validation loss: 2.8219
+[345/740] Training loss: 0.0071	 Validation loss: 2.9202
+[350/740] Training loss: 0.0097	 Validation loss: 2.8212
+[355/740] Training loss: 0.0063	 Validation loss: 2.8643
+[360/740] Training loss: 0.0061	 Validation loss: 3.0190
+[365/740] Training loss: 0.0071	 Validation loss: 2.9038
+[370/740] Training loss: 0.0063	 Validation loss: 2.9662
+[375/740] Training loss: 0.0076	 Validation loss: 3.4510
+[380/740] Training loss: 0.0069	 Validation loss: 3.2309
+[385/740] Training loss: 0.0115	 Validation loss: 2.9225
+[390/740] Training loss: 0.0107	 Validation loss: 2.8630
+[395/740] Training loss: 0.0086	 Validation loss: 2.6924
+[400/740] Training loss: 0.0077	 Validation loss: 2.9969
+[405/740] Training loss: 0.0054	 Validation loss: 2.8299
+[410/740] Training loss: 0.0118	 Validation loss: 2.8042
+[415/740] Training loss: 0.0058	 Validation loss: 2.8294
+[420/740] Training loss: 0.0062	 Validation loss: 2.8359
+[425/740] Training loss: 0.0060	 Validation loss: 2.7884
+[430/740] Training loss: 0.0063	 Validation loss: 2.8287
+[435/740] Training loss: 0.0083	 Validation loss: 2.8115
+[440/740] Training loss: 0.0057	 Validation loss: 2.8453
+[445/740] Training loss: 0.0078	 Validation loss: 3.3669
+[450/740] Training loss: 0.0068	 Validation loss: 2.7041
+[455/740] Training loss: 0.0067	 Validation loss: 2.8687
+[460/740] Training loss: 0.0069	 Validation loss: 2.8299
+[465/740] Training loss: 0.0069	 Validation loss: 2.5077
+[470/740] Training loss: 0.0080	 Validation loss: 2.9479
+[475/740] Training loss: 0.0058	 Validation loss: 2.7904
+[480/740] Training loss: 0.0087	 Validation loss: 2.7490
+[485/740] Training loss: 0.0053	 Validation loss: 3.5985
+[490/740] Training loss: 0.0052	 Validation loss: 2.8458
+[495/740] Training loss: 0.0083	 Validation loss: 2.8289
+[500/740] Training loss: 0.0066	 Validation loss: 2.7965
+[505/740] Training loss: 0.0094	 Validation loss: 2.8025
+[510/740] Training loss: 0.0056	 Validation loss: 2.8121
+[515/740] Training loss: 0.0070	 Validation loss: 2.8463
+[520/740] Training loss: 0.0099	 Validation loss: 7.1933
+[525/740] Training loss: 0.0066	 Validation loss: 4.1175
+[530/740] Training loss: 0.0059	 Validation loss: 2.8261
+[535/740] Training loss: 0.0066	 Validation loss: 2.7697
+[540/740] Training loss: 0.0083	 Validation loss: 2.8168
+[545/740] Training loss: 0.0115	 Validation loss: 2.7690
+[550/740] Training loss: 0.0072	 Validation loss: 2.8552
+[555/740] Training loss: 0.0053	 Validation loss: 2.8361
+[560/740] Training loss: 0.0082	 Validation loss: 2.8202
+[565/740] Training loss: 0.0137	 Validation loss: 2.9589
+[570/740] Training loss: 0.0059	 Validation loss: 2.8641
+[575/740] Training loss: 0.0080	 Validation loss: 2.7709
+[580/740] Training loss: 0.0088	 Validation loss: 2.7941
+[585/740] Training loss: 0.0106	 Validation loss: 2.5722
+[590/740] Training loss: 0.0082	 Validation loss: 2.9736
+[595/740] Training loss: 0.0059	 Validation loss: 2.8237
+[600/740] Training loss: 0.0099	 Validation loss: 3.0975
+[605/740] Training loss: 0.0075	 Validation loss: 2.8051
+[610/740] Training loss: 0.0111	 Validation loss: 3.8082
+[615/740] Training loss: 0.0061	 Validation loss: 2.6835
+[620/740] Training loss: 0.0062	 Validation loss: 2.8500
+[625/740] Training loss: 0.0089	 Validation loss: 2.3041
+[630/740] Training loss: 0.0055	 Validation loss: 2.4724
+[635/740] Training loss: 0.0067	 Validation loss: 2.9391
+[640/740] Training loss: 0.0058	 Validation loss: 3.2393
+[645/740] Training loss: 0.0069	 Validation loss: 2.9226
+[650/740] Training loss: 0.0053	 Validation loss: 2.9792
+[655/740] Training loss: 0.0057	 Validation loss: 2.9150
+[660/740] Training loss: 0.0088	 Validation loss: 2.8071
+[665/740] Training loss: 0.0115	 Validation loss: 7.6223
+[670/740] Training loss: 0.0066	 Validation loss: 2.8230
+[675/740] Training loss: 0.0079	 Validation loss: 2.7528
+[680/740] Training loss: 0.0079	 Validation loss: 2.8199
+[685/740] Training loss: 0.0119	 Validation loss: 2.6296
+[690/740] Training loss: 0.0064	 Validation loss: 2.8060
+[695/740] Training loss: 0.0085	 Validation loss: 3.1956
+[700/740] Training loss: 0.0087	 Validation loss: 2.9583
+[705/740] Training loss: 0.0062	 Validation loss: 2.8031
+[710/740] Training loss: 0.0063	 Validation loss: 2.8577
+[715/740] Training loss: 0.0076	 Validation loss: 2.7055
+[720/740] Training loss: 0.0088	 Validation loss: 2.7291
+[725/740] Training loss: 0.0081	 Validation loss: 2.8158
+[730/740] Training loss: 0.0059	 Validation loss: 2.9005
+[735/740] Training loss: 0.0070	 Validation loss: 3.1079
+[740/740] Training loss: 0.0064	 Validation loss: 2.7785
+Bus error (core dumped)
