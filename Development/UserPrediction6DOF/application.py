@@ -152,6 +152,11 @@ class Application:
         plotter = DataPlotter()
         plotter.plot_datasets(self.flipped_dataset_path, self.results_path, 'flipped')
 
+    def plot_datasets_comparasion(self):
+        """Plots interpolated trace"""
+        plotter = DataPlotter()
+        plotter.plot_comparasion(self.dataset_path, self.flipped_dataset_path, self.results_path, 'compare')
+
     def plot_flipped_quaternions(self):
         plotter = DataPlotter()
         plotter.plot_datasets_quaternions_flipped(self.flipped_dataset_path, self.results_path, 'quaternions_flipped')
