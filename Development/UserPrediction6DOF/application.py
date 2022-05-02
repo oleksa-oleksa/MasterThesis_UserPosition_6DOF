@@ -108,6 +108,8 @@ class Application:
                 self.plot_flipped_datasets()
             elif self.plot_command == 'flipped_quaternions':
                 self.plot_flipped_quaternions()
+            elif self.plot_command == 'compare':
+                self.plot_datasets_comparison()
 
     def run_kalman(self):
         """Runs Kalman filter on all traces and evaluates the results"""
@@ -152,10 +154,10 @@ class Application:
         plotter = DataPlotter()
         plotter.plot_datasets(self.flipped_dataset_path, self.results_path, 'flipped')
 
-    def plot_datasets_comparasion(self):
-        """Plots interpolated trace"""
+    def plot_datasets_comparison(self):
+        """Plots selected area of two graphs for visual comparison in thesis"""
         plotter = DataPlotter()
-        plotter.plot_comparasion(self.dataset_path, self.flipped_dataset_path, self.results_path, 'compare')
+        plotter.plot_comparison(self.dataset_path, self.flipped_dataset_path, self.results_path, 'compare')
 
     def plot_flipped_quaternions(self):
         plotter = DataPlotter()
@@ -506,7 +508,7 @@ class Application:
             '--plot-command',
             dest='plot_command',
             type=str,
-            choices=['dataset', 'raw', 'flipped_', 'flipped_quaternions', 'train_val'],
+            choices=['dataset', 'raw', 'flipped_', 'flipped_quaternions', 'train_val', 'compare'],
             default='dataset',
             help='Visualises and plots the input datasets'
         )

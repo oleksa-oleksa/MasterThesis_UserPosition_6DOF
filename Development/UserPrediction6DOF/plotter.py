@@ -137,6 +137,7 @@ class DataPlotter():
             ax.set_xlabel('seconds')
             ax.set_ylabel('degrees')
             ax.set_xlim(0, dataset_lengh_sec)
+            plt.ylim(-1.0, 1.0)
             ax.legend(loc='upper left')
             ax.yaxis.grid(which='major', linestyle='dotted', linewidth=1)
             ax.xaxis.set_major_locator(MultipleLocator(10))
@@ -148,23 +149,23 @@ class DataPlotter():
 
     """Plots flipped quaternions dataset traces"""
     @staticmethod
-    def plot_comparasion(dataset_path1, dataset_path2, output_path, dataset_type):
+    def plot_comparison(dataset_path1, dataset_path2, output_path, dataset_type):
         # start and end of plot. Numbers obtained empirically from plots,
         # the most significant
-        ts_start = 130
-        ts_end = 190
+        ts_start = int(130/0.005)
+        ts_end = int(190/0.005)
         logging.info(f"Plotting from {dataset_path1} and from {dataset_path2} and saving to {output_path}")
         for trace_path1 in get_csv_files(dataset_path1):
             for trace_path2 in get_csv_files(dataset_path2):
                 # plotting only interpolated and flipped quaternions of the same datasets
-                if trace_path1 == trace_path2:
+                if (os.path.splitext(os.path.basename(trace_path1))[0]) == \
+                        (os.path.splitext(os.path.basename(trace_path2))[0]):
                     df1 = pd.read_csv(trace_path1)
                     df2 = pd.read_csv(trace_path2)
-
                     ts = np.arange(0, dataset_lengh_sec + cfg['dt'], cfg['dt'])
+                    ts_comp = ts[ts_start:ts_end]
 
-                    fig, (ax1, ax2) = plt.subplots(1, 1, figsize=(18, 8), sharex=True)
-
+                    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(18, 8), sharex=True)
 
                     # Plot orientation in Quaternions
                     '''
@@ -174,24 +175,26 @@ class DataPlotter():
                     is the imaginary part 
                     x, y and z represent a vector. w is a scalar that stores the rotation around the vector.
                     '''
-                    ax1.plot(ts, df1.loc[ts_start:ts_end, 'qx'], label='qx', linestyle='solid')
-                    ax1.plot(ts, df1.loc[ts_start:ts_end, 'qy'], label='qy', linestyle='--')
-                    ax1.plot(ts, df1.loc[ts_start:ts_end, 'qz'], label='qz', linestyle='-.')
-                    ax1.plot(ts, df1.loc[ts_start:ts_end, 'qw'], label='real qw', linestyle='solid')
+                    ax1.plot(ts_comp, df1.loc[ts_start:ts_end-1, 'qx'], label='qx', linestyle='solid')
+                    ax1.plot(ts_comp, df1.loc[ts_start:ts_end-1, 'qy'], label='qy', linestyle='--')
+                    ax1.plot(ts_comp, df1.loc[ts_start:ts_end-1, 'qz'], label='qz', linestyle='-.')
+                    ax1.plot(ts_comp, df1.loc[ts_start:ts_end-1, 'qw'], label='real qw', linestyle='solid')
                     ax1.set_xlabel('seconds')
                     ax1.set_ylabel('degrees')
-                    ax1.set_xlim(0, dataset_lengh_sec)
+                    ax1.set_xlim(130, 190)
+                    plt.ylim(-1.0, 1.0)
                     ax1.legend(loc='upper left')
                     ax1.yaxis.grid(which='major', linestyle='dotted', linewidth=1)
                     ax1.xaxis.set_major_locator(MultipleLocator(10))
 
-                    ax2.plot(ts, df2.loc[ts_start:ts_end, 'qx'], label='qx', linestyle='solid')
-                    ax2.plot(ts, df2.loc[ts_start:ts_end, 'qy'], label='qy', linestyle='--')
-                    ax2.plot(ts, df2.loc[ts_start:ts_end, 'qz'], label='qz', linestyle='-.')
-                    ax2.plot(ts, df2.loc[ts_start:ts_end, 'qw'], label='real qw', linestyle='solid')
+                    ax2.plot(ts_comp, df2.loc[ts_start:ts_end-1, 'qx'], label='qx', linestyle='solid')
+                    ax2.plot(ts_comp, df2.loc[ts_start:ts_end-1, 'qy'], label='qy', linestyle='--')
+                    ax2.plot(ts_comp, df2.loc[ts_start:ts_end-1, 'qz'], label='qz', linestyle='-.')
+                    ax2.plot(ts_comp, df2.loc[ts_start:ts_end-1, 'qw'], label='real qw', linestyle='solid')
                     ax2.set_xlabel('seconds')
                     ax2.set_ylabel('degrees')
-                    ax2.set_xlim(0, dataset_lengh_sec)
+                    ax2.set_xlim(130, 190)
+                    ax1.set_ylim(-1.0, 1.0)
                     ax2.legend(loc='upper left')
                     ax2.yaxis.grid(which='major', linestyle='dotted', linewidth=1)
                     ax2.xaxis.set_major_locator(MultipleLocator(10))
