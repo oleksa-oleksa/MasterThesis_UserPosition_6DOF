@@ -303,10 +303,10 @@ class LSTMRunner():
         # self.features = self.cfg['pos_coords'] + self.cfg['quat_coords']
 
         self.input_dim = 11  # 11 features with velocity and speed
-        self.hidden_dim = 32
+        self.hidden_dim = 24
         self.layer_dim = 1  # the number of LSTM layers stacked on top of each other
         self.output_dim = 7  # 3 position parameter + 4 rotation parameter
-        self.batch_size = 2048
+        self.batch_size = 4096
         # If there is only one layer, dropout is not applied
         # self.dropout = 0.4  # using dropout causes pytorch unsolved issue
         self.n_epochs = 740

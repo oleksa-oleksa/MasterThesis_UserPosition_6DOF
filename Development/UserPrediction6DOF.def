@@ -5,6 +5,7 @@ From: pytorch/pytorch:1.9.1-cuda11.1-cudnn8-runtime
     # Copies the source code for the from the local machine to the container image
     ./UserPrediction6DOF /opt/UserPrediction6DOF
     ./data/interpolated  /opt/data/interpolated
+    ./data/flipped /opt/data/flipped
     ./results /opt/results
     requirements.txt /opt
     config.toml /opt
@@ -20,4 +21,5 @@ From: pytorch/pytorch:1.9.1-cuda11.1-cudnn8-runtime
 %runscript
     # Start the training of LeNet5 on the Cifar10 dataset
     cd /opt
-    python -m UserPrediction6DOF run -a lstm -w 100
+    # python -m UserPrediction6DOF run -a lstm -w 100
+    python -m UserPrediction6DOF run -a lstm -w 100 -d 'data/flipped'
