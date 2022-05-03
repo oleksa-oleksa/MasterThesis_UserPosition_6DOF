@@ -152,8 +152,10 @@ class DataPlotter():
     def plot_comparison(dataset_path1, dataset_path2, output_path, dataset_type):
         # start and end of plot. Numbers obtained empirically from plots,
         # the most significant
-        ts_start = int(130/0.005)
-        ts_end = int(190/0.005)
+        start = 162
+        end = 182
+        ts_start = int(start/0.005)
+        ts_end = int(end/0.005)
         logging.info(f"Plotting from {dataset_path1} and from {dataset_path2} and saving to {output_path}")
         for trace_path1 in get_csv_files(dataset_path1):
             for trace_path2 in get_csv_files(dataset_path2):
@@ -181,7 +183,7 @@ class DataPlotter():
                     ax1.plot(ts_comp, df1.loc[ts_start:ts_end-1, 'qw'], label='real qw', linestyle='solid')
                     ax1.set_xlabel('seconds')
                     ax1.set_ylabel('degrees')
-                    ax1.set_xlim(130, 190)
+                    ax1.set_xlim(start, end)
                     plt.ylim(-1.0, 1.0)
                     ax1.legend(loc='upper left')
                     ax1.yaxis.grid(which='major', linestyle='dotted', linewidth=1)
@@ -193,7 +195,7 @@ class DataPlotter():
                     ax2.plot(ts_comp, df2.loc[ts_start:ts_end-1, 'qw'], label='real qw', linestyle='solid')
                     ax2.set_xlabel('seconds')
                     ax2.set_ylabel('degrees')
-                    ax2.set_xlim(130, 190)
+                    ax2.set_xlim(start, end)
                     ax1.set_ylim(-1.0, 1.0)
                     ax2.legend(loc='upper left')
                     ax2.yaxis.grid(which='major', linestyle='dotted', linewidth=1)
