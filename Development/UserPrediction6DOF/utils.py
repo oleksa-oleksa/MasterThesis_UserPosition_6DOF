@@ -145,6 +145,8 @@ def flip_negative_quaternions(trace_path, out_dir):
     # A comma-separated values (csv) file is returned as two-dimensional data structure with labeled axes.
     df = pd.read_csv(trace_path, skipfooter=1, engine='python')
 
+
+    '''
     filter_qw = df["qw"] < 0
 
     # the whole quaternion with negative real qw part will be inverted
@@ -154,6 +156,13 @@ def flip_negative_quaternions(trace_path, out_dir):
     df[filter_qw]['qw'] = df[filter_qw]['qw'] * (-1)
 
     print(df[filter_qw]['qx'])
+    '''
+
+    df.loc[(df.qw < 0), 'qx'] *= -1
+    df.loc[(df.qw < 0), 'qy'] *= -1
+    df.loc[(df.qw < 0), 'qz'] *= -1
+    df.loc[(df.qw < 0), 'qw'] *= -1
+    print(df)
 
     # Save flipped DataFrame to csv
     if not os.path.exists(out_dir):
