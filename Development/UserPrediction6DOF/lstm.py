@@ -212,6 +212,9 @@ class LSTMModel(nn.Module):
         # Fully connected layer maps last LSTM output (hidden dimension) to the label dimension
         self.fc = nn.Linear(hidden_dim, output_dim)
 
+        self.cuda = torch.cuda.is_available()
+        print(f'cuda on GPU is available: {self.cuda}')
+
     def forward(self, x):
         # Initializing hidden state for first input with zeros
         h0 = torch.zeros(self.layer_dim, x.size(0), self.hidden_dim).requires_grad_()
