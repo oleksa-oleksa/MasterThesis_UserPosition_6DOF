@@ -178,7 +178,7 @@ class Application:
         logging.info(f"Flipped traces written to {self.flipped_dataset_path}")
 
     def report(self):
-        trace_path = os.path.join(self.dataset_path, "202201251454.csv")
+        trace_path = os.path.join(self.dataset_path, "1556.csv")
         Reporter.plot_trace(trace_path, self.figures_path) # Fig. 5
         Reporter.plot_head_velocity(self.dataset_path, self.figures_path) # Fig. 6-7
         Reporter.compute_mean(self.results_path)
