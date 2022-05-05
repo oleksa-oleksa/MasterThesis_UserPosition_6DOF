@@ -10,15 +10,14 @@ From: pytorch/pytorch:1.9.1-cuda11.1-cudnn8-runtime
     requirements.txt /opt
     config.toml /opt
 
-    mkdir $LOCAL_JOB_DIR/job_results
-
-
 %post
     # Python lives in a Anaconda environment in the container, so the PATH must be adjusted before conda can be called
     # export "PATH=/opt/conda/bin:$PATH"
     # chmod -R 777 /opt/results
     # -B /opt/results
     source "/etc/slurm/local_job_dir.sh"
+    mkdir $LOCAL_JOB_DIR/job_results
+
     conda install pip
     pip install -r /opt/requirements.txt
     
