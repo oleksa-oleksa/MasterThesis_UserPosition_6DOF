@@ -340,7 +340,7 @@ class LSTMOptimization:
             predictions = []
             values = []
             for x_test, y_test in test_loader:
-                if self.cuda():
+                if self.cuda:
                     x_test, y_test = x_test.cuda(), y_test.cuda()
 
                 x_test = x_test.view([batch_size, -1, n_features])

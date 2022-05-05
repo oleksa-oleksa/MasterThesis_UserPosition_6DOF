@@ -296,6 +296,7 @@ class LSTMRunner():
         self.pred_window = pred_window * 1e-3  # convert to seconds
         self.dataset_path = dataset_path
         self.results_path = results_path
+
         # features with velocity
         self.features = self.cfg['pos_coords'] + self.cfg['quat_coords'] + self.cfg['velocity'] + self.cfg['speed']
 
@@ -309,10 +310,15 @@ class LSTMRunner():
         self.batch_size = 1024
         # If there is only one layer, dropout is not applied
         # self.dropout = 0.4  # using dropout causes pytorch unsolved issue
-        self.n_epochs = 740
+        self.n_epochs = 2
         self.learning_rate = 1e-3
         self.weight_decay = 1e-6
+
         self.cuda = torch.cuda.is_available()
+
+        if self.cuda:
+            self.results_path = os.path.join(self.results_path, $LOCAL_JOB_DIR)
+
 
         # input_dim, hidden_dim, layer_dim, output_dim, dropout_prob
         # batch_first=True --> input is [batch_size, seq_len, input_size]
