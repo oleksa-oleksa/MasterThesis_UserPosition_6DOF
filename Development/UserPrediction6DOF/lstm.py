@@ -216,8 +216,8 @@ class LSTMModel(nn.Module):
         self.cuda = torch.cuda.is_available()
         if self.cuda:
             self.lstm.cuda()
+            self.fc.cuda()
         logging.info(F"Model on GPU is {self.cuda}")
-
 
     def forward(self, x):
         # Initializing hidden state for first input with zeros
