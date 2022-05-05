@@ -252,17 +252,17 @@ class LSTMOptimization:
         self.train_losses = []
         self.val_losses = []
         self.cuda = torch.cuda.is_available()
-        if self.cuda:
-            self.model.cuda()
 
     def train_step(self, x, y):
         # Sets model to train mode
         if self.cuda:
-            self.model.cuda()
+            x, y = x.cuda(), y.cuda()
         self.model.train()
 
         # Makes predictions
         yhat = self.model(x)
+        if self.cuda:
+            yhat = yhat.cuda()
         # DEBUG
         # print(f"step x: {x.shape}")
         # print(f"step y: {y.shape}")
