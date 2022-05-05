@@ -317,8 +317,8 @@ class LSTMRunner():
         self.cuda = torch.cuda.is_available()
 
         if self.cuda:
-            self.results_path = os.path.join(self.results_path, $LOCAL_JOB_DIR)
-
+            cuda_path = os.getenv('LOCAL_JOB_DIR')
+            self.results_path = os.path.join(cuda_path, self.results_path)
 
         # input_dim, hidden_dim, layer_dim, output_dim, dropout_prob
         # batch_first=True --> input is [batch_size, seq_len, input_size]
