@@ -221,10 +221,15 @@ class LSTMModel(nn.Module):
 
     def forward(self, x):
         # Initializing hidden state for first input with zeros
+        if self.cuda:
+            x = x.cuda()
         h0 = torch.zeros(self.layer_dim, x.size(0), self.hidden_dim).requires_grad_()
 
         # Initializing cell state for first input with zeros
         c0 = torch.zeros(self.layer_dim, x.size(0), self.hidden_dim).requires_grad_()
+
+        if self.cuda:
+            h0, c0 = h0.cuda(), c0.cuda()
 
         # We need to detach as we are doing truncated backpropagation through time (BPTT)
         # If we don't, we'll backprop all the way to the start even after going through another batch
