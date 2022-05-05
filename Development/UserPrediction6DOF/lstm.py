@@ -347,8 +347,8 @@ class LSTMOptimization:
                 y_test = y_test
                 self.model.eval()
                 yhat = self.model(x_test)
-                predictions.append(yhat.detach().numpy())
-                values.append(y_test.detach().numpy())
+                predictions.append(yhat.cpu().detach().numpy())
+                values.append(y_test.cpu().detach().numpy())
 
         return predictions, values
 

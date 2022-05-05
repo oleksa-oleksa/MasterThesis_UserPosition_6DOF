@@ -180,7 +180,7 @@ class KalmanRunner():
         
         dists_path = os.path.join(self.results_path, 'distances')
         if not os.path.exists(dists_path):
-            os.makedirs(dists_path)
+            os.makedirs(dists_path, exist_ok=True)
         
         for trace_path in get_csv_files(self.dataset_path):
             basename = os.path.splitext(os.path.basename(trace_path))[0]
@@ -319,7 +319,8 @@ class LSTMRunner():
         self.cuda = torch.cuda.is_available()
 
         if self.cuda:
-            self.results_path = os.path.join(cuda_path, self.results_path)
+            self.results_path = os.path.join(cuda_path, 'job_results/results/tabular')
+            logging.info(f"Cuda true. Path {self.results_path}")
 
         # input_dim, hidden_dim, layer_dim, output_dim, dropout_prob
         # batch_first=True --> input is [batch_size, seq_len, input_size]
@@ -329,10 +330,12 @@ class LSTMRunner():
         logging.info(f"LSTM Base: hidden_dim: {self.hidden_dim}, n_epochs: {self.n_epochs}, batch_size: {self.batch_size}.")
         results = []
         dists_path = os.path.join(self.results_path, 'distances')
-        logging.info(dists_path)
+        logging.info(self.results_path)
+        logging.info(f"{dists_path}, {os.path.exists(dists_path)}")
 
-        if not os.path.exists(dists_path):
-            os.makedirs(dists_path)
+
+        if not os.path.exists(dists_path) and not self.cuda:
+            os.makedirs(dists_path, exist_ok=True)
 
         for trace_path in get_csv_files(self.dataset_path):
             basename = os.path.splitext(os.path.basename(trace_path))[0]
