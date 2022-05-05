@@ -320,9 +320,10 @@ class LSTMRunner():
 
         if self.cuda:
             self.model.cuda()
+        logging.info(F"Model on GPU is {self.cuda}")
 
     def run(self):
-        logging.info(f"LSTM Pure PyTorch: hidden_dim: {self.hidden_dim}, n_epochs: {self.n_epochs}, batch_size: {self.batch_size}.")
+        logging.info(f"LSTM Base: hidden_dim: {self.hidden_dim}, n_epochs: {self.n_epochs}, batch_size: {self.batch_size}.")
         results = []
         dists_path = os.path.join(self.results_path, 'distances')
         if not os.path.exists(dists_path):

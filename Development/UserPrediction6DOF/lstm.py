@@ -248,6 +248,7 @@ class LSTMOptimization:
         self.optimizer = optimizer
         self.train_losses = []
         self.val_losses = []
+        self.cuda = torch.cuda.is_available()
 
     def train_step(self, x, y):
         # Sets model to train mode
@@ -279,6 +280,8 @@ class LSTMOptimization:
         for epoch in range(1, n_epochs + 1):
             batch_losses = []
             for x_batch, y_batch in train_loader:
+                if self.cuda:
+                    x_batch, y_batch = x_batch.cuda(), y_batch.cuda()
                 # creates 3D Tensor
                 x_batch = x_batch.view([batch_size, -1, n_features])
                 # print(f"x_batch: {x_batch.shape}")
