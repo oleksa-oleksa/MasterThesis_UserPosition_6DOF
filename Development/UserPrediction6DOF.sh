@@ -31,7 +31,7 @@
 # In order to use this location your job script needs to include the line:
 source "/etc/slurm/local_job_dir.sh"
 
-mldir $LOCAL_JOB_DIR/job_results
+mkdir $LOCAL_JOB_DIR/job_results
 
 # run job
 singularity run --nv ./UserPrediction6DOF.sif
@@ -39,7 +39,6 @@ singularity run --nv ./UserPrediction6DOF.sif
 # Store Intermediate Data and Results Locally
 # Doing this after the singularity run call ensures, that the data is copied back even when your singularity run fails.
 cd $LOCAL_JOB_DIR
-
 tar -cf zz_${SLURM_JOB_ID}.tar job_results
 cp zz_${SLURM_JOB_ID}.tar $SLURM_SUBMIT_DIR
 rm -rf ${LOCAL_JOB_DIR}/job_results
