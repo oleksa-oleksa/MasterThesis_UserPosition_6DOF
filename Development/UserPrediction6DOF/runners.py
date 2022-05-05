@@ -329,6 +329,9 @@ class LSTMRunner():
         results = []
         dists_path = os.path.join(self.results_path, 'distances')
         if not os.path.exists(dists_path):
+            if self.cuda:
+                cuda_path = os.getenv('LOCAL_JOB_DIR')
+                dists_path = os.path.join(cuda_path, dists_path)
             os.makedirs(dists_path)
 
         for trace_path in get_csv_files(self.dataset_path):
