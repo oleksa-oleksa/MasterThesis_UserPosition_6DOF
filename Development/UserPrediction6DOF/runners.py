@@ -358,6 +358,10 @@ class LSTMRunner():
                 train_loader, val_loader, test_loader, test_loader_one = load_data(X_train, X_val, X_test,
                                                                   y_train, y_val, y_test, batch_size=self.batch_size)
 
+                if self.cuda:
+                    train_loader, val_loader, test_loader, test_loader_one = train_loader.cuda(), val_loader.cuda(), \
+                                                                             test_loader(), test_loader_one()
+
                 # Long Short-Term Memory TRAIN + EVAL
 
                 # Mean Squared Error Loss Function
