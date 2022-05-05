@@ -252,9 +252,13 @@ class LSTMOptimization:
         self.train_losses = []
         self.val_losses = []
         self.cuda = torch.cuda.is_available()
+        if self.cuda:
+            self.model.cuda()
 
     def train_step(self, x, y):
         # Sets model to train mode
+        if self.cuda:
+            self.model.cuda()
         self.model.train()
 
         # Makes predictions
@@ -296,6 +300,9 @@ class LSTMOptimization:
             with torch.no_grad():
                 batch_val_losses = []
                 for x_val, y_val in val_loader:
+                    if self.cuda:
+                        x_val, y_val = x_val.cuda(), y_val.cuda()
+                    # creates 3D Tensor
                     x_val = x_val.view([batch_size, -1, n_features])
                     y_val = y_val
                     self.model.eval()
@@ -328,6 +335,9 @@ class LSTMOptimization:
             predictions = []
             values = []
             for x_test, y_test in test_loader:
+                if self.cuda():
+                    x_test, y_test = x_test.cuda(), y_test.cuda()
+
                 x_test = x_test.view([batch_size, -1, n_features])
                 y_test = y_test
                 self.model.eval()
