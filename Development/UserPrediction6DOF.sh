@@ -28,10 +28,9 @@
 # singularity build --force --fakeroot UserPrediction6DOF.sif UserPrediction6DOF.def
 
 source "/etc/slurm/local_job_dir.sh"
-cd $LOCAL_JOB_DIR
-mkdir results
-mkdir results/figures
-mkdir results/tabular
+mkdir $LOCAL_JOB_DIR/results
+mkdir $LOCAL_JOB_DIR/results/figures
+mkdir $LOCAL_JOB_DIR/results/tabular
 
 
 # run job
