@@ -329,8 +329,7 @@ class LSTMRunner():
         logging.info(f"LSTM Base: hidden_dim: {self.hidden_dim}, n_epochs: {self.n_epochs}, batch_size: {self.batch_size}.")
         results = []
         dists_path = os.path.join(self.results_path, 'distances')
-        if self.cuda:
-            dists_path = os.path.join(cuda_path, dists_path)
+
         if not os.path.exists(dists_path):
             os.makedirs(dists_path)
 
