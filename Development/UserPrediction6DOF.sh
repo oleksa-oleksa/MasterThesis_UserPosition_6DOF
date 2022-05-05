@@ -27,6 +27,7 @@
 # to build container write from ssh terminal
 # singularity build --force --fakeroot UserPrediction6DOF.sif UserPrediction6DOF.def
 
+
 # run job
 singularity run --nv ./UserPrediction6DOF.sif
 
