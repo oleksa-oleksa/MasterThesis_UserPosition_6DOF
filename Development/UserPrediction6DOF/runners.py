@@ -312,13 +312,18 @@ class LSTMRunner():
         self.n_epochs = 740
         self.learning_rate = 1e-3
         self.weight_decay = 1e-6
+        self.cuda = torch.cuda.is_available()
 
         # input_dim, hidden_dim, layer_dim, output_dim, dropout_prob
         # batch_first=True --> input is [batch_size, seq_len, input_size]
         self.model = LSTMModel(self.input_dim, self.hidden_dim, self.output_dim, self.layer_dim)
 
+        if self.cuda:
+            self.model.cuda()
+        logging.info(F"Model on GPU is {self.cuda}")
+
     def run(self):
-        logging.info(f"LSTM Pure PyTorch: hidden_dim: {self.hidden_dim}, n_epochs: {self.n_epochs}, batch_size: {self.batch_size}.")
+        logging.info(f"LSTM Base: hidden_dim: {self.hidden_dim}, n_epochs: {self.n_epochs}, batch_size: {self.batch_size}.")
         results = []
         dists_path = os.path.join(self.results_path, 'distances')
         if not os.path.exists(dists_path):

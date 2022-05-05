@@ -4,6 +4,7 @@ import torch.nn as nn
 from datetime import datetime
 import numpy as np
 from matplotlib import pyplot as plt
+import logging
 
 
 class LSTMModelBase(nn.Module):
@@ -213,7 +214,7 @@ class LSTMModel(nn.Module):
         self.fc = nn.Linear(hidden_dim, output_dim)
 
         self.cuda = torch.cuda.is_available()
-        print(f'cuda on GPU is available: {self.cuda}')
+        logging.info(f'cuda on GPU is available: {self.cuda}')
 
     def forward(self, x):
         # Initializing hidden state for first input with zeros
@@ -247,6 +248,7 @@ class LSTMOptimization:
         self.optimizer = optimizer
         self.train_losses = []
         self.val_losses = []
+        self.cuda = torch.cuda.is_available()
 
     def train_step(self, x, y):
         # Sets model to train mode
@@ -278,6 +280,8 @@ class LSTMOptimization:
         for epoch in range(1, n_epochs + 1):
             batch_losses = []
             for x_batch, y_batch in train_loader:
+                if self.cuda:
+                    x_batch, y_batch = x_batch.cuda(), y_batch.cuda()
                 # creates 3D Tensor
                 x_batch = x_batch.view([batch_size, -1, n_features])
                 # print(f"x_batch: {x_batch.shape}")
@@ -300,7 +304,7 @@ class LSTMOptimization:
 
             if (epoch <= 5) | (epoch % 5 == 0):
                 # print first 5 epochs and then every 5 epochs
-                print(
+                logging.info(
                     f"[{epoch}/{n_epochs}] Training loss: {training_loss:.4f}\t Validation loss: {validation_loss:.4f}"
                 )
 
