@@ -27,12 +27,6 @@
 # to build container write from ssh terminal
 # singularity build --force --fakeroot UserPrediction6DOF.sif UserPrediction6DOF.def
 
-# Only your job has access to this location.
-# In order to use this location your job script needs to include the line:
-source "/etc/slurm/local_job_dir.sh"
-
-mkdir $LOCAL_JOB_DIR/job_results
-
 # run job
 singularity run --nv ./UserPrediction6DOF.sif
 
