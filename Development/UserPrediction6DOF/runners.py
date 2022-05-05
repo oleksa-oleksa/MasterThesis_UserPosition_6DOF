@@ -56,6 +56,8 @@ from statsmodels.tsa.ar_model import AutoReg, AutoRegResults, ar_select_order
 from .evaluator import Evaluator, DeepLearnEvaluator
 from .utils import *
 
+cuda_path = os.getenv('LOCAL_JOB_DIR')
+
 # For more readable printing
 np.set_printoptions(precision=6, suppress=True, linewidth=np.inf)
 
@@ -317,7 +319,6 @@ class LSTMRunner():
         self.cuda = torch.cuda.is_available()
 
         if self.cuda:
-            cuda_path = os.getenv('LOCAL_JOB_DIR')
             self.results_path = os.path.join(cuda_path, self.results_path)
 
         # input_dim, hidden_dim, layer_dim, output_dim, dropout_prob
@@ -328,10 +329,9 @@ class LSTMRunner():
         logging.info(f"LSTM Base: hidden_dim: {self.hidden_dim}, n_epochs: {self.n_epochs}, batch_size: {self.batch_size}.")
         results = []
         dists_path = os.path.join(self.results_path, 'distances')
+        if self.cuda:
+            dists_path = os.path.join(cuda_path, dists_path)
         if not os.path.exists(dists_path):
-            if self.cuda:
-                cuda_path = os.getenv('LOCAL_JOB_DIR')
-                dists_path = os.path.join(cuda_path, dists_path)
             os.makedirs(dists_path)
 
         for trace_path in get_csv_files(self.dataset_path):
