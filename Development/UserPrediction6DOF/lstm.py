@@ -214,7 +214,10 @@ class LSTMModel(nn.Module):
         self.fc = nn.Linear(hidden_dim, output_dim)
 
         self.cuda = torch.cuda.is_available()
-        logging.info(f'cuda on GPU is available: {self.cuda}')
+        if self.cuda:
+            self.lstm.cuda()
+        logging.info(F"Model on GPU is {self.cuda}")
+
 
     def forward(self, x):
         # Initializing hidden state for first input with zeros
