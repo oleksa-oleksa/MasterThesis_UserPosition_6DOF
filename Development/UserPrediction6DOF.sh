@@ -28,9 +28,9 @@
 # singularity build --force --fakeroot UserPrediction6DOF.sif UserPrediction6DOF.def
 
 source "/etc/slurm/local_job_dir.sh"
-mkdir $LOCAL_JOB_DIR/results
-mkdir $LOCAL_JOB_DIR/results/figures
-mkdir $LOCAL_JOB_DIR/results/tabular
+mkdir $LOCAL_JOB_DIR/job_results
+mkdir $LOCAL_JOB_DIR/job_results/figures
+mkdir $LOCAL_JOB_DIR/job_results/tabular
 
 
 # run job
@@ -39,8 +39,8 @@ singularity run --nv ./UserPrediction6DOF.sif
 # Store Intermediate Data and Results Locally
 # Doing this after the singularity run call ensures, that the data is copied back even when your singularity run fails.
 cd $LOCAL_JOB_DIR
-tar -cf zz_${SLURM_JOB_ID}.tar results
+tar -cf zz_${SLURM_JOB_ID}.tar job_results
 cp zz_${SLURM_JOB_ID}.tar $SLURM_SUBMIT_DIR
-rm -rf ${LOCAL_JOB_DIR}/results
+rm -rf ${LOCAL_JOB_DIR}/job_results
 
 
