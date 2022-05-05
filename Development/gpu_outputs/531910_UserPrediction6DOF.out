@@ -1,0 +1,33 @@
+INFO:root:Model on GPU is True
+INFO:root:LSTM Base: hidden_dim: 64, n_epochs: 740, batch_size: 1024.
+INFO:root:Trace path: data/flipped/1556.csv
+INFO:root:Prediction window = 100.0 ms
+Traceback (most recent call last):
+  File "/opt/conda/lib/python3.7/runpy.py", line 193, in _run_module_as_main
+    "__main__", mod_spec)
+  File "/opt/conda/lib/python3.7/runpy.py", line 85, in _run_code
+    exec(code, run_globals)
+  File "/opt/UserPrediction6DOF/__main__.py", line 45, in <module>
+    APPLICATION.run()
+  File "/opt/UserPrediction6DOF/application.py", line 91, in run
+    self.run_lstm()
+  File "/opt/UserPrediction6DOF/application.py", line 140, in run_lstm
+    runner.run()
+  File "/opt/UserPrediction6DOF/runners.py", line 373, in run
+    opt.train(train_loader, val_loader, batch_size=self.batch_size, n_epochs=self.n_epochs, n_features=self.input_dim)
+  File "/opt/UserPrediction6DOF/lstm.py", line 291, in train
+    loss = self.train_step(x_batch, y_batch)
+  File "/opt/UserPrediction6DOF/lstm.py", line 261, in train_step
+    yhat = self.model(x)
+  File "/opt/conda/lib/python3.7/site-packages/torch/nn/modules/module.py", line 1102, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/opt/UserPrediction6DOF/lstm.py", line 232, in forward
+    out, (hn, cn) = self.lstm(x, (h0.detach(), c0.detach()))
+  File "/opt/conda/lib/python3.7/site-packages/torch/nn/modules/module.py", line 1102, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/opt/conda/lib/python3.7/site-packages/torch/nn/modules/rnn.py", line 692, in forward
+    self.dropout, self.training, self.bidirectional, self.batch_first)
+RuntimeError: Input and hidden tensors are not at the same device, found input tensor at cuda:0 and hidden tensor at cpu
+-------------------------------------------------------------------------
+-------------------------------------------------------------------------
+X_train (71999, 11), X_val (24000, 11), X_test(24000, 11), y_train (71999, 7), y_val (24000, 7), y_test (24000, 7)

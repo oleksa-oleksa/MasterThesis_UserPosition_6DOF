@@ -1,0 +1,15 @@
+INFO:root:cuda on GPU is available: True
+Traceback (most recent call last):
+  File "/opt/conda/lib/python3.7/runpy.py", line 193, in _run_module_as_main
+    "__main__", mod_spec)
+  File "/opt/conda/lib/python3.7/runpy.py", line 85, in _run_code
+    exec(code, run_globals)
+  File "/opt/UserPrediction6DOF/__main__.py", line 45, in <module>
+    APPLICATION.run()
+  File "/opt/UserPrediction6DOF/application.py", line 91, in run
+    self.run_lstm()
+  File "/opt/UserPrediction6DOF/application.py", line 139, in run_lstm
+    self.results_path)
+  File "/opt/UserPrediction6DOF/runners.py", line 322, in __init__
+    self.model.cuda()
+TypeError: 'bool' object is not callable

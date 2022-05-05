@@ -1,0 +1,26 @@
+INFO:root:Model on GPU is True
+INFO:root:LSTM Base: hidden_dim: 64, n_epochs: 740, batch_size: 1024.
+INFO:root:Trace path: data/flipped/1556.csv
+INFO:root:Prediction window = 100.0 ms
+INFO:root:[1/740] Training loss: 4.6183	 Validation loss: 2.7293
+INFO:root:[2/740] Training loss: 3.6290	 Validation loss: 1.8840
+INFO:root:[3/740] Training loss: 2.3609	 Validation loss: 1.0385
+INFO:root:[4/740] Training loss: 1.2934	 Validation loss: 0.5463
+INFO:root:[5/740] Training loss: 0.6880	 Validation loss: 0.3627
+INFO:root:[10/740] Training loss: 0.2021	 Validation loss: 0.2697
+INFO:root:[15/740] Training loss: 0.1079	 Validation loss: 0.1919
+INFO:root:[20/740] Training loss: 0.0617	 Validation loss: 0.1405
+INFO:root:[25/740] Training loss: 0.0386	 Validation loss: 0.1065
+INFO:root:[30/740] Training loss: 0.0258	 Validation loss: 0.0825
+INFO:root:[35/740] Training loss: 0.0182	 Validation loss: 0.0655
+INFO:root:[40/740] Training loss: 0.0136	 Validation loss: 0.0537
+INFO:root:[45/740] Training loss: 0.0107	 Validation loss: 0.0455
+INFO:root:[50/740] Training loss: 0.0089	 Validation loss: 0.0401
+INFO:root:[55/740] Training loss: 0.0077	 Validation loss: 0.0365
+INFO:root:[60/740] Training loss: 0.0071	 Validation loss: 0.0343
+INFO:root:[65/740] Training loss: 0.0067	 Validation loss: 0.0330
+INFO:root:[70/740] Training loss: 0.0063	 Validation loss: 0.0316
+INFO:root:[75/740] Training loss: 0.0099	 Validation loss: 0.0289
+INFO:root:[80/740] Training loss: 0.0055	 Validation loss: 0.0290
+INFO:root:[85/740] Training loss: 0.0049	 Validation loss: 0.0297
+INFO:root:[90/740] Training loss: 0.0048	 Validation loss: 0.0298
