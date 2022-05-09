@@ -56,7 +56,8 @@ from statsmodels.tsa.ar_model import AutoReg, AutoRegResults, ar_select_order
 from .evaluator import Evaluator, DeepLearnEvaluator
 from .utils import *
 
-cuda_path = os.getenv('LOCAL_JOB_DIR')
+# cuda_path = os.getenv('LOCAL_JOB_DIR')
+cuda_path = "/mnt/output"
 job_id = os.path.basename(os.path.normpath(cuda_path))
 
 # For more readable printing
@@ -320,7 +321,7 @@ class LSTMRunner():
         self.cuda = torch.cuda.is_available()
 
         if self.cuda:
-            self.results_path = os.path.join(job_id, 'job_results/results/tabular')
+            self.results_path = os.path.join(cuda_path, 'results/tabular')
             logging.info(f"Cuda true. results_path {self.results_path}")
 
         # input_dim, hidden_dim, layer_dim, output_dim, dropout_prob

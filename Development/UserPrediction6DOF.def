@@ -21,6 +21,9 @@ From: pytorch/pytorch:1.9.1-cuda11.1-cudnn8-runtime
 %runscript
     # Start the training of LeNet5 on the Cifar10 dataset
     cd /opt
+
+    # run with interpolated dataset
     # python -m UserPrediction6DOF run -a lstm -w 100
 
+    # run with dataset with flipped quaternions
     python -m UserPrediction6DOF run -a lstm -w 100 -d 'data/flipped'

@@ -21,9 +21,6 @@
 
 #SBATCH --mem=4G
 
-# Launch the singularity image with --nv for nvidia support.
-# The job writes its results to stdout which is directed to the output which starts with the job number file. Check it.
-
 # to build container write from ssh terminal
 # singularity build --force --fakeroot UserPrediction6DOF.sif UserPrediction6DOF.def
 
@@ -33,8 +30,10 @@ mkdir -p "${LOCAL_JOB_DIR}/job_results/figures"
 mkdir -p "${LOCAL_JOB_DIR}/job_results/tabular"
 mkdir -p "${LOCAL_JOB_DIR}/job_results/tabular/distances"
 
-# run job
-singularity run --nv ./UserPrediction6DOF.sif
+# run job and bind the output dir
+# Launch the singularity image with --nv for nvidia support.
+# The job writes its results to stdout which is directed to the output which starts with the job number file. Check it.
+singularity run --nv  --bind ${LOCAL_JOB_DIR}:/mnt/output  ./UserPrediction6DOF.sif
 
 # Store Intermediate Data and Results Locally
 # Doing this after the singularity run call ensures, that the data is copied back even when your singularity run fails.
