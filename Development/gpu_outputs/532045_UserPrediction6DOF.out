@@ -1,0 +1,28 @@
+INFO:root:Cuda true. results_path 532045/job_results/results/tabular
+INFO:root:Model on GPU is True
+INFO:root:LSTM Base: hidden_dim: 64, n_epochs: 2, batch_size: 1024.
+INFO:root:532045/job_results/results/tabular
+INFO:root:532045/job_results/results/tabular/distances, False
+Traceback (most recent call last):
+  File "/opt/conda/lib/python3.7/runpy.py", line 193, in _run_module_as_main
+    "__main__", mod_spec)
+  File "/opt/conda/lib/python3.7/runpy.py", line 85, in _run_code
+    exec(code, run_globals)
+  File "/opt/UserPrediction6DOF/__main__.py", line 45, in <module>
+    APPLICATION.run()
+  File "/opt/UserPrediction6DOF/application.py", line 91, in run
+    self.run_lstm()
+  File "/opt/UserPrediction6DOF/application.py", line 140, in run_lstm
+    runner.run()
+  File "/opt/UserPrediction6DOF/runners.py", line 338, in run
+    os.makedirs(dists_path, exist_ok=True)
+  File "/opt/conda/lib/python3.7/os.py", line 213, in makedirs
+    makedirs(head, exist_ok=exist_ok)
+  File "/opt/conda/lib/python3.7/os.py", line 213, in makedirs
+    makedirs(head, exist_ok=exist_ok)
+  File "/opt/conda/lib/python3.7/os.py", line 213, in makedirs
+    makedirs(head, exist_ok=exist_ok)
+  [Previous line repeated 1 more time]
+  File "/opt/conda/lib/python3.7/os.py", line 223, in makedirs
+    mkdir(name, mode)
+OSError: [Errno 30] Read-only file system: '532045'
