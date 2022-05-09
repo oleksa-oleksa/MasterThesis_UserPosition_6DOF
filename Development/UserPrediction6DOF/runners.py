@@ -407,9 +407,8 @@ class LSTMRunner():
                 if self.cuda:
                     logging.info(f"cuda path exists: {os.path.exists(cuda_path)}")
                     logging.info(f"dists_path exists: {os.path.exists(dists_path)}")
-                    with open((os.path.join(dists_path,
-                                         'euc_dists_lstm_{}_{}ms.npy'.format(basename, int(w * 1e3)))), 'wb+') as f:
-                        np.save(f, euc_dists)
+                    np.save(os.path.join(dists_path,
+                                         'euc_dists_lstm_{}_{}ms.npy'.format(basename, int(w * 1e3))), euc_dists)
                     np.save(os.path.join(dists_path,
                                          'ang_dists_lstm_{}_{}ms.npy'.format(basename, int(w * 1e3))), ang_dists)
                 else:
