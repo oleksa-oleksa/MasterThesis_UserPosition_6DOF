@@ -33,7 +33,7 @@ mkdir -p "${LOCAL_JOB_DIR}/job_results/tabular/distances"
 # run job and bind the output dir
 # Launch the singularity image with --nv for nvidia support.
 # The job writes its results to stdout which is directed to the output which starts with the job number file. Check it.
-singularity run --nv  --bind ${LOCAL_JOB_DIR}:/mnt/output  ./UserPrediction6DOF.sif
+singularity run --nv  --bind ${LOCAL_JOB_DIR}:/mnt/output --bind $LOCAL_JOB_DIR/figures:/mnt/figures --bind $LOCAL_JOB_DIR/figures/tabular:/mnt/figures/tabular --bind $LOCAL_JOB_DIR/figures/tabular/distances:/mnt/figures/tabular/distances ./UserPrediction6DOF.sif
 
 # Store Intermediate Data and Results Locally
 # Doing this after the singularity run call ensures, that the data is copied back even when your singularity run fails.
