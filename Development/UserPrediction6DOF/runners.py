@@ -57,6 +57,7 @@ from .evaluator import Evaluator, DeepLearnEvaluator
 from .utils import *
 
 cuda_path = os.getenv('LOCAL_JOB_DIR')
+job_id = os.path.basename(os.path.normpath(cuda_path))
 
 # For more readable printing
 np.set_printoptions(precision=6, suppress=True, linewidth=np.inf)
@@ -319,8 +320,8 @@ class LSTMRunner():
         self.cuda = torch.cuda.is_available()
 
         if self.cuda:
-            self.results_path = os.path.join(cuda_path, 'job_results/results/tabular')
-            logging.info(f"Cuda true. Path {self.results_path}")
+            self.results_path = os.path.join(job_id, 'job_results/results/tabular')
+            logging.info(f"Cuda true. results_path {self.results_path}")
 
         # input_dim, hidden_dim, layer_dim, output_dim, dropout_prob
         # batch_first=True --> input is [batch_size, seq_len, input_size]
@@ -333,8 +334,7 @@ class LSTMRunner():
         logging.info(self.results_path)
         logging.info(f"{dists_path}, {os.path.exists(dists_path)}")
 
-
-        if not os.path.exists(dists_path) and not self.cuda:
+        if not os.path.exists(dists_path):
             os.makedirs(dists_path, exist_ok=True)
 
         for trace_path in get_csv_files(self.dataset_path):
@@ -403,10 +403,19 @@ class LSTMRunner():
                 euc_dists = deep_eval.euc_dists
                 ang_dists = np.rad2deg(deep_eval.ang_dists)
 
-                np.save(os.path.join(dists_path,
-                                     'euc_dists_lstm_{}_{}ms.npy'.format(basename, int(w * 1e3))), euc_dists)
-                np.save(os.path.join(dists_path,
-                                     'ang_dists_lstm_{}_{}ms.npy'.format(basename, int(w * 1e3))), ang_dists)
+                if self.cuda:
+                    logging.info(f"cuda path exists: {os.path.exists(cuda_path)}")
+                    logging.info(f"dists_path exists: {os.path.exists(dists_path)}")
+                    with open((os.path.join(dists_path,
+                                         'euc_dists_lstm_{}_{}ms.npy'.format(basename, int(w * 1e3)))), 'wb+') as f:
+                        np.save(f, euc_dists)
+                    np.save(os.path.join(dists_path,
+                                         'ang_dists_lstm_{}_{}ms.npy'.format(basename, int(w * 1e3))), ang_dists)
+                else:
+                    np.save(os.path.join(dists_path,
+                                         'euc_dists_lstm_{}_{}ms.npy'.format(basename, int(w * 1e3))), euc_dists)
+                    np.save(os.path.join(dists_path,
+                                         'ang_dists_lstm_{}_{}ms.npy'.format(basename, int(w * 1e3))), ang_dists)
                 result_single = list(np.hstack((basename, w, metrics)))
                 results.append(result_single)
 
