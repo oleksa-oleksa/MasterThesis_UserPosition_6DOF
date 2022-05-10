@@ -29,6 +29,7 @@ mkdir -p "${LOCAL_JOB_DIR}/job_results"
 mkdir -p "${LOCAL_JOB_DIR}/job_results/figures"
 mkdir -p "${LOCAL_JOB_DIR}/job_results/tabular"
 mkdir -p "${LOCAL_JOB_DIR}/job_results/tabular/distances"
+pwd
 cp /opt/results/model_parameters_adjust_log $LOCAL_JOB_DIR/job_results
 
 # run job and bind the output dir
