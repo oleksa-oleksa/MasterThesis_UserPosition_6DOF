@@ -271,7 +271,11 @@ def print_result(predictions, values):
 
 
 def log_parameters(hidden_dim, n_epochs, batch_size, df_results):
-    result_path = os.path.join(os.getcwd(), 'results')
+    results_path = ""
+    if torch.cuda.is_available():
+        results_path = "/mnt/output"
+    else:
+        result_path = os.path.join(os.getcwd(), 'results')
     csv_file = "model_parameters_adjust_log.csv"
     log_path = os.path.join(result_path, csv_file)
     csv_columns = ['LAT', 'hidden_size', 'epochs', 'batch_size', 'MSE_pos', 'MSE_rot', 'RMSE_pos', 'RMSE_rot']
