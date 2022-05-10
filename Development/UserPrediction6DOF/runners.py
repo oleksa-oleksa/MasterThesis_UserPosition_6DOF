@@ -307,7 +307,7 @@ class LSTMRunner():
         # for running in Singularity container paths must be modified
         self.cuda = torch.cuda.is_available()
         if self.cuda:
-            self.results_path = os.path.join(cuda_path, 'results/tabular')
+            self.results_path = os.path.join(cuda_path, 'job_results/tabular')
             logging.info(f"Cuda true. results_path {self.results_path}")
             self.dists_path = os.path.join(self.results_path, 'distances')
             logging.info(f"Cuda true. dists_path {self.dists_path}")
@@ -320,13 +320,13 @@ class LSTMRunner():
 
         # -----  MODEL HYPERPARAMETERS ----------#
         self.input_dim = 11  # 11 features with velocity and speed
-        self.hidden_dim = 64
+        self.hidden_dim = 1
         self.layer_dim = 1  # the number of LSTM layers stacked on top of each other
         self.output_dim = 7  # 3 position parameter + 4 rotation parameter
         self.batch_size = 1024
         # If there is only one layer, dropout is not applied
         # self.dropout = 0.4  # using dropout causes pytorch unsolved issue
-        self.n_epochs = 2
+        self.n_epochs = 1
         self.learning_rate = 1e-3
         self.weight_decay = 1e-6
 
