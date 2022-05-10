@@ -271,9 +271,9 @@ def print_result(predictions, values):
 
 
 def log_parameters(hidden_dim, n_epochs, batch_size, df_results):
-    results_path = ""
+    result_path = ""
     if torch.cuda.is_available():
-        results_path = "/mnt/output"
+        result_path = "/mnt/output"
     else:
         result_path = os.path.join(os.getcwd(), 'results')
     csv_file = "model_parameters_adjust_log.csv"
