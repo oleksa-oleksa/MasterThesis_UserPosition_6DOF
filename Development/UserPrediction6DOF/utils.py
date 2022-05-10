@@ -259,22 +259,22 @@ def print_result(predictions, values):
     prints on terminal 10 elements of array near the end of prediction.
     we expect the model predicts better on the end of the dataset
     """
-    print("---------------- PREDICTIONS ---------------------------------")
-    print(f"predictions.shape: {predictions.shape}")
-    print(predictions[2000:2010, :])
+    logging.info("---------------- PREDICTIONS ---------------------------------")
+    logging.info(f"predictions.shape: {predictions.shape}")
+    logging.info(predictions[2000:2010, :])
 
-    print("------------------- VALUES -----------------------------------")
-    print(f"values.shape: {values.shape}")
-    print(values[2000:2010, :])
+    logging.info("------------------- VALUES -----------------------------------")
+    logging.info(f"values.shape: {values.shape}")
+    logging.info(values[2000:2010, :])
 
-    print("-------------------------------------------------------------")
+    logging.info("-------------------------------------------------------------")
 
 
 def log_parameters(hidden_dim, n_epochs, batch_size, df_results):
     result_path = ""
     if torch.cuda.is_available():
-        result_path = "/mnt/output"
-    else:
+        result_path = "/mnt/output/results"
+    if not torch.cuda.is_available():
         result_path = os.path.join(os.getcwd(), 'results')
     csv_file = "model_parameters_adjust_log.csv"
     log_path = os.path.join(result_path, csv_file)

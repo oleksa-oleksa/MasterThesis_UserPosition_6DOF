@@ -81,9 +81,9 @@ class BaselineRunner():
         
         for trace_path in get_csv_files(self.dataset_path):
             basename = os.path.splitext(os.path.basename(trace_path))[0]
-            print("-------------------------------------------------------------------------")
+            logging.info("-------------------------------------------------------------------------")
             logging.info("Trace path: %s", trace_path)
-            print("-------------------------------------------------------------------------")
+            logging.info("-------------------------------------------------------------------------")
             for w in self.pred_window:
                 logging.info("Prediction window = %s ms", w * 1e3)
                 
@@ -100,7 +100,7 @@ class BaselineRunner():
                 metrics = np.array(list(eval.metrics.values()))
                 result_one_experiment = list(np.hstack((basename, w, metrics)))
                 results.append(result_one_experiment)
-                print("--------------------------------------------------------------")
+                logging.info("--------------------------------------------------------------")
         
         df_results = pd.DataFrame(results, columns=['Trace', 'LAT', 'mae_euc', 'mae_ang',
                                                     'rmse_euc', 'rmse_ang'])
@@ -294,19 +294,31 @@ class LSTMRunner():
     """
 
     def __init__(self, pred_window, dataset_path, results_path):
+        # -----  PRESET ----------#
         config_path = os.path.join(os.getcwd(), 'config.toml')
         self.cfg = toml.load(config_path)
         self.dt = self.cfg['dt']
         self.pred_window = pred_window * 1e-3  # convert to seconds
         self.dataset_path = dataset_path
         self.results_path = results_path
+        self.dists_path = os.path.join(self.results_path, 'distances')
 
+        # -----  CUDA FOR CPU ----------#
+        # for running in Singularity container paths must be modified
+        self.cuda = torch.cuda.is_available()
+        if self.cuda:
+            self.results_path = os.path.join(cuda_path, 'results/tabular')
+            logging.info(f"Cuda true. results_path {self.results_path}")
+            self.dists_path = os.path.join(self.results_path, 'distances')
+            logging.info(f"Cuda true. dists_path {self.dists_path}")
+
+        # -----  FEATURES ----------#
         # features with velocity
         self.features = self.cfg['pos_coords'] + self.cfg['quat_coords'] + self.cfg['velocity'] + self.cfg['speed']
-
         # only position and rotation without velocity and speed
         # self.features = self.cfg['pos_coords'] + self.cfg['quat_coords']
 
+        # -----  MODEL HYPERPARAMETERS ----------#
         self.input_dim = 11  # 11 features with velocity and speed
         self.hidden_dim = 64
         self.layer_dim = 1  # the number of LSTM layers stacked on top of each other
@@ -318,12 +330,7 @@ class LSTMRunner():
         self.learning_rate = 1e-3
         self.weight_decay = 1e-6
 
-        self.cuda = torch.cuda.is_available()
-
-        if self.cuda:
-            self.results_path = os.path.join(cuda_path, 'results/tabular')
-            logging.info(f"Cuda true. results_path {self.results_path}")
-
+        # -----  CREATE PYTORH MODEL ----------#
         # input_dim, hidden_dim, layer_dim, output_dim, dropout_prob
         # batch_first=True --> input is [batch_size, seq_len, input_size]
         self.model = LSTMModel(self.input_dim, self.hidden_dim, self.output_dim, self.layer_dim)
@@ -331,18 +338,14 @@ class LSTMRunner():
     def run(self):
         logging.info(f"LSTM Base: hidden_dim: {self.hidden_dim}, n_epochs: {self.n_epochs}, batch_size: {self.batch_size}.")
         results = []
-        dists_path = os.path.join(self.results_path, 'distances')
-        logging.info(self.results_path)
-        logging.info(f"{dists_path}, {os.path.exists(dists_path)}")
-
-        if not os.path.exists(dists_path):
-            os.makedirs(dists_path, exist_ok=True)
+        if not os.path.exists(self.dists_path):
+            os.makedirs(self.dists_path, exist_ok=True)
 
         for trace_path in get_csv_files(self.dataset_path):
             basename = os.path.splitext(os.path.basename(trace_path))[0]
-            print("-------------------------------------------------------------------------")
+            logging.info("-------------------------------------------------------------------------")
             logging.info("Trace path: %s", trace_path)
-            print("-------------------------------------------------------------------------")
+            logging.info("-------------------------------------------------------------------------")
             for w in self.pred_window:
                 logging.info("Prediction window = %s ms", w * 1e3)
 
@@ -404,22 +407,15 @@ class LSTMRunner():
                 euc_dists = deep_eval.euc_dists
                 ang_dists = np.rad2deg(deep_eval.ang_dists)
 
-                if self.cuda:
-                    logging.info(f"cuda path exists: {os.path.exists(cuda_path)}")
-                    logging.info(f"dists_path exists: {os.path.exists(dists_path)}")
-                    np.save(os.path.join(dists_path,
-                                         'euc_dists_lstm_{}_{}ms.npy'.format(basename, int(w * 1e3))), euc_dists)
-                    np.save(os.path.join(dists_path,
-                                         'ang_dists_lstm_{}_{}ms.npy'.format(basename, int(w * 1e3))), ang_dists)
-                else:
-                    np.save(os.path.join(dists_path,
-                                         'euc_dists_lstm_{}_{}ms.npy'.format(basename, int(w * 1e3))), euc_dists)
-                    np.save(os.path.join(dists_path,
-                                         'ang_dists_lstm_{}_{}ms.npy'.format(basename, int(w * 1e3))), ang_dists)
+                np.save(os.path.join(self.dists_path,
+                                     'euc_dists_lstm_{}_{}ms.npy'.format(basename, int(w * 1e3))), euc_dists)
+                np.save(os.path.join(self.dists_path,
+                                     'ang_dists_lstm_{}_{}ms.npy'.format(basename, int(w * 1e3))), ang_dists)
+
                 result_single = list(np.hstack((basename, w, metrics)))
                 results.append(result_single)
 
-                print("--------------------------------------------------------------")
+                logging.info("--------------------------------------------------------------")
 
         df_results = pd.DataFrame(results, columns=['Trace', 'LAT', 'mae_euc', 'mae_ang',
                                                     'rmse_euc', 'rmse_ang'])
