@@ -30,7 +30,7 @@ mkdir -p "${LOCAL_JOB_DIR}/job_results/figures"
 mkdir -p "${LOCAL_JOB_DIR}/job_results/tabular"
 mkdir -p "${LOCAL_JOB_DIR}/job_results/tabular/distances"
 pwd
-cp /opt/results/model_parameters_adjust_log $LOCAL_JOB_DIR/job_results
+cp results/model_parameters_adjust_log $LOCAL_JOB_DIR/job_results
 
 # run job and bind the output dir
 # Launch the singularity image with --nv for nvidia support.
