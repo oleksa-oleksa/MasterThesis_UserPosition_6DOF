@@ -296,4 +296,5 @@ def log_parameters(hidden_dim, n_epochs, batch_size, df_results):
     except IOError:
         print("I/O error")
 
+    logging.info(f"log_path file {log_path} exists: {os.path.exists(log_path)}")
     logging.info(f"Saved model parameters to file: {csv_file}")
