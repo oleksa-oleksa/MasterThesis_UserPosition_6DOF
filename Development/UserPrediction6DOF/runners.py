@@ -328,7 +328,7 @@ class LSTMRunner():
             self.hidden_dim = int(os.getenv('HIDDEN_DIM'))
             self.batch_size = int(os.getenv('BATCH_SIZE'))
             self.n_epochs = int(os.getenv('N_EPOCHS'))
-            self.dropout = int(os.getenv('DROPOUT'))
+            self.dropout = float(os.getenv('DROPOUT'))
         else:
             self.hidden_dim = 2
             self.batch_size = 1024
