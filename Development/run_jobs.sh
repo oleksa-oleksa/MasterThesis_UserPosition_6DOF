@@ -8,8 +8,9 @@ do
   export BATCH_SIZE=$batch_size
   export N_EPOCHS=$n_epochs
   export DROPOUT=$dropout
+  export PRED_WINDOW=$2
   export RNN_PARAMETERS=1
   echo "env: $HIDDEN_DIM $BATCH_SIZE $N_EPOCHS $DROPOUT"
-  nohup python -m UserPrediction6DOF run -a lstm -w $2 &
+  nohup sbatch UserPrediction6DOF.sh &
 done < <(tail -n +2 $1)
 

@@ -297,7 +297,11 @@ class LSTMRunner():
         config_path = os.path.join(os.getcwd(), 'config.toml')
         self.cfg = toml.load(config_path)
         self.dt = self.cfg['dt']
-        self.pred_window = pred_window * 1e-3  # convert to seconds
+        if 'RNN_PARAMETERS' in os.environ:
+            self.pred_window = int(os.getenv('PRED_WINDOW')) * 1e-3  # convert to seconds
+        else:
+            self.pred_window = 100 * 1e-3  # convert to seconds
+
         self.dataset_path = dataset_path
         self.results_path = results_path
         self.dists_path = os.path.join(self.results_path, 'distances')
