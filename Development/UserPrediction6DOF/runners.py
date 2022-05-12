@@ -56,7 +56,6 @@ from statsmodels.tsa.ar_model import AutoReg, AutoRegResults, ar_select_order
 from .evaluator import Evaluator, DeepLearnEvaluator
 from .utils import *
 
-# cuda_path = os.getenv('LOCAL_JOB_DIR')
 cuda_path = "/mnt/output"
 job_id = os.path.basename(os.path.normpath(cuda_path))
 
@@ -320,15 +319,21 @@ class LSTMRunner():
 
         # -----  MODEL HYPERPARAMETERS ----------#
         self.input_dim = 10  # 11 features with velocity and speed
-        self.hidden_dim = 8
         self.layer_dim = 1  # the number of LSTM layers stacked on top of each other
         self.output_dim = 7  # 3 position parameter + 4 rotation parameter
-        self.batch_size = 1024
-        # If there is only one layer, dropout is not applied
-        self.dropout = 0.3  # using dropout causes pytorch unsolved issue
-        self.n_epochs = 5
         self.learning_rate = 1e-3
         self.weight_decay = 1e-6
+
+        if 'RNN_PARAMETERS' in os.environ:
+            self.hidden_dim = int(os.getenv('HIDDEN_DIM'))
+            self.batch_size = int(os.getenv('BATCH_SIZE'))
+            self.n_epochs = int(os.getenv('N_EPOCHS'))
+            self.dropout = int(os.getenv('DROPOUT'))
+        else:
+            self.hidden_dim = 2
+            self.batch_size = 1024
+            self.n_epochs = 10
+            self.dropout = 0.2
 
         # -----  CREATE PYTORH MODEL ----------#
         # input_dim, hidden_dim, layer_dim, output_dim, dropout_prob
@@ -336,7 +341,8 @@ class LSTMRunner():
         self.model = LSTMModel(self.input_dim, self.hidden_dim, self.output_dim, self.layer_dim)
 
     def run(self):
-        logging.info(f"LSTM Base: hidden_dim: {self.hidden_dim}, n_epochs: {self.n_epochs}, batch_size: {self.batch_size}.")
+        logging.info(f"LSTM Base: hidden_dim: {self.hidden_dim}, batch_size: {self.batch_size}, "
+                     f"n_epochs: {self.n_epochs}, dropout: {self.dropout}")
         results = []
         if not os.path.exists(self.dists_path):
             os.makedirs(self.dists_path, exist_ok=True)
