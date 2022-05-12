@@ -72,6 +72,7 @@ class Application:
         self.pred_window = None
         self.plot_command = None
         self.flipped_dataset_path = None
+        self.settings_path = None
 
     def run(self):
         """Runs the application"""
@@ -241,6 +242,7 @@ class Application:
             self.algorithm = args.algorithm
             self.dataset_path = args.dataset_path
             self.results_path = args.results_path
+            self.settings_path = args.settings_path
             if not os.path.exists(self.results_path):
                 os.makedirs(self.results_path)
             self.pred_window = np.asarray(args.pred_window)
@@ -381,6 +383,16 @@ class Application:
             metavar='',
             default='./data/interpolated',
             help='Path to the head motion traces dataset'
+        )
+
+        run_command_parser.add_argument(
+            '-s',
+            '--setting',
+            dest='settings_path',
+            type=str,
+            metavar='',
+            default='./bash',
+            help='Path to the settings for parameters adjustment jobs'
         )
         
         run_command_parser.add_argument(

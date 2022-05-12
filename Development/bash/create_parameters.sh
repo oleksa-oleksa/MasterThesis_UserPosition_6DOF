@@ -21,9 +21,9 @@ do
     fi
     for batch_size in $(seq 4 1 13)
     do
-        for n_epochs in $(seq 500 250 1000)
+        for n_epochs in $(seq 400 200 1000)
         do
-            for dropout in $(seq 0.2 0.2 0.6)
+            for dropout in $(seq 0.2 0.2 0.7)
             do
                 echo "$hidden_dim, $((2**$batch_size)), $n_epochs, $dropout" >> jobs_parameters.csv
             done
