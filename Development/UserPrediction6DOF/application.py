@@ -72,7 +72,6 @@ class Application:
         self.pred_window = None
         self.plot_command = None
         self.flipped_dataset_path = None
-        self.settings_path = None
 
     def run(self):
         """Runs the application"""
@@ -218,7 +217,6 @@ class Application:
         Application.add_plot_command(sub_parsers)
         Application.add_flip_command(sub_parsers)
 
-
         # Parses the arguments
         args = argument_parser.parse_args()
         self.command = args.command
@@ -242,7 +240,6 @@ class Application:
             self.algorithm = args.algorithm
             self.dataset_path = args.dataset_path
             self.results_path = args.results_path
-            self.settings_path = args.settings_path
             if not os.path.exists(self.results_path):
                 os.makedirs(self.results_path)
             self.pred_window = np.asarray(args.pred_window)
@@ -386,23 +383,13 @@ class Application:
         )
 
         run_command_parser.add_argument(
-            '-s',
-            '--setting',
-            dest='settings_path',
-            type=str,
-            metavar='',
-            default='./bash',
-            help='Path to the settings for parameters adjustment jobs'
-        )
-        
-        run_command_parser.add_argument(
             '-w',
             '--pred-window',
             dest='pred_window',
             metavar='',
             type=int,
             nargs='+',
-            default=[40],
+            default=[80],
             help='Sets the prediction window/look-ahead time [ms]'
         )
 

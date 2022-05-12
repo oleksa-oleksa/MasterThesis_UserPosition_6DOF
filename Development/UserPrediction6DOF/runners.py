@@ -297,11 +297,7 @@ class LSTMRunner():
         config_path = os.path.join(os.getcwd(), 'config.toml')
         self.cfg = toml.load(config_path)
         self.dt = self.cfg['dt']
-        if 'RNN_PARAMETERS' in os.environ:
-            self.pred_window = (int(os.getenv('PRED_WINDOW'))) * 1e-3  # convert to seconds
-        else:
-            self.pred_window = 100 * 1e-3  # convert to seconds
-
+        self.pred_window = pred_window * 1e-3  # convert to seconds
         self.dataset_path = dataset_path
         self.results_path = results_path
         self.dists_path = os.path.join(self.results_path, 'distances')
@@ -346,7 +342,7 @@ class LSTMRunner():
 
     def run(self):
         logging.info(f"LSTM Base: hidden_dim: {self.hidden_dim}, batch_size: {self.batch_size}, "
-                f"n_epochs: {self.n_epochs}, dropout: {self.dropout}, window: {self.pred_window * 1e3}")
+                     f"n_epochs: {self.n_epochs}, dropout: {self.dropout}")
         results = []
         if not os.path.exists(self.dists_path):
             os.makedirs(self.dists_path, exist_ok=True)
@@ -356,31 +352,33 @@ class LSTMRunner():
             logging.info("-------------------------------------------------------------------------")
             logging.info("Trace path: %s", trace_path)
             logging.info("-------------------------------------------------------------------------")
+            for w in self.pred_window:
+                logging.info("Prediction window = %s ms", w * 1e3)
 
-            # Read trace from CSV file
-            df_trace = pd.read_csv(trace_path)
-            X = df_trace[self.features].to_numpy() # features.shape (12001, 11)
+                # Read trace from CSV file
+                df_trace = pd.read_csv(trace_path)
+                X = df_trace[self.features].to_numpy() # features.shape (12001, 11)
 
-            pred_step = int(self.pred_window / self.dt)
+                pred_step = int(w / self.dt)
 
-            # output is created from the features shifted corresponding to given latency
-            y = X[pred_step:, :]  # Assumption: LAT = E2E latency
-            # labels.shape
-            # 20 ms (11997, 11) => 12001 - 20/5
-            # 100 ms (11981, 11) => 12002 - 100/5
+                # output is created from the features shifted corresponding to given latency
+                y = X[pred_step:, :]  # Assumption: LAT = E2E latency
+                # labels.shape
+                # 20 ms (11997, 11) => 12001 - 20/5
+                # 100 ms (11981, 11) => 12002 - 100/5
 
-            # prepare features and labels
-            X_cut = cut_dataset_lenght(X, y)
-            y_cut = cut_extra_labels(y)
+                # prepare features and labels
+                X_cut = cut_dataset_lenght(X, y)
+                y_cut = cut_extra_labels(y)
 
-            # Splitting the data into train, validation, and test sets
-            X_train, X_val, X_test, y_train, y_val, y_test = train_val_test_split(X_cut, y_cut, 0.2)
+                # Splitting the data into train, validation, and test sets
+                X_train, X_val, X_test, y_train, y_val, y_test = train_val_test_split(X_cut, y_cut, 0.2)
 
-            logging.info(f"X_train {X_train.shape}, X_val {X_val.shape}, X_test{X_test.shape}, "
-                         f"y_train {y_train.shape}, y_val {y_val.shape}, y_test {y_test.shape}")
+                logging.info(f"X_train {X_train.shape}, X_val {X_val.shape}, X_test{X_test.shape}, "
+                             f"y_train {y_train.shape}, y_val {y_val.shape}, y_test {y_test.shape}")
 
                 train_loader, val_loader, test_loader, test_loader_one = load_data(X_train, X_val, X_test,
-                                                                         y_train, y_val, y_test, batch_size=self.batch_size)
+                                                                  y_train, y_val, y_test, batch_size=self.batch_size)
 
                 # Long Short-Term Memory TRAIN + EVAL
 
