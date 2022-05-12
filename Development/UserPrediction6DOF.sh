@@ -29,6 +29,7 @@ mkdir -p "${LOCAL_JOB_DIR}/job_results"
 mkdir -p "${LOCAL_JOB_DIR}/job_results/figures"
 mkdir -p "${LOCAL_JOB_DIR}/job_results/tabular"
 mkdir -p "${LOCAL_JOB_DIR}/job_results/tabular/distances"
+mkdir -p $SLURM_SUBMIT_DIR/gpu_jobs_results
 pwd
 
 # run job and bind the output dir
