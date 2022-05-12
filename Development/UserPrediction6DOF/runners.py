@@ -342,7 +342,7 @@ class LSTMRunner():
 
     def run(self):
         logging.info(f"LSTM Base: hidden_dim: {self.hidden_dim}, batch_size: {self.batch_size}, "
-                     f"n_epochs: {self.n_epochs}, dropout: {self.dropout}")
+                     f"n_epochs: {self.n_epochs}, dropout: {self.dropout}. window: {self.pred_window * 1e3}")
         results = []
         if not os.path.exists(self.dists_path):
             os.makedirs(self.dists_path, exist_ok=True)
@@ -352,76 +352,74 @@ class LSTMRunner():
             logging.info("-------------------------------------------------------------------------")
             logging.info("Trace path: %s", trace_path)
             logging.info("-------------------------------------------------------------------------")
-            for w in self.pred_window:
-                logging.info("Prediction window = %s ms", w * 1e3)
 
-                # Read trace from CSV file
-                df_trace = pd.read_csv(trace_path)
-                X = df_trace[self.features].to_numpy() # features.shape (12001, 11)
+            # Read trace from CSV file
+            df_trace = pd.read_csv(trace_path)
+            X = df_trace[self.features].to_numpy() # features.shape (12001, 11)
 
-                pred_step = int(w / self.dt)
+            pred_step = int(self.pred_window / self.dt)
 
-                # output is created from the features shifted corresponding to given latency
-                y = X[pred_step:, :]  # Assumption: LAT = E2E latency
-                # labels.shape
-                # 20 ms (11997, 11) => 12001 - 20/5
-                # 100 ms (11981, 11) => 12002 - 100/5
+            # output is created from the features shifted corresponding to given latency
+            y = X[pred_step:, :]  # Assumption: LAT = E2E latency
+            # labels.shape
+            # 20 ms (11997, 11) => 12001 - 20/5
+            # 100 ms (11981, 11) => 12002 - 100/5
 
-                # prepare features and labels
-                X_cut = cut_dataset_lenght(X, y)
-                y_cut = cut_extra_labels(y)
+            # prepare features and labels
+            X_cut = cut_dataset_lenght(X, y)
+            y_cut = cut_extra_labels(y)
 
-                # Splitting the data into train, validation, and test sets
-                X_train, X_val, X_test, y_train, y_val, y_test = train_val_test_split(X_cut, y_cut, 0.2)
+            # Splitting the data into train, validation, and test sets
+            X_train, X_val, X_test, y_train, y_val, y_test = train_val_test_split(X_cut, y_cut, 0.2)
 
-                logging.info(f"X_train {X_train.shape}, X_val {X_val.shape}, X_test{X_test.shape}, "
-                             f"y_train {y_train.shape}, y_val {y_val.shape}, y_test {y_test.shape}")
+            logging.info(f"X_train {X_train.shape}, X_val {X_val.shape}, X_test{X_test.shape}, "
+                         f"y_train {y_train.shape}, y_val {y_val.shape}, y_test {y_test.shape}")
 
-                train_loader, val_loader, test_loader, test_loader_one = load_data(X_train, X_val, X_test,
-                                                                  y_train, y_val, y_test, batch_size=self.batch_size)
+            train_loader, val_loader, test_loader, test_loader_one = load_data(X_train, X_val, X_test,
+                                                              y_train, y_val, y_test, batch_size=self.batch_size)
 
-                # Long Short-Term Memory TRAIN + EVAL
+            # Long Short-Term Memory TRAIN + EVAL
 
-                # Mean Squared Error Loss Function
-                # average of the squared differences between actual values and predicted values
-                loss_fn = nn.MSELoss(reduction="mean")
+            # Mean Squared Error Loss Function
+            # average of the squared differences between actual values and predicted values
+            loss_fn = nn.MSELoss(reduction="mean")
 
-                # Mean Absolute Error (L1 Loss Function)
-                # average of the sum of absolute differences between actual values and predicted values
-                # loss_fn = nn.L1Loss()
-                optimizer = optim.Adam(self.model.parameters(), lr=self.learning_rate, weight_decay=self.weight_decay)
+            # Mean Absolute Error (L1 Loss Function)
+            # average of the sum of absolute differences between actual values and predicted values
+            # loss_fn = nn.L1Loss()
+            optimizer = optim.Adam(self.model.parameters(), lr=self.learning_rate, weight_decay=self.weight_decay)
 
-                opt = LSTMOptimization(model=self.model, loss_fn=loss_fn, optimizer=optimizer)
-                opt.train(train_loader, val_loader, batch_size=self.batch_size, n_epochs=self.n_epochs, n_features=self.input_dim)
-                # opt.plot_losses()
+            opt = LSTMOptimization(model=self.model, loss_fn=loss_fn, optimizer=optimizer)
+            opt.train(train_loader, val_loader, batch_size=self.batch_size, n_epochs=self.n_epochs, n_features=self.input_dim)
+            # opt.plot_losses()
 
-                predictions, values = opt.evaluate(test_loader_one, batch_size=1, n_features=self.input_dim)
+            predictions, values = opt.evaluate(test_loader_one, batch_size=1, n_features=self.input_dim)
 
-                # predictions.shape is [(2400, 1, 7)]
-                # Remove axes of length one from predictions.
-                predictions = np.array(predictions).squeeze()
-                values = np.array(values).squeeze()
+            # predictions.shape is [(2400, 1, 7)]
+            # Remove axes of length one from predictions.
+            predictions = np.array(predictions).squeeze()
+            values = np.array(values).squeeze()
 
-                # Debug info
-                # print_result(predictions, values)
-                # print(f"y_test is close to values? {np.allclose(y_test, values, atol=1e-08)}")
+            # Debug info
+            # print_result(predictions, values)
+            # print(f"y_test is close to values? {np.allclose(y_test, values, atol=1e-08)}")
 
-                # Compute evaluation metrics LSTM
-                deep_eval = DeepLearnEvaluator(predictions, values)
-                deep_eval.eval_lstm()
-                metrics = np.array(list(deep_eval.metrics.values()))
-                euc_dists = deep_eval.euc_dists
-                ang_dists = np.rad2deg(deep_eval.ang_dists)
+            # Compute evaluation metrics LSTM
+            deep_eval = DeepLearnEvaluator(predictions, values)
+            deep_eval.eval_lstm()
+            metrics = np.array(list(deep_eval.metrics.values()))
+            euc_dists = deep_eval.euc_dists
+            ang_dists = np.rad2deg(deep_eval.ang_dists)
 
-                np.save(os.path.join(self.dists_path,
-                                     'euc_dists_lstm_{}_{}ms.npy'.format(basename, int(w * 1e3))), euc_dists)
-                np.save(os.path.join(self.dists_path,
-                                     'ang_dists_lstm_{}_{}ms.npy'.format(basename, int(w * 1e3))), ang_dists)
+            np.save(os.path.join(self.dists_path,
+                                 'euc_dists_lstm_{}_{}ms.npy'.format(basename, int(self.pred_window * 1e3))), euc_dists)
+            np.save(os.path.join(self.dists_path,
+                                 'ang_dists_lstm_{}_{}ms.npy'.format(basename, int(self.pred_window * 1e3))), ang_dists)
 
-                result_single = list(np.hstack((basename, w, metrics)))
-                results.append(result_single)
+            result_single = list(np.hstack((basename, self.pred_window, metrics)))
+            results.append(result_single)
 
-                logging.info("--------------------------------------------------------------")
+            logging.info("--------------------------------------------------------------")
 
         df_results = pd.DataFrame(results, columns=['Trace', 'LAT', 'mae_euc', 'mae_ang',
                                                     'rmse_euc', 'rmse_ang'])
