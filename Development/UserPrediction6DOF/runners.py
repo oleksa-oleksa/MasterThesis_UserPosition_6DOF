@@ -422,14 +422,4 @@ class LSTMRunner():
         df_results.to_csv(os.path.join(self.results_path, 'res_lstm.csv'), index=False)
 
         # log model parameters
-        log_parameters(self.hidden_dim, self.n_epochs, self.batch_size, df_results)
-
-        # TODO: PCA
-        # TODO: Outliers
-        # TODO: Without velocity and speed -> same dataset as Kalman
-        # TODO Learning rate
-        #       1e-9 NO decrease/improvement in training and validation loss (0.4582 0.3841)
-        #       1e-6 Very high training loss 0.46, very slow decreasing speed
-        #       1e-2 First epoch very low 0.08 and then rises up to 0.4 and fluctuates on the same level
-        # TODO Weight decay
-
+        log_parameters(self.hidden_dim, self.n_epochs, self.batch_size, self.dropout, df_results)
