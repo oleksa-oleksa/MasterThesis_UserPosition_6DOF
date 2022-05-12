@@ -1,6 +1,6 @@
 #!/bin/bash
 echo "Bash version ${BASH_VERSION}..."
-hid_step=8
+hid_step=4
 end=450
 
 echo "hidden_dim, batch_size, n_epochs, dropout" > jobs_parameters.csv
@@ -11,10 +11,10 @@ do
 
     if ((hidden_dim>=24 && hidden_dim<=48));
     then
-        hid_step=12
+        hid_step=8
     fi
 
-    if ((hidden_dim==60));
+    if (($hidden_dim==72));
     then
         hidden_dim=100
         hid_step=200
