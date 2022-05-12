@@ -41,7 +41,7 @@ singularity run --nv  --bind ${LOCAL_JOB_DIR}:/mnt/output ./UserPrediction6DOF.s
 # Doing this after the singularity run call ensures, that the data is copied back even when your singularity run fails.
 cd $LOCAL_JOB_DIR
 tar -zcvf zz_${SLURM_JOB_ID}.tar job_results
-cp zz_${SLURM_JOB_ID}.tar $SLURM_SUBMIT_DIR
+cp zz_${SLURM_JOB_ID}.tar $SLURM_SUBMIT_DIR/gpu_job_results
 rm -rf ${LOCAL_JOB_DIR}/job_results
 
 
