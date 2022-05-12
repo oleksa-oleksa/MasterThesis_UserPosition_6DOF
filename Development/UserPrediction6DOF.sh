@@ -25,12 +25,12 @@
 # singularity build --force --fakeroot UserPrediction6DOF.sif UserPrediction6DOF.def
 
 source "/etc/slurm/local_job_dir.sh"
-mkdir -p "${LOCAL_JOB_DIR}/job_results"
-mkdir -p "${LOCAL_JOB_DIR}/job_results/figures"
-mkdir -p "${LOCAL_JOB_DIR}/job_results/tabular"
-mkdir -p "${LOCAL_JOB_DIR}/job_results/tabular/distances"
+mkdir -p "${LOCAL_JOB_DIR}/job_results_${SLURM_JOB_ID}"
+mkdir -p "${LOCAL_JOB_DIR}/job_results_${SLURM_JOB_ID}/figures"
+mkdir -p "${LOCAL_JOB_DIR}/job_results_${SLURM_JOB_ID}/tabular"
+mkdir -p "${LOCAL_JOB_DIR}/job_results_${SLURM_JOB_ID}/tabular/distances"
 pwd
-cp results/model_parameters_adjust_log $LOCAL_JOB_DIR/job_results
+cp results/model_parameters_adjust_log $LOCAL_JOB_DIR/job_results_${SLURM_JOB_ID}
 
 # run job and bind the output dir
 # Launch the singularity image with --nv for nvidia support.
@@ -40,7 +40,7 @@ singularity run --nv  --bind ${LOCAL_JOB_DIR}:/mnt/output ./UserPrediction6DOF.s
 # Store Intermediate Data and Results Locally
 # Doing this after the singularity run call ensures, that the data is copied back even when your singularity run fails.
 cd $LOCAL_JOB_DIR
-tar -zcvf zz_${SLURM_JOB_ID}.tar job_results
+tar -zcvf zz_${SLURM_JOB_ID}.tar job_results_${SLURM_JOB_ID}
 cp zz_${SLURM_JOB_ID}.tar $SLURM_SUBMIT_DIR/gpu_job_results
 rm -rf ${LOCAL_JOB_DIR}/job_results
 
