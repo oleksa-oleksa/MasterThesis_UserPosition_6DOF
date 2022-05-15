@@ -47,6 +47,7 @@ from matplotlib import pyplot as plt
 from matplotlib.ticker import MultipleLocator, FormatStrFormatter
 from scipy.signal import savgol_filter
 from .utils import get_csv_files
+import statsmodels.api as sm
 
 style_path = os.path.join(os.getcwd(), 'UserPrediction6DOF/style.json')
 style = json.load(open(style_path))
@@ -205,6 +206,11 @@ class DataPlotter():
                     dest = os.path.join(output_path, f"Fig-{trace_id}-{dataset_type}.pdf")
                     fig.savefig(dest)
                     logging.info("Plotting trace {} and saving to file {}".format(trace_path1, dest))
+
+    @staticmethod
+    def plot_autocorrelaction(dataset_path, output_path, dataset_type):
+        plt.rc("figure", figsize=(10, 6))
+        sm.graphics.tsa.plot_acf(dataset_path, lags=50)
 
 
 

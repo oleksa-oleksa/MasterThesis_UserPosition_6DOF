@@ -3,7 +3,6 @@ import pandas as pd
 import sys
 
 
-
 def find_min():
     df = pd.read_csv(sys.argv[1], skipfooter=1, engine='python')
     minMSE_pos = df['MSE_pos'].min()
@@ -14,5 +13,24 @@ def find_min():
     print(all_hs)
 
 
+
+def get_LSTM_train_size(batch_size, test_percent):
+    df = pd.read_csv(sys.argv[1], skipfooter=1, engine='python')
+    # substract test_percent to be excluded from training, reserved for testset
+    number_of_samples = df.shape[0]
+    print("# Shape of the input dataframe",number_of_samples)
+    number_of_samples *= 1 - test_percent
+    train_set_sizes = []
+    for size in range(int(number_of_samples) - (batch_size - 100), int(number_of_samples)):
+        mod=size%batch_size
+        if (mod == 0):
+            train_set_sizes.append(size)
+            print(size)
+    max_ts = (max(train_set_sizes))
+    print(f"For {batch_size} and {test_percent} max trainset is: {max_ts}")
+    return (max_ts)
+
+
 if __name__ == "__main__":
-    find_min()
+    # find_min()
+    get_LSTM_train_size(int(sys.argv[2]), float(sys.argv[3]))
