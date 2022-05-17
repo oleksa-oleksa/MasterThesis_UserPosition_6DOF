@@ -72,6 +72,7 @@ class Application:
         self.pred_window = None
         self.plot_command = None
         self.flipped_dataset_path = None
+        self.column = None
 
     def run(self):
         """Runs the application"""
@@ -110,6 +111,13 @@ class Application:
                 self.plot_flipped_quaternions()
             elif self.plot_command == 'compare':
                 self.plot_datasets_comparison()
+            elif self.plot_command == 'autocorr':
+                self.plot_datasets_autocorr()
+            elif self.plot_command == 'average':
+                self.plot_datasets_average()
+            elif self.plot_command == 'corr_matrix':
+                self.plot_datasets_corr_matrix()
+
 
     def run_kalman(self):
         """Runs Kalman filter on all traces and evaluates the results"""
@@ -162,6 +170,18 @@ class Application:
     def plot_flipped_quaternions(self):
         plotter = DataPlotter()
         plotter.plot_datasets_quaternions_flipped(self.flipped_dataset_path, self.results_path, 'quaternions_flipped')
+
+    def plot_datasets_autocorr(self):
+        plotter = DataPlotter()
+        plotter.plot_autocorrelation(self.dataset_path, self.results_path, 'autocorr')
+
+    def plot_datasets_average(self):
+        plotter = DataPlotter()
+        plotter.plot_average(self.dataset_path, self.results_path, 'average')
+
+    def plot_datasets_corr_matrix(self):
+        plotter = DataPlotter()
+        plotter.plot_corr_matrix(self.dataset_path, self.results_path, self.column, 'corr_matrix')
 
     def prepare(self):
         """Resample all user traces in the given path to a common sampling time and make
@@ -250,6 +270,7 @@ class Application:
             if not os.path.exists(self.figures_path):
                 os.makedirs(self.figures_path)
         elif self.command == 'plot':
+            self.column = args.column
             self.flipped_dataset_path = args.flipped_dataset_path
             self.raw_dataset_path = args.raw_dataset_path
             self.plot_command = args.plot_command
@@ -507,7 +528,8 @@ class Application:
             '--plot-command',
             dest='plot_command',
             type=str,
-            choices=['dataset', 'raw', 'flipped_', 'flipped_quaternions', 'train_val', 'compare'],
+            choices=['dataset', 'raw', 'flipped_', 'flipped_quaternions', 'train_val',
+                     'compare', 'autocorr', 'average', "corr_matrix"],
             default='dataset',
             help='Visualises and plots the input datasets'
         )
@@ -520,5 +542,15 @@ class Application:
             metavar='',
             default='./data/raw',
             help='Path to the raw head motion traces collected from the headset'
+        )
+
+        plot_command_parser.add_argument(
+            '-c',
+            '--column',
+            dest='column',
+            type=str,
+            metavar='',
+            default='x',
+            help='Dataframe column name '
         )
 

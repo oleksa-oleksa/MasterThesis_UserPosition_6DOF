@@ -43,11 +43,13 @@ import pandas as pd
 import numpy as np
 import toml
 import logging
+import os
 from matplotlib import pyplot as plt
 from matplotlib.ticker import MultipleLocator, FormatStrFormatter
 from scipy.signal import savgol_filter
 from .utils import get_csv_files
 import statsmodels.api as sm
+import seaborn as sns
 
 style_path = os.path.join(os.getcwd(), 'UserPrediction6DOF/style.json')
 style = json.load(open(style_path))
@@ -208,9 +210,90 @@ class DataPlotter():
                     logging.info("Plotting trace {} and saving to file {}".format(trace_path1, dest))
 
     @staticmethod
-    def plot_autocorrelaction(dataset_path, output_path, dataset_type):
-        plt.rc("figure", figsize=(10, 6))
-        sm.graphics.tsa.plot_acf(dataset_path, lags=50)
+    def plot_autocorrelation(dataset_path, output_path, dataset_type):
+        for trace_path in get_csv_files(dataset_path):
+            df = pd.read_csv(trace_path, skipfooter=1, engine='python')
+            plt.rc("figure", figsize=(10, 6))
+            sm.graphics.tsa.plot_acf(df['qx'], lags=50)
 
+            trace_id = os.path.splitext(os.path.basename(trace_path))[0]
+            dest = os.path.join(output_path, f"Fig-{trace_id}-{dataset_type}.pdf")
+            plt.savefig(dest)
+            logging.info("Autocorrelation trace {} and saving to file {}".format(trace_path, dest))
+
+    @staticmethod
+    def plot_average(dataset_path, output_path, dataset_type):
+        out_dir_df = "./data/average/"
+        av_time = 300
+        for trace_path in get_csv_files(dataset_path):
+            df = pd.read_csv(trace_path, skipfooter=1, engine='python')
+            df = df.rolling(av_time).mean()
+
+            ts = np.arange(0, dataset_lengh_sec + cfg['dt'], cfg['dt'])
+
+            fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(18, 8), sharex=True)
+
+            # Plot position
+            ax1.plot(ts, df.loc[:len(ts) - 1, 'x'], label='x')
+            ax1.plot(ts, df.loc[:len(ts) - 1, 'y'], label='y', linestyle='--')
+            ax1.plot(ts, df.loc[:len(ts) - 1, 'z'], label='z', linestyle='-.')
+            ax1.set_ylabel('meters')
+            ax1.set_xlim(0, dataset_lengh_sec)
+            ax1.legend(loc='upper left')
+            ax1.yaxis.grid(which='major', linestyle='dotted', linewidth=1)
+            ax1.xaxis.set_major_locator(MultipleLocator(10))
+
+            # Plot orientation in Quaternions
+            '''
+            Q =  [qx, qy, qz, qw] = qv + qw, where 
+            qw is the real part  and 
+            qv = iqx + jqy + kqz= (qx, qy, qz) 
+            is the imaginary part 
+            x, y and z represent a vector. w is a scalar that stores the rotation around the vector.
+            '''
+            ax2.plot(ts, df.loc[:len(ts) - 1, 'qx'], label='qx', linestyle='solid')
+            ax2.plot(ts, df.loc[:len(ts) - 1, 'qy'], label='qy', linestyle='--')
+            ax2.plot(ts, df.loc[:len(ts) - 1, 'qz'], label='qz', linestyle='-.')
+            ax2.plot(ts, df.loc[:len(ts) - 1, 'qw'], label='real qw', linestyle='solid')
+            ax2.set_xlabel('seconds')
+            ax2.set_ylabel('degrees')
+            ax2.set_xlim(0, dataset_lengh_sec)
+            ax2.legend(loc='upper left')
+            ax2.yaxis.grid(which='major', linestyle='dotted', linewidth=1)
+            ax2.xaxis.set_major_locator(MultipleLocator(10))
+
+            trace_id = os.path.splitext(os.path.basename(trace_path))[0]
+            dest = os.path.join(output_path, f"Fig-{trace_id}-{dataset_type}.pdf")
+            fig.savefig(dest)
+            logging.info("Plotting trace {} and saving to file {}".format(trace_path, dest))
+
+            case = os.path.splitext(os.path.basename(trace_path))[0]
+            df_out = df.drop(labels=range(0, 300), axis=0)
+            if not os.path.exists(out_dir_df):
+                os.makedirs(out_dir_df)
+            df_out.to_csv(os.path.join(out_dir_df, case + '.csv'), index=False)
+
+
+    @staticmethod
+    def plot_corr_matrix(dataset_path, output_path, column, dataset_type):
+        for trace_path in get_csv_files(dataset_path):
+            df = pd.read_csv(trace_path, skipfooter=1, engine='python')
+            correlation_matrix = df.drop([column], axis=1).corr()
+            print(correlation_matrix)
+
+            fig, ax = plt.subplots(figsize=(13,10))
+
+            sns.heatmap(correlation_matrix,
+                        annot=True,
+                        fmt='.2f',
+                        #cmap='YlGnBu',
+                        ax=ax);
+            plt.xticks(fontsize=14)
+            plt.yticks(fontsize=14);
+
+            trace_id = os.path.splitext(os.path.basename(trace_path))[0]
+            dest = os.path.join(output_path, f"Fig-{trace_id}-{dataset_type}.pdf")
+            fig.savefig(dest)
+            logging.info("Plotting trace {} and saving to file {}".format(trace_path, dest))
 
 

@@ -4,7 +4,7 @@ import sys
 
 
 def find_min():
-    df = pd.read_csv(sys.argv[1], skipfooter=1, engine='python')
+    df = pd.read_csv(sys.argv[2], skipfooter=1, engine='python')
     minMSE_pos = df['MSE_pos'].min()
     print(f"MIN MSE_pos: {minMSE_pos}")
     parameters = df.loc[df['MSE_pos'] == minMSE_pos]
@@ -13,9 +13,8 @@ def find_min():
     print(all_hs)
 
 
-
 def get_LSTM_train_size(batch_size, test_percent):
-    df = pd.read_csv(sys.argv[1], skipfooter=1, engine='python')
+    df = pd.read_csv(sys.argv[2], skipfooter=1, engine='python')
     # substract test_percent to be excluded from training, reserved for testset
     number_of_samples = df.shape[0]
     print("# Shape of the input dataframe",number_of_samples)
@@ -32,5 +31,10 @@ def get_LSTM_train_size(batch_size, test_percent):
 
 
 if __name__ == "__main__":
-    # find_min()
-    get_LSTM_train_size(int(sys.argv[2]), float(sys.argv[3]))
+
+    print('Usage: process_results command file_path parameters')
+
+    if sys.argv[1] == "min":
+        find_min()
+    elif sys.argv[1] == "train_size":
+        get_LSTM_train_size(int(sys.argv[3]), float(sys.argv[4]))
