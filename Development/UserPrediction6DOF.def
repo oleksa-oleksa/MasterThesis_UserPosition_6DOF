@@ -6,6 +6,7 @@ From: pytorch/pytorch:1.9.1-cuda11.1-cudnn8-runtime
     ./UserPrediction6DOF /opt/UserPrediction6DOF
     ./data/interpolated  /opt/data/interpolated
     ./data/flipped /opt/data/flipped
+    ./data/average /opt/data/average
     ./results /opt/results
     requirements.txt /opt
     config.toml /opt
@@ -23,7 +24,10 @@ From: pytorch/pytorch:1.9.1-cuda11.1-cudnn8-runtime
     cd /opt
 
     # run with interpolated dataset
-    python -m UserPrediction6DOF run -a lstm -w 100
+    # python -m UserPrediction6DOF run -a lstm -w 100
 
     # run with dataset with flipped quaternions
     # python -m UserPrediction6DOF run -a lstm -w 100 -d 'data/flipped'
+
+    # run with dataset with flipped quaternions
+    python -m UserPrediction6DOF run -a lstm -w 100 -d 'data/average'
