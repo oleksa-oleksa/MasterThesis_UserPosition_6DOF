@@ -117,6 +117,8 @@ class Application:
                 self.plot_datasets_average()
             elif self.plot_command == 'corr_matrix':
                 self.plot_datasets_corr_matrix()
+            elif self.plot_command == 'hist':
+                self.plot_datasets_hist()
 
 
     def run_kalman(self):
@@ -182,6 +184,10 @@ class Application:
     def plot_datasets_corr_matrix(self):
         plotter = DataPlotter()
         plotter.plot_corr_matrix(self.dataset_path, self.results_path, self.column, 'corr_matrix')
+
+    def plot_datasets_hist(self):
+        plotter = DataPlotter()
+        plotter.plot_hist(self.dataset_path, self.results_path, self.column, 'hist')
 
     def prepare(self):
         """Resample all user traces in the given path to a common sampling time and make
@@ -529,7 +535,7 @@ class Application:
             dest='plot_command',
             type=str,
             choices=['dataset', 'raw', 'flipped_', 'flipped_quaternions', 'train_val',
-                     'compare', 'autocorr', 'average', "corr_matrix"],
+                     'compare', 'autocorr', 'average', "corr_matrix", 'hist'],
             default='dataset',
             help='Visualises and plots the input datasets'
         )

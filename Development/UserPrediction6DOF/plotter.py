@@ -296,4 +296,16 @@ class DataPlotter():
             fig.savefig(dest)
             logging.info("Plotting trace {} and saving to file {}".format(trace_path, dest))
 
+    @staticmethod
+    def plot_hist(dataset_path, output_path, column, dataset_type):
+        for trace_path in get_csv_files(dataset_path):
+            df = pd.read_csv(trace_path, skipfooter=1, engine='python')
+
+            df[column].hist(bins=100)
+
+            trace_id = os.path.splitext(os.path.basename(trace_path))[0]
+            dest = os.path.join(output_path, f"Fig-{trace_id}-{dataset_type}.pdf")
+            plt.savefig(dest)
+            logging.info("Plotting trace {} and saving to file {}".format(trace_path, dest))
+
 
