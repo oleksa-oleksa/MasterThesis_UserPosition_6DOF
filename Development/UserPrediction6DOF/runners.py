@@ -49,7 +49,7 @@ import torch.nn as nn
 import torch.optim as optim
 from filterpy.common import Q_discrete_white_noise
 from filterpy.kalman import KalmanFilter
-from .lstm import LSTMModel, LSTMOptimization
+from .lstm import LSTMModel
 from .gru import GRUModel
 from .optimization import RNNOptimization
 from scipy.linalg import block_diag
@@ -391,8 +391,9 @@ class LSTMRunner():
             # loss_fn = nn.L1Loss()
             optimizer = optim.Adam(self.model.parameters(), lr=self.learning_rate, weight_decay=self.weight_decay)
 
-            opt = LSTMOptimization(model=self.model, loss_fn=loss_fn, optimizer=optimizer)
-            opt.train(train_loader, val_loader, batch_size=self.batch_size, n_epochs=self.n_epochs, n_features=self.input_dim)
+            opt = RNNOptimization(model=self.model, loss_fn=loss_fn, optimizer=optimizer)
+            opt.train(train_loader, val_loader, batch_size=self.batch_size,
+                      n_epochs=self.n_epochs, n_features=self.input_dim)
             # opt.plot_losses()
 
             predictions, values = opt.evaluate(test_loader_one, batch_size=1, n_features=self.input_dim)

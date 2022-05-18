@@ -315,6 +315,7 @@ class LSTMModel(nn.Module):
         return out
 
 
+"""
 class LSTMOptimization:
     def __init__(self, model, loss_fn, optimizer):
         self.model = model
@@ -394,15 +395,6 @@ class LSTMOptimization:
         # torch.save(self.model.state_dict(), model_path)
 
     def evaluate(self, test_loader, batch_size=1, n_features=1):
-        """
-        predictions: list[float] The values predicted by the model
-        values: list[float] The actual values in the test set.
-
-        Typically validation loss should be similar to but slightly higher than training loss.
-         As long as validation loss is lower than or even equal to training loss one should keep doing more training.
-        If training loss is reducing without increase in validation loss then again keep doing more training
-        If validation loss starts increasing then it is time to stop
-        """
         with torch.no_grad():
             predictions = []
             values = []
@@ -426,3 +418,4 @@ class LSTMOptimization:
         plt.title("Losses")
         plt.show()
         plt.close()
+"""

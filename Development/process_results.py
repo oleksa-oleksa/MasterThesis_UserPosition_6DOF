@@ -5,6 +5,7 @@ import sys
 
 def find_min():
     df = pd.read_csv(sys.argv[2], skipfooter=1, engine='python')
+    print(df)
     minMSE_pos = df['MSE_pos'].min()
     print(f"MIN MSE_pos: {minMSE_pos}")
     parameters = df.loc[df['MSE_pos'] == minMSE_pos]
