@@ -321,7 +321,6 @@ class LSTMRunner():
 
         # -----  MODEL HYPERPARAMETERS ----------#
         self.input_dim = 10  # 11 features with velocity and speed
-        self.layer_dim = 3  # the number of LSTM layers stacked on top of each other
         self.output_dim = 7  # 3 position parameter + 4 rotation parameter
         self.learning_rate = 1e-3
         self.weight_decay = 1e-6
@@ -331,11 +330,13 @@ class LSTMRunner():
             self.batch_size = int(os.getenv('BATCH_SIZE'))
             self.n_epochs = int(os.getenv('N_EPOCHS'))
             self.dropout = float(os.getenv('DROPOUT'))
+            self.layer_dim = int(os.getenv('LAYERS'))
         else:
             self.hidden_dim = 100
             self.batch_size = 2048
             self.n_epochs = 10
-            self.dropout = 0.2
+            self.dropout = 0
+            self.layer_dim = 1  # the number of LSTM layers stacked on top of each other
 
         # -----  CREATE PYTORH MODEL ----------#
         # input_dim, hidden_dim, layer_dim, output_dim, dropout_prob
