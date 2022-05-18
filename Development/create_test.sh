@@ -5,14 +5,11 @@ out=test_parameters.csv
 
 echo "hidden_dim,batch_size,n_epochs,dropout,layers" > $out
 
-for ((hidden_dim = 200; hidden_dim <= 600; hidden_dim+=200));
+for ((hidden_dim = 200; hidden_dim <= 400; hidden_dim+=200));
 do
-    for batch_size in $(seq 10 1 13)
+    for batch_size in $(seq 11 1 13)
     do
-        for n_epochs in $(seq 800 100 1000)
-        do
-            echo "$hidden_dim,$((2**$batch_size)),$n_epochs,0,1" >> $out
-        done
+        echo "$hidden_dim,$((2**$batch_size)),750,0,1" >> $out
     done
     hidden_dim=$((hidden_dim+hid_step))
 done
