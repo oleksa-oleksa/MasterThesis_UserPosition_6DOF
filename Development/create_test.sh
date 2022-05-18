@@ -2,8 +2,9 @@
 echo "Bash version ${BASH_VERSION}..."
 hid_step=4
 end=4
+out=test_parameters.csv
 
-echo "hidden_dim, batch_size, n_epochs, dropout" > test_parameters.csv
+echo "hidden_dim,batch_size,n_epochs,dropout" > $out
 
 for ((hidden_dim = 0; hidden_dim <= end; hid_step));
 do
@@ -13,11 +14,11 @@ do
     do
         for n_epochs in $(seq 1 1 3)
         do
-            for dropout in $(seq 0.2 0.2 0.3)
+            for dropout in $(seq 0 0.1 0.2)
             do
-                echo "$hidden_dim, $((2**$batch_size)), $n_epochs, $dropout" >> test_parameters.csv
+                echo "$hidden_dim, $((2**$batch_size)), $n_epochs, $dropout" >> $out
             done
         done
     done
 done
-echo "test_parameters.csv is written"
+echo "$out is written"

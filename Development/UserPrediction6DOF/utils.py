@@ -257,7 +257,7 @@ def print_result(predictions, values):
     logging.info("-------------------------------------------------------------")
 
 
-def log_parameters(hidden_dim, n_epochs, batch_size, dropout, df_results):
+def log_parameters(hidden_dim, n_epochs, batch_size, dropout, layers, df_results):
     result_path = ""
     if torch.cuda.is_available():
         result_path = "/mnt/output/job_results"
@@ -265,14 +265,15 @@ def log_parameters(hidden_dim, n_epochs, batch_size, dropout, df_results):
         result_path = os.path.join(os.getcwd(), 'results')
     csv_file = "model_parameters_adjust_log.csv"
     log_path = os.path.join(result_path, csv_file)
-    csv_columns = ['MSE_pos', 'MSE_rot', 'RMSE_pos', 'RMSE_rot', 'LAT', 'hidden_size', 'epochs', 'batch_size', 'dropout']
+    csv_columns = ['MSE_pos', 'MSE_rot', 'RMSE_pos', 'RMSE_rot', 'LAT', 'hidden_size',
+                   'epochs', 'batch_size', 'dropout', 'layers']
     file_exists = os.path.isfile(log_path)
 
     dict_data = [
         {'MSE_pos': df_results.iloc[0]["mae_euc"], 'MSE_rot': df_results.iloc[0]["mae_ang"],
          'RMSE_pos': df_results.iloc[0]["rmse_euc"], 'RMSE_rot': df_results.iloc[0]["rmse_ang"],
          'LAT': df_results.iloc[0]["LAT"], 'hidden_size': hidden_dim, 'epochs': n_epochs, 'batch_size': batch_size,
-         'dropout': dropout}]
+         'dropout': dropout, 'layers': layers}]
 
     try:
         with open(log_path, 'a') as csvfile:
