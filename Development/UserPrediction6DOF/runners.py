@@ -50,6 +50,8 @@ import torch.optim as optim
 from filterpy.common import Q_discrete_white_noise
 from filterpy.kalman import KalmanFilter
 from .lstm import LSTMModel, LSTMOptimization
+from .gru import GRUModel
+from .optimization import RNNOptimization
 from scipy.linalg import block_diag
 from statsmodels.iolib.smpickle import save_pickle
 from statsmodels.tsa.ar_model import AutoReg, AutoRegResults, ar_select_order
