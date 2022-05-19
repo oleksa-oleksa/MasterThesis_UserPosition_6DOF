@@ -267,6 +267,7 @@ class LSTMModel(nn.Module):
     def __init__(self, input_dim, hidden_dim, output_dim, dropout, layer_dim=1):
         """Works both on CPU and GPU without additional modifications"""
         super(LSTMModel, self).__init__()
+        self.name = "LSTM"
 
         # Defining the number of layers and the nodes in each layer
         self.hidden_dim = hidden_dim

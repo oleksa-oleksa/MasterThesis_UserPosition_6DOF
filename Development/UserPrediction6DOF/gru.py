@@ -20,6 +20,7 @@ class GRUModel(nn.Module):
     """
     def __init__(self, input_dim, hidden_dim, output_dim, dropout_prob, layer_dim=1):
         super(GRUModel, self).__init__()
+        self.name = "GRU"
 
         # Defining the number of layers and the nodes in each layer
         self.layer_dim = layer_dim

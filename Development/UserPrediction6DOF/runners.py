@@ -209,10 +209,8 @@ class KalmanRunner():
         df_results.to_csv(os.path.join(self.results_path, 'res_kalman.csv'), index=False)
 
 
-
-
-class LSTMRunner():
-    """Runs the LSTM NN over all traces
+class RNNRunner():
+    """Runs the RNN over all traces
 
     Predicts the next value, X(t+n), from the previous n observations Xt, X+1, …, and X(t+n-1).
 
@@ -244,7 +242,7 @@ class LSTMRunner():
 
     """
 
-    def __init__(self, pred_window, dataset_path, results_path):
+    def __init__(self, model, pred_window, dataset_path, results_path):
         # -----  PRESET ----------#
         config_path = os.path.join(os.getcwd(), 'config.toml')
         self.cfg = toml.load(config_path)
@@ -253,6 +251,7 @@ class LSTMRunner():
         self.dataset_path = dataset_path
         self.results_path = results_path
         self.dists_path = os.path.join(self.results_path, 'distances')
+        self.model = None
 
         # -----  CUDA FOR CPU ----------#
         # for running in Singularity container paths must be modified
@@ -289,12 +288,16 @@ class LSTMRunner():
             self.layer_dim = 1  # the number of LSTM layers stacked on top of each other
 
         # -----  CREATE PYTORH MODEL ----------#
-        # input_dim, hidden_dim, layer_dim, output_dim, dropout_prob
         # batch_first=True --> input is [batch_size, seq_len, input_size]
-        self.model = LSTMModel(self.input_dim, self.hidden_dim, self.output_dim, self.dropout, self.layer_dim)
+        # SELECTS MODEL
+        if model == "lstm":
+            self.model = LSTMModel(self.input_dim, self.hidden_dim,
+                                   self.output_dim, self.dropout, self.layer_dim)
+        elif model == "gru":
+            self.model = GRUModel(self.input_dim, self.hidden_dim, self.output_dim, self.dropout, self.layer_dim)
 
     def run(self):
-        logging.info(f"LSTM Base: hidden_dim: {self.hidden_dim}, batch_size: {self.batch_size}, "
+        logging.info(f"RNN model is {self.model.name}: hidden_dim: {self.hidden_dim}, batch_size: {self.batch_size}, "
                      f"n_epochs: {self.n_epochs}, dropout: {self.dropout}, layers: {self.layer_dim}, window: {self.pred_window * 1e3}")
         results = []
         if not os.path.exists(self.dists_path):

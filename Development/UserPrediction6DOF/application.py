@@ -45,7 +45,7 @@ import os
 import sys
 import numpy as np
 import toml
-from .runners import KalmanRunner, BaselineRunner, LSTMBaseRunner, LSTMRunner
+from .runners import KalmanRunner, BaselineRunner, RNNRunner
 from .reporter import Reporter
 from .utils import get_csv_files, preprocess_trace, flip_negative_quaternions
 from .plotter import DataPlotter
@@ -258,6 +258,7 @@ class Application:
             self.algorithm = args.algorithm
             self.dataset_path = args.dataset_path
             self.results_path = args.results_path
+            self.model = args.model
             if not os.path.exists(self.results_path):
                 os.makedirs(self.results_path)
             self.pred_window = np.asarray(args.pred_window)
