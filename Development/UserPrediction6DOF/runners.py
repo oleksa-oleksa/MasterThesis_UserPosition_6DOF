@@ -296,6 +296,9 @@ class RNNRunner():
         elif model == "gru":
             self.model = GRUModel(self.input_dim, self.hidden_dim, self.output_dim, self.dropout, self.layer_dim)
 
+        self.params = {'LAT':self.pred_window, 'hidden_dim': self.hidden_dim, 'epochs': self.n_epochs,
+                       'batch_size': self.batch_size, 'dropout': self.dropout, 'layers': self.layer_dim}
+
     def run(self):
         logging.info(f"RNN model is {self.model.name}: hidden_dim: {self.hidden_dim}, batch_size: {self.batch_size}, "
                      f"n_epochs: {self.n_epochs}, dropout: {self.dropout}, layers: {self.layer_dim}, window: {self.pred_window * 1e3}")
@@ -342,10 +345,10 @@ class RNNRunner():
             # loss_fn = nn.L1Loss()
             optimizer = optim.Adam(self.model.parameters(), lr=self.learning_rate, weight_decay=self.weight_decay)
 
-            opt = RNNOptimization(model=self.model, loss_fn=loss_fn, optimizer=optimizer, )
+            opt = RNNOptimization(model=self.model, loss_fn=loss_fn, optimizer=optimizer, results=self.results_path, params=self.params)
             opt.train(train_loader, val_loader, batch_size=self.batch_size,
                       n_epochs=self.n_epochs, n_features=self.input_dim)
-            # opt.plot_losses()
+            opt.plot_losses()
 
             predictions, values = opt.evaluate(test_loader_one, batch_size=1, n_features=self.input_dim)
 

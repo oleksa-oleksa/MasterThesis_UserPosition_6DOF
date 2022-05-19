@@ -3,16 +3,19 @@ from datetime import datetime
 import numpy as np
 from matplotlib import pyplot as plt
 import logging
+import os
 
 
 class RNNOptimization:
-    def __init__(self, model, loss_fn, optimizer):
+    def __init__(self, model, loss_fn, optimizer, results, params):
         self.model = model
         self.loss_fn = loss_fn
         self.optimizer = optimizer
         self.train_losses = []
         self.val_losses = []
+        self.results_path = results
         self.cuda = torch.cuda.is_available()
+        self.params = params
 
     def train_step(self, x, y):
         # Sets model to train mode
@@ -116,9 +119,11 @@ class RNNOptimization:
         plt.title("Losses")
         #plt.show()
 
-        trace_id = os.path.splitext(os.path.basename(trace_path))[0]
-        dest = os.path.join(output_path, f"Fig-{trace_id}-{dataset_type}.pdf")
-        fig.savefig(dest)
-        logging.info("Plotting trace {} and saving to file {}".format(trace_path, dest))
+        dest = os.path.join(self.results_path, f"Fig-LAT{int(self.params['LAT'][0]*1e3)}_"
+                            f"hid{self.params['hidden_dim']}_epochs{self.params['epochs']}_"
+                            f"batch{self.params['batch_size']}_drop{self.params['dropout']}_"
+                            f"layers{self.params['layers']}.pdf")
+        plt.savefig(dest)
+        logging.info(f"Saved to file {dest}")
 
         plt.close()

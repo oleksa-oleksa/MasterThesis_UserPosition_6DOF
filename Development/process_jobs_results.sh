@@ -1,7 +1,7 @@
 #!/bin/bash
 process_dir=gpu_jobs_results_interpolated
 
-echo "MSE_pos,MSE_rot,RMSE_pos,RMSE_rot,LAT,hidden_size,epochs,batch_size,dropout,layers" > results/model_parameters_merge_interpolated_max.csv
+echo "MSE_pos,MSE_rot,RMSE_pos,RMSE_rot,LAT,hidden_dim,epochs,batch_size,dropout,layers" > results/model_parameters_merge_interpolated_max.csv
 
 for file in "$process_dir"/*
 do
