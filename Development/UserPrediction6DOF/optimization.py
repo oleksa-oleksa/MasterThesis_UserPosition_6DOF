@@ -116,10 +116,19 @@ class RNNOptimization:
         plt.plot(self.train_losses, label="Training loss")
         plt.plot(self.val_losses, label="Validation loss")
         plt.legend()
-        plt.title("Losses")
+        plt.title(f"Train/Val losses: {int(self.params['LAT'][0]*1e3)}ms "
+                  f"hidden: {self.params['hidden_dim']}, batch: "
+                  f"{self.params['batch_size']}, dropout: {self.params['dropout']}, "
+                  f"layers: {self.params['layers']}")
+        plt.xlabel("Epochs")
+        plt.ylabel("Losses")
         #plt.show()
 
-        dest = os.path.join(self.results_path, f"Fig-LAT{int(self.params['LAT'][0]*1e3)}_"
+        head, _ = os.path.split(self.results_path)
+        out = os.path.join(head, 'losses')
+        if not os.path.exists(out):
+            os.makedirs(out)
+        dest = os.path.join(out, f"Fig-LAT{int(self.params['LAT'][0]*1e3)}_"
                             f"hid{self.params['hidden_dim']}_epochs{self.params['epochs']}_"
                             f"batch{self.params['batch_size']}_drop{self.params['dropout']}_"
                             f"layers{self.params['layers']}.pdf")

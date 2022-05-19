@@ -283,7 +283,7 @@ class RNNRunner():
         else:
             self.hidden_dim = 100
             self.batch_size = 1024
-            self.n_epochs = 1
+            self.n_epochs = 20
             self.dropout = 0
             self.layer_dim = 1  # the number of LSTM layers stacked on top of each other
 
@@ -348,7 +348,8 @@ class RNNRunner():
             opt = RNNOptimization(model=self.model, loss_fn=loss_fn, optimizer=optimizer, results=self.results_path, params=self.params)
             opt.train(train_loader, val_loader, batch_size=self.batch_size,
                       n_epochs=self.n_epochs, n_features=self.input_dim)
-            opt.plot_losses()
+
+            # opt.plot_losses()
 
             predictions, values = opt.evaluate(test_loader_one, batch_size=1, n_features=self.input_dim)
 
