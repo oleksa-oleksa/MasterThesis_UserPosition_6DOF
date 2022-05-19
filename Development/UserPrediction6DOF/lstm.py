@@ -284,7 +284,7 @@ class LSTMModel(nn.Module):
         if self.cuda:
             self.lstm.cuda()
             self.fc.cuda()
-        logging.info(F"Model on GPU is {self.cuda}")
+        logging.info(F"Model {self.name} on GPU with cuda: {self.cuda}")
 
     def forward(self, x):
         # Initializing hidden state for first input with zeros

@@ -282,8 +282,8 @@ class RNNRunner():
             self.layer_dim = int(os.getenv('LAYERS'))
         else:
             self.hidden_dim = 100
-            self.batch_size = 2048
-            self.n_epochs = 10
+            self.batch_size = 1024
+            self.n_epochs = 1
             self.dropout = 0
             self.layer_dim = 1  # the number of LSTM layers stacked on top of each other
 
@@ -317,9 +317,6 @@ class RNNRunner():
 
             # output is created from the features shifted corresponding to given latency
             y = X[pred_step:, :]  # Assumption: LAT = E2E latency
-            # labels.shape
-            # 20 ms (11997, 11) => 12001 - 20/5
-            # 100 ms (11981, 11) => 12002 - 100/5
 
             # prepare features and labels
             X_cut = cut_dataset_lenght(X, y)
@@ -328,8 +325,8 @@ class RNNRunner():
             # Splitting the data into train, validation, and test sets
             X_train, X_val, X_test, y_train, y_val, y_test = train_val_test_split(X_cut, y_cut, 0.2)
 
-            logging.info(f"X_train {X_train.shape}, X_val {X_val.shape}, X_test{X_test.shape}, "
-                         f"y_train {y_train.shape}, y_val {y_val.shape}, y_test {y_test.shape}")
+            # logging.info(f"X_train {X_train.shape}, X_val {X_val.shape}, X_test{X_test.shape}, "
+            #             f"y_train {y_train.shape}, y_val {y_val.shape}, y_test {y_test.shape}")
 
             train_loader, val_loader, test_loader, test_loader_one = load_data(X_train, X_val, X_test,
                                                               y_train, y_val, y_test, batch_size=self.batch_size)
@@ -345,7 +342,7 @@ class RNNRunner():
             # loss_fn = nn.L1Loss()
             optimizer = optim.Adam(self.model.parameters(), lr=self.learning_rate, weight_decay=self.weight_decay)
 
-            opt = RNNOptimization(model=self.model, loss_fn=loss_fn, optimizer=optimizer)
+            opt = RNNOptimization(model=self.model, loss_fn=loss_fn, optimizer=optimizer, )
             opt.train(train_loader, val_loader, batch_size=self.batch_size,
                       n_epochs=self.n_epochs, n_features=self.input_dim)
             # opt.plot_losses()
@@ -359,7 +356,7 @@ class RNNRunner():
 
             # Debug info
             # print_result(predictions, values)
-            # print(f"y_test is close to values? {np.allclose(y_test, values, atol=1e-08)}")
+            # logging.info(f"y_test is close to values? {np.allclose(y_test, values, atol=1e-08)}")
 
             # Compute evaluation metrics LSTM
             deep_eval = DeepLearnEvaluator(predictions, values)
@@ -369,9 +366,9 @@ class RNNRunner():
             ang_dists = np.rad2deg(deep_eval.ang_dists)
 
             np.save(os.path.join(self.dists_path,
-                                 'euc_dists_lstm_{}_{}ms.npy'.format(basename, int(self.pred_window * 1e3))), euc_dists)
+                                 'euc_dists_{}_{}_{}ms.npy'.format(self.model.name, basename, int(self.pred_window * 1e3))), euc_dists)
             np.save(os.path.join(self.dists_path,
-                                 'ang_dists_lstm_{}_{}ms.npy'.format(basename, int(self.pred_window * 1e3))), ang_dists)
+                                 'ang_dists_{}_{}_{}ms.npy'.format(self.model.name, basename, int(self.pred_window * 1e3))), ang_dists)
 
             result_single = list(np.hstack((basename, self.pred_window, metrics)))
             results.append(result_single)

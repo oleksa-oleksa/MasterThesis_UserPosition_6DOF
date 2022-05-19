@@ -114,5 +114,11 @@ class RNNOptimization:
         plt.plot(self.val_losses, label="Validation loss")
         plt.legend()
         plt.title("Losses")
-        plt.show()
+        #plt.show()
+
+        trace_id = os.path.splitext(os.path.basename(trace_path))[0]
+        dest = os.path.join(output_path, f"Fig-{trace_id}-{dataset_type}.pdf")
+        fig.savefig(dest)
+        logging.info("Plotting trace {} and saving to file {}".format(trace_path, dest))
+
         plt.close()
