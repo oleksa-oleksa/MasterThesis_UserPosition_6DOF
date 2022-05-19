@@ -1,11 +1,11 @@
 #!/bin/bash
-process_dir=gpu_jobs_results_interpolated
-
-echo "MSE_pos,MSE_rot,RMSE_pos,RMSE_rot,LAT,hidden_dim,epochs,batch_size,dropout,layers" > results/model_parameters_merge_interpolated_max.csv
+process_dir=$1
+echo $process_dir
+echo "MSE_pos,MSE_rot,RMSE_pos,RMSE_rot,LAT,hidden_dim,epochs,batch_size,dropout,layers" > results/$process_dir.csv
 
 for file in "$process_dir"/*
 do
   out=$((tar -xOzf $file job_results/model_parameters_adjust_log.csv) >&1)
   log=$(echo -e "$out" | sed -n '2p')
-  echo $log >> results/model_parameters_merge_interpolated_max.csv
+  echo $log >> results/$process_dir.csv
 done
