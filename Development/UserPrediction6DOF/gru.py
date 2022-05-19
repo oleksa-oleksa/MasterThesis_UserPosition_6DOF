@@ -8,6 +8,16 @@ import logging
 
 
 class GRUModel(nn.Module):
+    """
+    Gated Recurrent Units (GRU) is a slightly more streamlined variant
+    that provides comparable performance and considerably faster computation.
+    Like LSTMs, they also capture long-term dependencies, but they do so
+    by using reset and update gates without any cell state.
+
+    While the update gate determines how much of the past information needs to be kept,
+    the reset gate decides how much of the past information to forget.
+    Doing fewer tensor operations, GRUs are often faster and require less memory than LSTMs.
+    """
     def __init__(self, input_dim, hidden_dim, output_dim, dropout_prob, layer_dim=1):
         super(GRUModel, self).__init__()
 
