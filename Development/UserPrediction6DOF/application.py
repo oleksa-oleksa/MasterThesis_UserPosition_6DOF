@@ -45,7 +45,7 @@ import os
 import sys
 import numpy as np
 import toml
-from .runners import KalmanRunner, BaselineRunner, LSTMBaseRunner, LSTMRunner
+from .runners import KalmanRunner, BaselineRunner, RNNRunner
 from .reporter import Reporter
 from .utils import get_csv_files, preprocess_trace, flip_negative_quaternions
 from .plotter import DataPlotter
@@ -73,6 +73,7 @@ class Application:
         self.plot_command = None
         self.flipped_dataset_path = None
         self.column = None
+        self.model = None
 
     def run(self):
         """Runs the application"""
@@ -88,10 +89,11 @@ class Application:
         if self.command == 'run':
             if self.algorithm == 'kalman':
                 self.run_kalman()
-            elif self.algorithm == 'lstm':
-                self.run_lstm()
-            elif self.algorithm == 'lstm_base':
-                self.run_lstm_base()
+            elif self.algorithm == 'rnn':
+                if self.model is not None:
+                    self.run_rnn(self.model)
+                else:
+                    logging.info("Select model: -m model (lstm/gru)!")
             elif self.algorithm == 'baseline':
                 self.run_baseline()
         elif self.command == 'prepare':
@@ -120,7 +122,6 @@ class Application:
             elif self.plot_command == 'hist':
                 self.plot_datasets_hist()
 
-
     def run_kalman(self):
         """Runs Kalman filter on all traces and evaluates the results"""
         runner = KalmanRunner(self.pred_window,
@@ -135,18 +136,9 @@ class Application:
                                 self.results_path)
         runner.run()
 
-    def run_lstm_base(self):
+    def run_rnn(self, model):
         """Runs baseline (no-prediction) on all traces and evaluates the results"""
-        runner = LSTMBaseRunner(self.pred_window,
-                                self.dataset_path,
-                                self.results_path)
-        runner.run()
-
-    def run_lstm(self):
-        """Runs baseline (no-prediction) on all traces and evaluates the results"""
-        runner = LSTMRunner(self.pred_window,
-                                self.dataset_path,
-                                self.results_path)
+        runner = RNNRunner(model, self.pred_window, self.dataset_path, self.results_path)
         runner.run()
 
     def plot_interpolated_datasets(self):
@@ -266,6 +258,7 @@ class Application:
             self.algorithm = args.algorithm
             self.dataset_path = args.dataset_path
             self.results_path = args.results_path
+            self.model = args.model
             if not os.path.exists(self.results_path):
                 os.makedirs(self.results_path)
             self.pred_window = np.asarray(args.pred_window)
@@ -394,9 +387,19 @@ class Application:
             '--algorithm',
             dest='algorithm',
             type=str,
-            choices=['lstm_base', 'lstm', 'kalman', 'baseline'],
+            choices=['rnn', 'kalman', 'baseline'],
             default='kalman',
             help='Selects which prediction algorithm is run on the data traces'
+        )
+
+        run_command_parser.add_argument(
+            '-m',
+            '--model',
+            dest='model',
+            type=str,
+            choices=['lstm', 'gru'],
+            default='lstm',
+            help='Selects RNN variant'
         )
 
         run_command_parser.add_argument(

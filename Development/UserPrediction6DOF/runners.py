@@ -209,60 +209,8 @@ class KalmanRunner():
         df_results.to_csv(os.path.join(self.results_path, 'res_kalman.csv'), index=False)
 
 
-class LSTMBaseRunner():
-    """Runs the LSTM NN over all traces
-
-    Predicts the next value, X(t+n), from the previous n observations Xt, X+1, …, and X(t+n-1).
-    """
-
-    def __init__(self, pred_window, dataset_path, results_path):
-        config_path = os.path.join(os.getcwd(), 'config.toml')
-        self.cfg = toml.load(config_path)
-        self.dt = self.cfg['dt']
-        self.pred_window = pred_window * 1e-3  # convert to seconds
-        self.dataset_path = dataset_path
-        self.results_path = results_path
-        self.features = self.cfg['pos_coords'] + self.cfg['quat_coords'] + self.cfg['velocity'] + self.cfg['speed']
-
-        ## TODO: Prepare dataset for dataloader
-        ## TODO: and try the custom LSTM
-
-    def run(self):
-        logging.info("LSTM Base (Long Short-Term Memory Network)")
-        results = []
-
-        for trace_path in get_csv_files(self.dataset_path):
-            basename = os.path.splitext(os.path.basename(trace_path))[0]
-            print("-------------------------------------------------------------------------")
-            logging.info("Trace path: %s", trace_path)
-            print("-------------------------------------------------------------------------")
-            for w in self.pred_window:
-                logging.info("Prediction window = %s ms", w * 1e3)
-
-                # Read trace from CSV file
-                df_trace = pd.read_csv(trace_path)
-                features = df_trace[self.features].to_numpy()
-
-                pred_step = int(w / self.dt)
-
-                # output is created from the features shifted corresponding to given latency
-                labels = features[pred_step:, :]  # Assumption: LAT = E2E latency
-
-                # Compute evaluation metrics BASELINE
-                evaluator = Evaluator(features, labels, pred_step)
-                evaluator.eval_lstm_base()
-                metrics = np.array(list(evaluator.metrics.values()))
-                result_one_experiment = list(np.hstack((basename, w, metrics)))
-                results.append(result_one_experiment)
-                print("--------------------------------------------------------------")
-
-        df_results = pd.DataFrame(results, columns=['Trace', 'LAT', 'mae_euc', 'mae_ang',
-                                                    'rmse_euc', 'rmse_ang'])
-        df_results.to_csv(os.path.join(self.results_path, 'res_lstm_base.csv'), index=False)
-
-
-class LSTMRunner():
-    """Runs the LSTM NN over all traces
+class RNNRunner():
+    """Runs the RNN over all traces
 
     Predicts the next value, X(t+n), from the previous n observations Xt, X+1, …, and X(t+n-1).
 
@@ -294,7 +242,7 @@ class LSTMRunner():
 
     """
 
-    def __init__(self, pred_window, dataset_path, results_path):
+    def __init__(self, model, pred_window, dataset_path, results_path):
         # -----  PRESET ----------#
         config_path = os.path.join(os.getcwd(), 'config.toml')
         self.cfg = toml.load(config_path)
@@ -303,6 +251,7 @@ class LSTMRunner():
         self.dataset_path = dataset_path
         self.results_path = results_path
         self.dists_path = os.path.join(self.results_path, 'distances')
+        self.model = None
 
         # -----  CUDA FOR CPU ----------#
         # for running in Singularity container paths must be modified
@@ -333,18 +282,25 @@ class LSTMRunner():
             self.layer_dim = int(os.getenv('LAYERS'))
         else:
             self.hidden_dim = 100
-            self.batch_size = 2048
-            self.n_epochs = 10
+            self.batch_size = 1024
+            self.n_epochs = 1
             self.dropout = 0
             self.layer_dim = 1  # the number of LSTM layers stacked on top of each other
 
         # -----  CREATE PYTORH MODEL ----------#
-        # input_dim, hidden_dim, layer_dim, output_dim, dropout_prob
         # batch_first=True --> input is [batch_size, seq_len, input_size]
-        self.model = LSTMModel(self.input_dim, self.hidden_dim, self.output_dim, self.dropout, self.layer_dim)
+        # SELECTS MODEL
+        if model == "lstm":
+            self.model = LSTMModel(self.input_dim, self.hidden_dim,
+                                   self.output_dim, self.dropout, self.layer_dim)
+        elif model == "gru":
+            self.model = GRUModel(self.input_dim, self.hidden_dim, self.output_dim, self.dropout, self.layer_dim)
+
+        self.params = {'LAT':self.pred_window, 'hidden_dim': self.hidden_dim, 'epochs': self.n_epochs,
+                       'batch_size': self.batch_size, 'dropout': self.dropout, 'layers': self.layer_dim}
 
     def run(self):
-        logging.info(f"LSTM Base: hidden_dim: {self.hidden_dim}, batch_size: {self.batch_size}, "
+        logging.info(f"RNN model is {self.model.name}: hidden_dim: {self.hidden_dim}, batch_size: {self.batch_size}, "
                      f"n_epochs: {self.n_epochs}, dropout: {self.dropout}, layers: {self.layer_dim}, window: {self.pred_window * 1e3}")
         results = []
         if not os.path.exists(self.dists_path):
@@ -364,9 +320,6 @@ class LSTMRunner():
 
             # output is created from the features shifted corresponding to given latency
             y = X[pred_step:, :]  # Assumption: LAT = E2E latency
-            # labels.shape
-            # 20 ms (11997, 11) => 12001 - 20/5
-            # 100 ms (11981, 11) => 12002 - 100/5
 
             # prepare features and labels
             X_cut = cut_dataset_lenght(X, y)
@@ -375,8 +328,8 @@ class LSTMRunner():
             # Splitting the data into train, validation, and test sets
             X_train, X_val, X_test, y_train, y_val, y_test = train_val_test_split(X_cut, y_cut, 0.2)
 
-            logging.info(f"X_train {X_train.shape}, X_val {X_val.shape}, X_test{X_test.shape}, "
-                         f"y_train {y_train.shape}, y_val {y_val.shape}, y_test {y_test.shape}")
+            # logging.info(f"X_train {X_train.shape}, X_val {X_val.shape}, X_test{X_test.shape}, "
+            #             f"y_train {y_train.shape}, y_val {y_val.shape}, y_test {y_test.shape}")
 
             train_loader, val_loader, test_loader, test_loader_one = load_data(X_train, X_val, X_test,
                                                               y_train, y_val, y_test, batch_size=self.batch_size)
@@ -392,10 +345,10 @@ class LSTMRunner():
             # loss_fn = nn.L1Loss()
             optimizer = optim.Adam(self.model.parameters(), lr=self.learning_rate, weight_decay=self.weight_decay)
 
-            opt = RNNOptimization(model=self.model, loss_fn=loss_fn, optimizer=optimizer)
+            opt = RNNOptimization(model=self.model, loss_fn=loss_fn, optimizer=optimizer, results=self.results_path, params=self.params)
             opt.train(train_loader, val_loader, batch_size=self.batch_size,
                       n_epochs=self.n_epochs, n_features=self.input_dim)
-            # opt.plot_losses()
+            opt.plot_losses()
 
             predictions, values = opt.evaluate(test_loader_one, batch_size=1, n_features=self.input_dim)
 
@@ -406,7 +359,7 @@ class LSTMRunner():
 
             # Debug info
             # print_result(predictions, values)
-            # print(f"y_test is close to values? {np.allclose(y_test, values, atol=1e-08)}")
+            # logging.info(f"y_test is close to values? {np.allclose(y_test, values, atol=1e-08)}")
 
             # Compute evaluation metrics LSTM
             deep_eval = DeepLearnEvaluator(predictions, values)
@@ -416,9 +369,9 @@ class LSTMRunner():
             ang_dists = np.rad2deg(deep_eval.ang_dists)
 
             np.save(os.path.join(self.dists_path,
-                                 'euc_dists_lstm_{}_{}ms.npy'.format(basename, int(self.pred_window * 1e3))), euc_dists)
+                                 'euc_dists_{}_{}_{}ms.npy'.format(self.model.name, basename, int(self.pred_window * 1e3))), euc_dists)
             np.save(os.path.join(self.dists_path,
-                                 'ang_dists_lstm_{}_{}ms.npy'.format(basename, int(self.pred_window * 1e3))), ang_dists)
+                                 'ang_dists_{}_{}_{}ms.npy'.format(self.model.name, basename, int(self.pred_window * 1e3))), ang_dists)
 
             result_single = list(np.hstack((basename, self.pred_window, metrics)))
             results.append(result_single)

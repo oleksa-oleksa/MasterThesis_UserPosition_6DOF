@@ -9,8 +9,8 @@ def find_min():
     minMSE_pos = df['MSE_pos'].min()
     print(f"MIN MSE_pos: {minMSE_pos}")
     parameters = df.loc[df['MSE_pos'] == minMSE_pos]
-    hs = parameters['hidden_size'].values[0]
-    all_hs = df.loc[df['hidden_size'] == hs].sort_values(by=['MSE_pos']).head(10)
+    hs = parameters['hidden_dim'].values[0]
+    all_hs = df.loc[df['hidden_dim'] == hs].sort_values(by=['MSE_pos']).head(10)
     print(all_hs)
 
 
