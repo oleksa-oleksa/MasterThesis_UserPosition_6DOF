@@ -209,56 +209,6 @@ class KalmanRunner():
         df_results.to_csv(os.path.join(self.results_path, 'res_kalman.csv'), index=False)
 
 
-class LSTMBaseRunner():
-    """Runs the LSTM NN over all traces
-
-    Predicts the next value, X(t+n), from the previous n observations Xt, X+1, …, and X(t+n-1).
-    """
-
-    def __init__(self, pred_window, dataset_path, results_path):
-        config_path = os.path.join(os.getcwd(), 'config.toml')
-        self.cfg = toml.load(config_path)
-        self.dt = self.cfg['dt']
-        self.pred_window = pred_window * 1e-3  # convert to seconds
-        self.dataset_path = dataset_path
-        self.results_path = results_path
-        self.features = self.cfg['pos_coords'] + self.cfg['quat_coords'] + self.cfg['velocity'] + self.cfg['speed']
-
-        ## TODO: Prepare dataset for dataloader
-        ## TODO: and try the custom LSTM
-
-    def run(self):
-        logging.info("LSTM Base (Long Short-Term Memory Network)")
-        results = []
-
-        for trace_path in get_csv_files(self.dataset_path):
-            basename = os.path.splitext(os.path.basename(trace_path))[0]
-            print("-------------------------------------------------------------------------")
-            logging.info("Trace path: %s", trace_path)
-            print("-------------------------------------------------------------------------")
-            for w in self.pred_window:
-                logging.info("Prediction window = %s ms", w * 1e3)
-
-                # Read trace from CSV file
-                df_trace = pd.read_csv(trace_path)
-                features = df_trace[self.features].to_numpy()
-
-                pred_step = int(w / self.dt)
-
-                # output is created from the features shifted corresponding to given latency
-                labels = features[pred_step:, :]  # Assumption: LAT = E2E latency
-
-                # Compute evaluation metrics BASELINE
-                evaluator = Evaluator(features, labels, pred_step)
-                evaluator.eval_lstm_base()
-                metrics = np.array(list(evaluator.metrics.values()))
-                result_one_experiment = list(np.hstack((basename, w, metrics)))
-                results.append(result_one_experiment)
-                print("--------------------------------------------------------------")
-
-        df_results = pd.DataFrame(results, columns=['Trace', 'LAT', 'mae_euc', 'mae_ang',
-                                                    'rmse_euc', 'rmse_ang'])
-        df_results.to_csv(os.path.join(self.results_path, 'res_lstm_base.csv'), index=False)
 
 
 class LSTMRunner():
