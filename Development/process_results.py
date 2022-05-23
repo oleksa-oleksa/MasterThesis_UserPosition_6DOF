@@ -5,13 +5,22 @@ import sys
 
 def find_min():
     df = pd.read_csv(sys.argv[2], skipfooter=1, engine='python')
-    print(df)
-    minMSE_pos = df['MSE_pos'].min()
-    print(f"MIN MSE_pos: {minMSE_pos}")
-    parameters = df.loc[df['MSE_pos'] == minMSE_pos]
-    hs = parameters['hidden_dim'].values[0]
-    all_hs = df.loc[df['hidden_dim'] == hs].sort_values(by=['MSE_pos']).head(10)
-    print(all_hs)
+    mins_pos = df.nsmallest(10, 'MSE_pos')
+    print("MSE Position MIN")
+    print(mins_pos)
+    mins_rot = df.nsmallest(10, 'MSE_rot')
+    print("MSE Rotation MIN")
+    print(mins_rot)
+
+
+def find_max():
+    df = pd.read_csv(sys.argv[2], skipfooter=1, engine='python')
+    maxs_pos = df.nlargest(10, 'MSE_pos')
+    print("MSE Position MAX")
+    print(maxs_pos)
+    maxs_rot = df.nlargest(10, 'MSE_rot')
+    print("MSE Rotation MAX")
+    print(maxs_rot)
 
 
 def get_LSTM_train_size(batch_size, test_percent):
@@ -37,5 +46,7 @@ if __name__ == "__main__":
 
     if sys.argv[1] == "min":
         find_min()
+    if sys.argv[1] == "max":
+        find_max()
     elif sys.argv[1] == "train_size":
         get_LSTM_train_size(int(sys.argv[3]), float(sys.argv[4]))
