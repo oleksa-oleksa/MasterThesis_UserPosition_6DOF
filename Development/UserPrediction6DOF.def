@@ -25,13 +25,13 @@ From: pytorch/pytorch:1.9.1-cuda11.1-cudnn8-runtime
 
     # LSTM
     # run with interpolated dataset
-    # python -m UserPrediction6DOF run -a rnn -m lstm -w 100
+    python -m UserPrediction6DOF run -a rnn -m lstm -w 100
 
     # run with dataset with flipped quaternions
     # python -m UserPrediction6DOF run -a rnn -m lstm -w 100 -d 'data/flipped'
 
     # run with averaged dataset
-    python -m UserPrediction6DOF run -a rnn -m lstm -w 100 -d 'data/average'
+    # python -m UserPrediction6DOF run -a rnn -m lstm -w 100 -d 'data/average'
 
     # GRU
     # run with interpolated dataset
