@@ -6,10 +6,10 @@ import sys
 def find_min():
     df = pd.read_csv(sys.argv[2], skipfooter=1, engine='python')
     mins_pos = df.nsmallest(10, 'MSE_pos')
-    print("MSE Position MIN")
+    print(f"MSE Position MIN is {df['MSE_pos'].min()}")
     print(mins_pos)
     mins_rot = df.nsmallest(10, 'MSE_rot')
-    print("MSE Rotation MIN")
+    print(f"MSE Rotation MIN is {df['MSE_rot'].min()}")
     print(mins_rot)
 
 

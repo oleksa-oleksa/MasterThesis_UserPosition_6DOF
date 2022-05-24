@@ -121,6 +121,8 @@ class Application:
                 self.plot_datasets_corr_matrix()
             elif self.plot_command == 'hist':
                 self.plot_datasets_hist()
+            elif self.plot_command == 'position':
+                self.plot_datasets_position()
 
     def run_kalman(self):
         """Runs Kalman filter on all traces and evaluates the results"""
@@ -159,7 +161,7 @@ class Application:
     def plot_datasets_comparison(self):
         """Plots selected area of two graphs for visual comparison in thesis"""
         plotter = DataPlotter()
-        plotter.plot_comparison(self.dataset_path, self.flipped_dataset_path, self.results_path, 'compare')
+        plotter.plot_comparison(self.dataset_path, self.flipped_dataset_path, self.results_path)
 
     def plot_flipped_quaternions(self):
         plotter = DataPlotter()
@@ -180,6 +182,10 @@ class Application:
     def plot_datasets_hist(self):
         plotter = DataPlotter()
         plotter.plot_hist(self.dataset_path, self.results_path, self.column, 'hist')
+
+    def plot_datasets_position(self):
+        plotter = DataPlotter()
+        plotter.plot_position(self.dataset_path, self.results_path)
 
     def prepare(self):
         """Resample all user traces in the given path to a common sampling time and make
@@ -538,7 +544,8 @@ class Application:
             dest='plot_command',
             type=str,
             choices=['dataset', 'raw', 'flipped_', 'flipped_quaternions', 'train_val',
-                     'compare', 'autocorr', 'average', "corr_matrix", 'hist'],
+                     'compare', 'autocorr', 'average', "corr_matrix", 'hist',
+                     'position', 'rotation'],
             default='dataset',
             help='Visualises and plots the input datasets'
         )

@@ -152,7 +152,7 @@ class DataPlotter():
 
     """Plots flipped quaternions dataset traces"""
     @staticmethod
-    def plot_comparison(dataset_path1, dataset_path2, output_path, dataset_type):
+    def plot_comparison(dataset_path1, dataset_path2, output_path):
         # start and end of plot. Numbers obtained empirically from plots,
         # the most significant
         start = 162
@@ -205,9 +205,39 @@ class DataPlotter():
                     ax2.xaxis.set_major_locator(MultipleLocator(10))
 
                     trace_id = os.path.splitext(os.path.basename(trace_path1))[0]
-                    dest = os.path.join(output_path, f"Fig-{trace_id}-{dataset_type}.pdf")
+                    dest = os.path.join(output_path, f"Fig-{trace_id}-compare.pdf")
                     fig.savefig(dest)
                     logging.info("Plotting trace {} and saving to file {}".format(trace_path1, dest))
+
+    """Plots flipped quaternions dataset traces"""
+
+    @staticmethod
+    def plot_position(dataset_path, output_path):
+        logging.info(f"Plotting from {dataset_path} and saving to {output_path}")
+        print(len([name for name in os.listdir(dataset_path) if os.path.isfile(os.path.join(dataset_path, name))]))
+
+        for trace_path in get_csv_files(dataset_path):
+            df = pd.read_csv(trace_path)
+            ts = np.arange(0, dataset_lengh_sec + cfg['dt'], cfg['dt'])
+
+            fig, (ax) = plt.subplots(1, 1, figsize=(18, 4), sharex=True)
+
+            # Plot position in Quaternions
+            ax.plot(ts, df.loc[:len(ts) - 1, 'x'], label='qx', linestyle='solid')
+            ax.plot(ts, df.loc[:len(ts) - 1, 'y'], label='qy', linestyle='--')
+            ax.plot(ts, df.loc[:len(ts) - 1, 'z'], label='qz', linestyle='-.')
+            ax.set_xlabel('seconds')
+            ax.set_ylabel('degrees')
+            ax.set_xlim(0, dataset_lengh_sec)
+            plt.ylim(-15.0, 15.0)
+            ax.legend(loc='upper left')
+            ax.yaxis.grid(which='major', linestyle='dotted', linewidth=1)
+            ax.xaxis.set_major_locator(MultipleLocator(10))
+
+            trace_id = os.path.splitext(os.path.basename(trace_path))[0]
+            dest = os.path.join(output_path, f"Fig-{trace_id}-position.pdf")
+            fig.savefig(dest)
+            logging.info("Plotting trace {} and saving to file {}".format(trace_path, dest))
 
     @staticmethod
     def plot_autocorrelation(dataset_path, output_path, dataset_type):
