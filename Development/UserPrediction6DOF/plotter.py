@@ -254,7 +254,7 @@ class DataPlotter():
     @staticmethod
     def plot_average(dataset_path, output_path, dataset_type):
         out_dir_df = "./data/average/"
-        av_time = 300
+        av_time = 600
         for trace_path in get_csv_files(dataset_path):
             df = pd.read_csv(trace_path, skipfooter=1, engine='python')
             df = df.rolling(av_time).mean()

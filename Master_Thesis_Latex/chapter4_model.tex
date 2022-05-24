@@ -46,6 +46,43 @@ The datasets were recorded in the laboratory space. HMD was presented to users a
 
 The first column in dataset is $timestamp$. It is obviously, that timestamp appears in row dataset not linearly and comes with different pauses. Even the high-cost HMD, like used in this research HoloLens 2, is sometimes unstable in frame rate during collecting data\footnote{https://docs.microsoft.com/en-us/windows/mixed-reality/develop/advanced-concepts/hologram-stability}.  In the Unity Application, the frame rate is  60 Hz which means that data will be collected per 0.016(6) second. Unfortunately, HMD could have delays, and the time gap of two samples may be reduced or increased, as we can observe on raw dataset. Data on some expected timestamps may be unavailable in HMS for recording. Those sequences with fewer timesteps may be considered to have missing values. To deal with above situation, the preprocessing steps must be done. They are described in a section \ref{sec:design:dataset:preprocessing} below. 
 
+\subsection{Data Exploration}
+\label{sec:design:dataset:explor} 
+The next step after looking at raw data, gathered for machine learning, is a data exploration. The goal of this initial step in data analysis is a data visualization and an usage of statistical techniques to describe dataset characterizations. As already stated in section \ref{sec:design:dataset:HL}, a user position $(x, y, z)$, orientation in quaternion $(qx, qy, qz, qw)$ and the world-space speed of the camera for each direction in $(x, y, z)$ was obtained from Main Camera in Unity application launched on HMD.\\
+\begin{figure}[H]
+	\centering
+	\begin{subfigure}[b]{1\textwidth}
+		\centering
+		\includegraphics[width=1\textwidth, keepaspectratio]{gfx/Fig-1556-position.pdf}
+		\caption{Dataset 1556}
+		\label{fig:pos1}
+	\end{subfigure}
+	\qquad
+	\begin{subfigure}[b]{1\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{gfx/Fig-1613-position.pdf}
+		\caption{Dataset 1623}
+		\label{fig:pos2}
+	\end{subfigure}
+	\qquad
+	\begin{subfigure}[b]{1\textwidth}
+		\centering
+		\includegraphics[width=1\textwidth, keepaspectratio]{gfx/Fig-1626-position.pdf}
+		\caption{Dataset 1626}
+		\label{fig:pos3}
+	\end{subfigure}
+	\caption{User position plots from obtained datasets (a, b, c)}
+\end{figure}
+First, let's start with the analysis of user position data. The figures \ref{fig:pos1}, \ref{fig:pos2}, \ref{fig:pos3} show dataset named $1556, 1623$ and $1626$ correspondently. As a matter of fact, plotted dataset were already interpolated on the preprocessing step. Although interpolation was done before data exploration after text data analysis, the details about interpolation can be found in section \ref*{sec:design:dataset:preprocessing}. The names of datasets means only a $timestamp$ in form $HH:MM$ when a dataset was obtained from HMD in laboratory space. Thus the unique name of $csv$-files on HMD system was guaranteed for the day of experiment. In this thesis the names will be used to identify each of all three datasets.\\
+All traces were recorded over 10 minutes long on average 12 minutes. All traces were then shortened to a precise length of 10 minutes to ensure equal data length for the purpose of visualization and analysis. The observations based on the sample traces can be made similar as it done by \textit{Gül et al., 2020} in their work \cite{serhan_kalman}. The user rarely moves along the y-axis. The y-axis shows the vertical movement that the users could make if they sit down or stand up. Based on the data obtained, users walked around a volumetric object in virtual reality and did not make particularly noticeable and prolonged attempts to examine the object at the lower point of the projection on a laboratory's floor since vertical movement requires more effort to crouch down and stand up. The laboratory space where the dataset was obtained was not cluttered with furniture thus users could walk around the volumetric object projected into their HMD. The figure \ref{fig:y_pos} shows an enlarged y-axis in the range from 400ms to 500ms and there is no significant change in the vertical position of the user.
+
+\begin{figure}[htb]
+	\begin{center}
+		\includegraphics[width=1\textwidth, keepaspectratio]{gfx/Fig-1556-y_position.pdf}
+		\caption{\label{fig:y_pos} Changes in the user's position along the Y axis in the range from 400ms to 500ms}
+	\end{center}
+\end{figure}
+
 \subsection{Data preprocessing}
 \label{sec:design:dataset:preprocessing}
 As was mentioned in section \ref*{sec:design:dataset:HL}, the raw sensor data obtained from the HoloLens was unevenly sampled at 60 Hz and had different temporal distances between consecutive samples. \textit{Gül et al., 2020} obtained the similar raw dataset from same HMD and interpolated it to obtain temporally equidistant samples. Same as it was done in work \cite{serhan_kalman}, the position and velocity data were upsampled using linear interpolation and for quaternions SLEP was used. During preprocessing step Euler angles (yaw, pitch, roll) were calculated from quaternions and these parameters are used for visualization purposes. Although the interpolated $csv$-file contains additional Euler angles columns, only described in section \ref{sec:design:dataset:HL} parameters were used for training and prediction. The table \ref{tab:inter_data} lists first 20 rows for columns $timestamp$ and position $(x, y, z)$ from interpolated dataset. This interpolated dataset is created with linear interpolation and SLEP mathematical methods from raw dataset shown in table \ref{tab:raw_data}. 
@@ -80,7 +117,6 @@ As was mentioned in section \ref*{sec:design:dataset:HL}, the raw sensor data ob
 	\end{tabular}
 	\caption{\label{tab:inter_data}Interpolated data from HoloLens 2}
 \end{table}
-
 
 After the interpolated dataset was plotted as figure \ref{fig:inter_data}, the important observations based on the sample trace could be done. While the user position data plots look appropriate for machine learning algorithms, the two graphs with orientation show data that is not the perfect case for usage with machine learning technologies and could decrease the prediction rate. The real part $qw$ and the component $qy$ of quaternion and $yaw$ of Euler angles are obviously discontinuous making it hard for a predictor to learn. A orientation on quaternions is used in training, thus this data requires a few additionally preprocessing steps. Usually, when doing calculation with quaternions, quaternions must be normalized to a unit length in order to represent valid rotations \cite{principles_robot_motion_book}. The normalized quaternion can be calculated using formula:
 \begin{equation}
@@ -120,39 +156,6 @@ The figure \ref{fig:compare} represents quaternions of the original interpolated
 	\end{center}
 \end{figure}
 
-
-
-\subsection{Data Exploration}
-\label{sec:design:dataset:explor}.  
-The next step after looking at raw data gathered for machine learning and performed basic data preprocessing is a data exploration. The goal of this initial step in data analysis is a data visualization and an usage of statistical techniques to describe dataset characterizations. As already stated in section \ref{sec:design:dataset:HL}, a user position $(x, y, z)$, orientation in quaternion $(qx, qy, qz, qw)$ and the world-space speed of the camera for each direction in $(x, y, z)$ was obtained from Main Camera in Unity application launched on HMD.\\
-First, let's start with the analysis of user position data. The figures \ref{fig:pos1}, \ref{fig:pos2}, \ref{fig:pos3} show dataset named $1556, 1623$ and $1626$ correspondently. The name means only a $timestamp$ in form $HH:MM$ when a dataset was obtained from HMD in laboratory space. Thus the unique name of $csv$-files on HMD system was guaranteed for the day of experiment. Here in thesis this names will be used to unique identify each of all three datasets. 
-\begin{figure}[H]
-	\centering
-	\begin{subfigure}[b]{1\textwidth}
-		\centering
-		\includegraphics[width=1\textwidth, keepaspectratio]{gfx/Fig-1556-position.pdf}
-		\caption{Dataset 1556}
-		\label{fig:pos1}
-	\end{subfigure}
-	\qquad
-	\begin{subfigure}[b]{1\textwidth}
-		\centering
-		\includegraphics[width=\textwidth]{gfx/Fig-1613-position.pdf}
-		\caption{Dataset 1623}
-		\label{fig:pos2}
-	\end{subfigure}
-	\qquad
-	\begin{subfigure}[b]{1\textwidth}
-		\centering
-		\includegraphics[width=1\textwidth, keepaspectratio]{gfx/Fig-1626-position.pdf}
-		\caption{Dataset 1626}
-		\label{fig:pos3}
-	\end{subfigure}
-	\caption{User position plots from obtained datasets (a, b, c)}
-\end{figure}
-All traces were recorded over 10 minutes long on average 12 minutes. All traces were then shortened to a precise length of 10 minutes to ensure equal data length for the purpose of visualization and analysis.
-
-We can make two important observations based on the sample trace: firstly, the viewer rarely moves along the y-axis (except for the time period between 38-42 s during which the viewer probably sat down and stood back up), which is understandable since it requires more effort to crouch down and stand up. Secondly, the orientation changes are typically due to yaw movements, whereas the magnitude of changes due to roll and pitch movements are much smaller. Our observations are also confirmed by visual inspection of the other recorded traces.
 
 
 \section{Neural Network}
