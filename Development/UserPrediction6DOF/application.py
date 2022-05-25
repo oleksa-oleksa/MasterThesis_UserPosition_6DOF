@@ -47,7 +47,7 @@ import numpy as np
 import toml
 from .runners import KalmanRunner, BaselineRunner, RNNRunner
 from .reporter import Reporter
-from .utils import get_csv_files, preprocess_trace, flip_negative_quaternions
+from .utils import get_csv_files, preprocess_trace, flip_negative_quaternions, normalize_dataset
 from .plotter import DataPlotter
 
 
@@ -74,6 +74,8 @@ class Application:
         self.flipped_dataset_path = None
         self.column = None
         self.model = None
+        self.norm_dataset_path = None
+        self.norm_type = None
 
     def run(self):
         """Runs the application"""
@@ -100,6 +102,8 @@ class Application:
             self.prepare()
         elif self.command == 'flip':
             self.flip()
+        elif self.command == 'normalize':
+            self.normalize()
         elif self.command == 'report':
             self.report()
         elif self.command == 'plot':
@@ -201,6 +205,13 @@ class Application:
             flip_negative_quaternions(trace_path, self.flipped_dataset_path)
         logging.info(f"Flipped traces written to {self.flipped_dataset_path}")
 
+    def normalize(self):
+        """Feature standardization makes the values of each feature
+        in the data have zero-mean and unit-variance"""
+        print(f"Normaizing datasets from {self.dataset_path}")
+        for trace_path in get_csv_files(self.dataset_path):
+            normalize_dataset(trace_path, self.norm_dataset_path, self.norm_type)
+
     def report(self):
         trace_path = os.path.join(self.dataset_path, "1556.csv")
         Reporter.plot_trace(trace_path, self.figures_path) # Fig. 5
@@ -240,6 +251,7 @@ class Application:
         Application.add_report_command(sub_parsers)
         Application.add_plot_command(sub_parsers)
         Application.add_flip_command(sub_parsers)
+        Application.add_normalize_command(sub_parsers)
 
         # Parses the arguments
         args = argument_parser.parse_args()
@@ -260,6 +272,12 @@ class Application:
             self.flipped_dataset_path = args.flipped_dataset_path
             if not os.path.exists(self.flipped_dataset_path):
                 os.makedirs(self.flipped_dataset_path)
+        elif self.command == 'normalize':
+            self.norm_type = args.norm_type
+            self.dataset_path = args.dataset_path
+            self.norm_dataset_path = args.norm_dataset_path
+            if not os.path.exists(self.norm_dataset_path):
+                os.makedirs(self.norm_dataset_path)
         elif self.command == 'run':
             self.algorithm = args.algorithm
             self.dataset_path = args.dataset_path
@@ -277,6 +295,8 @@ class Application:
         elif self.command == 'plot':
             self.column = args.column
             self.flipped_dataset_path = args.flipped_dataset_path
+            self.norm_dataset_path = args.norm_dataset_path
+            self.raw_dataset_path = args.raw_dataset_path
             self.raw_dataset_path = args.raw_dataset_path
             self.plot_command = args.plot_command
             self.dataset_path = args.dataset_path
@@ -367,6 +387,54 @@ class Application:
             metavar='',
             default='./data/flipped',
             help='Path to the dataset with flipped quaternions'
+        )
+
+    @staticmethod
+    def add_normalize_command(sub_parsers):
+        """"
+        Adds the process command which samples the raw data traces with
+        even temporal spacing.
+
+        Parameters
+        ----------
+            sub_parsers: Action
+                The sub-parser to which the command is to be added.
+
+        """
+        normalize_command_parser = sub_parsers.add_parser(
+            'normalize',
+            help='notmalize negative quaternions',
+            formatter_class=argparse.ArgumentDefaultsHelpFormatter
+        )
+
+        normalize_command_parser.add_argument(
+            '-i',
+            '--dataset-path',
+            dest='dataset_path',
+            type=str,
+            metavar='',
+            default='./data/flipped',
+            help='Path to the flipped head motion traces collected from the headset'
+        )
+
+        normalize_command_parser.add_argument(
+            '-o',
+            '--output-path',
+            dest='norm_dataset_path',
+            type=str,
+            metavar='',
+            default='./data/normalized',
+            help='Path to the normalized dataset with flipped quaternions'
+        )
+
+        normalize_command_parser.add_argument(
+            '-t',
+            '--type',
+            dest='norm_type',
+            type=str,
+            choices=['mean', 'min-max'],
+            default='mean',
+            help='Selects normalization variant'
         )
 
     @staticmethod
@@ -488,7 +556,6 @@ class Application:
             help='Path where results are stored as CSV'
         )
 
-
     @staticmethod
     def add_plot_command(sub_parsers):
         """"
@@ -526,6 +593,16 @@ class Application:
             metavar='',
             default='./data/flipped',
             help='Flipped dataset path'
+        )
+
+        plot_command_parser.add_argument(
+            '-n',
+            '--normalized-path',
+            dest='norm_dataset_path',
+            type=str,
+            metavar='',
+            default='./data/normalized',
+            help='Normalized dataset path'
         )
 
         plot_command_parser.add_argument(

@@ -281,9 +281,9 @@ class RNNRunner():
             self.dropout = float(os.getenv('DROPOUT'))
             self.layer_dim = int(os.getenv('LAYERS'))
         else:
-            self.hidden_dim = 100
-            self.batch_size = 1024
-            self.n_epochs = 20
+            self.hidden_dim = 20
+            self.batch_size = 30
+            self.n_epochs = 100
             self.dropout = 0
             self.layer_dim = 1  # the number of LSTM layers stacked on top of each other
 
