@@ -432,7 +432,7 @@ class Application:
             '--type',
             dest='norm_type',
             type=str,
-            choices=['mean', 'min-max'],
+            choices=['mean', 'min-max', 'full'],
             default='mean',
             help='Selects normalization variant'
         )
