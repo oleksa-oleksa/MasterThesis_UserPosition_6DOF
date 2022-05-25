@@ -334,7 +334,7 @@ class DataPlotter():
             df[column].hist(bins=100)
 
             trace_id = os.path.splitext(os.path.basename(trace_path))[0]
-            dest = os.path.join(output_path, f"Fig-{trace_id}-{dataset_type}.pdf")
+            dest = os.path.join(output_path, f"Fig-{trace_id}-{dataset_type}_{column}.pdf")
             plt.savefig(dest)
             logging.info("Plotting trace {} and saving to file {}".format(trace_path, dest))
 

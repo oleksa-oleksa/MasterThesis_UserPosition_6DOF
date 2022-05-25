@@ -4,18 +4,9 @@ out=full_set.csv
 
 echo "hidden_dim,batch_size,n_epochs,dropout,layers" > $out
 
-for ((hidden_dim = 8; hidden_dim <= 64; hidden_dim+=8));
+for ((hidden_dim = 8; hidden_dim <= 128; hidden_dim+=8));
 do
-    echo "$hidden_dim,1024,1000,0,1" >> $out
-    echo "$hidden_dim,2048,1000,0,1" >> $out
-    echo "$hidden_dim,8192,1000,0,1" >> $out
-
-    #hidden_dim=$((hidden_dim+step))
-done
-
-for ((hidden_dim = 200; hidden_dim <= 1000; hidden_dim+=200));
-do
-    for batch_size in $(seq 6 1 13)
+    for batch_size in $(seq 4 1 13)
     do
         for n_epochs in $(seq 100 200 1000)
         do

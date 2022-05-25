@@ -159,6 +159,36 @@ def flip_negative_quaternions(trace_path, out_dir):
     return df
 
 
+def normalize_dataset(trace_path, out_dir, norm_type):
+    case = os.path.splitext(os.path.basename(trace_path))[0]
+    # A comma-separated values (csv) file is returned as two-dimensional data structure with labeled axes.
+    df = pd.read_csv(trace_path, skipfooter=1, engine='python')
+
+    print(df.mean())
+
+    if norm_type == "mean":
+        df['x'] = (df['x'] - df['x'].mean())/df['x'].std()
+        df['y'] = (df['y'] - df['y'].mean())/df['y'].std()
+        df['z'] = (df['z'] - df['z'].mean())/df['z'].std()
+    elif norm_type == 'min-max':
+        df['x'] = (df['x'] - df['x'].min()) / (df['x'].max() - df['x'].min())
+        df['y'] = (df['y'] - df['y'].min()) / (df['y'].max() - df['y'].min())
+        df['z'] = (df['z'] - df['z'].min()) / (df['z'].max() - df['z'].min())
+
+    print(df.mean())
+
+    # Save flipped DataFrame to csv
+    dest = os.path.join(out_dir + '_' + norm_type)
+    print(dest)
+    if not os.path.exists(dest):
+        os.makedirs(dest)
+    df.to_csv(os.path.join(dest, case + '.csv'), index=False)
+    logging.info(f"Normalized traces written to {dest}")
+
+    return df
+
+
+
 def get_csv_files(dataset_path):
     """
     Generator function to recursively output the CSV files in a directory and its sub-directories.
