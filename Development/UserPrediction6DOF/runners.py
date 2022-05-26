@@ -343,6 +343,7 @@ class RNNRunner():
             # Mean Absolute Error (L1 Loss Function)
             # average of the sum of absolute differences between actual values and predicted values
             # loss_fn = nn.L1Loss()
+
             optimizer = optim.Adam(self.model.parameters(), lr=self.learning_rate, weight_decay=self.weight_decay)
 
             opt = RNNOptimization(model=self.model, loss_fn=loss_fn, optimizer=optimizer, results=self.results_path, params=self.params)
