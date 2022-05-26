@@ -176,7 +176,7 @@ def normalize_dataset(trace_path, out_dir, norm_type):
         df['z'] = (df['z'] - df['z'].min()) / (df['z'].max() - df['z'].min())
     elif norm_type == 'full':
         df = (df - df.min()) / (df.max() - df.min())
-  
+
     print(df.mean())
 
     # Save flipped DataFrame to csv
