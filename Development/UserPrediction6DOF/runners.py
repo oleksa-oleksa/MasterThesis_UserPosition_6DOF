@@ -281,7 +281,7 @@ class RNNRunner():
             self.dropout = float(os.getenv('DROPOUT'))
             self.layer_dim = int(os.getenv('LAYERS'))
         else:
-            self.hidden_dim = 20
+            self.hidden_dim = 40
             self.batch_size = 2048
             self.n_epochs = 500
             self.dropout = 0.05
