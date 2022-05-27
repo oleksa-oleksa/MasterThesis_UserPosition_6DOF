@@ -282,9 +282,9 @@ class RNNRunner():
             self.layer_dim = int(os.getenv('LAYERS'))
         else:
             self.hidden_dim = 20
-            self.batch_size = 30
-            self.n_epochs = 100
-            self.dropout = 0
+            self.batch_size = 2048
+            self.n_epochs = 500
+            self.dropout = 0.15
             self.layer_dim = 1  # the number of LSTM layers stacked on top of each other
 
         # -----  CREATE PYTORH MODEL ----------#
@@ -350,7 +350,7 @@ class RNNRunner():
             opt.train(train_loader, val_loader, batch_size=self.batch_size,
                       n_epochs=self.n_epochs, n_features=self.input_dim)
 
-            # opt.plot_losses()
+            opt.plot_losses()
 
             predictions, values = opt.evaluate(test_loader_one, batch_size=1, n_features=self.input_dim)
 
