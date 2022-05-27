@@ -12,7 +12,7 @@ Download the code and create a virtualenv and activate it:
 
 ``python3 -m venv UserPrediction6DOF``
 
-``source pred6dof/bin/activate``
+``source UserPrediction6DOF/bin/activate``
 
 Install the packages according to the configuration file requirements.txt.
 
@@ -53,7 +53,7 @@ The position data can be normalized also with z-score normalization. To normaliz
 Interpolated, flipped and normalized dataset to train LSTM and GRU Models and to make prediction.
 The best resuls are achieved with fully normalized dataset.
 
-Application works with environment variables. If ``RNN_PARAMETERS`` is set (let say is equal 1) then the following parameter must be set as environment variables: ``HIDDEN_DIM, BATCH_SIZE, N_EPOCHS, DROPOUT, LAYERS``.
+Application works with environment variables. If ``RNN_PARAMETERS`` is set (is equal to 1 or something else) then the following parameter must be set as environment variables: ``HIDDEN_DIM, BATCH_SIZE, N_EPOCHS, DROPOUT, LAYERS``.
 
 To run LSTM for LAT 100ms (-w 100) use command: 
 
@@ -103,11 +103,11 @@ To run your model (LSTM or GRU) on selected dataset with full hyperparameters se
 
 ``./run_jobs.sh Bash/full_set.csv``
 
-To see running (R) and pendinf (PD) jobs type:
+To see running (R) and pending (PD) jobs type:
 
 ``squeue``
 
-If something is wrong, you can stop all your jobs with the command:
+If something went wrong, you can stop all your jobs with the command:
 
 ``scancel -u <username>``
 
