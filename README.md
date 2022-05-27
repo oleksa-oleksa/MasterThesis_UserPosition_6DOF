@@ -125,9 +125,12 @@ This created merged cvs-file with all hyperparameters in ``./results/gpu_jobs_re
 
 Use this file for analyze and plotting.
 
-<h2>Post-processing the hyperparameters search</h2>
+<h2>Analyze of the results</h2>
 
-The results are logged into CSV-file.
+The results are logged into CSV-file as mentioned before.
+
+<h3>Parameters overview</h3>
+
 To find 10 minimal MAE position and MAE rotation use command:
 
 ``python process_results.py min results/gpu_jobs_results_fullNorm_lstm_MSE.csv ``
@@ -135,3 +138,33 @@ To find 10 minimal MAE position and MAE rotation use command:
 To find 10 maximal MAE position and MAE rotation use command:
 
 ``python process_results.py max results/gpu_jobs_results_fullNorm_lstm_MSE.csv ``
+
+
+<h2>Plots</h2>
+
+There are many plots available. Plots are saved as pdf-files in ``./results/plotter``
+
+Interpolated dataset: graph with x, y and z position, graph with 4 quaternions parameters and Euler angles in one pdf-file: 
+
+``python -m UserPrediction6DOF plot -p dataset ``
+
+Dataset with flipped quaternions: graph with x, y and z position, graph with 4 quaternions parameters and Euler angles in one pdf-file: 
+
+``python -m UserPrediction6DOF plot -p flipped_quaternions ``
+
+The comparision of interpolated dataset with dataset with flipped negative quaternions. This plots only quaternions graph from both datasets:
+
+``python -m UserPrediction6DOF plot -p compare ``
+
+For some plots the column can be specified with flag -c
+
+Histogram. 
+
+``python -m UserPrediction6DOF plot -p hist -c qw ``
+
+``python -m UserPrediction6DOF plot -p hist -c x``
+
+Correlation matrix:
+
+``python -m UserPrediction6DOF plot -p hist -c qw``
+
