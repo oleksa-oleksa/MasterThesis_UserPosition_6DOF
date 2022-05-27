@@ -284,7 +284,7 @@ class RNNRunner():
             self.hidden_dim = 20
             self.batch_size = 2048
             self.n_epochs = 500
-            self.dropout = 0.15
+            self.dropout = 0.05
             self.layer_dim = 1  # the number of LSTM layers stacked on top of each other
 
         # -----  CREATE PYTORH MODEL ----------#
