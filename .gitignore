@@ -94,3 +94,4 @@ models
 # HHI GPU Singularity Container
 *.sif
 *stats*
+.ipynb_checkpoints/*
