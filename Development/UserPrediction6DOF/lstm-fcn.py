@@ -1,6 +1,8 @@
 import torch
 import torch.nn as nn
 import logging
+import os
+from .lstm import LSTMModel
 
 
 class LSTMFCNModel(nn.Module):
@@ -71,8 +73,8 @@ class LSTMFCNModel(nn.Module):
 
     def __init__(self, input_dim, hidden_dim, output_dim, dropout, layer_dim=1):
         """Works both on CPU and GPU without additional modifications"""
-        super(LSTMModel, self).__init__()
-        self.name = "LSTM"
+        super(LSTMFCNModel, self).__init__()
+        self.name = "LSTM-FCN"
 
         # Defining the number of layers and the nodes in each layer
         self.hidden_dim = hidden_dim
@@ -80,42 +82,66 @@ class LSTMFCNModel(nn.Module):
 
         # LSTM layers (default 1)
         # setting batch_first=True requires the input to have the shape [batch_size, seq_len, input_size]
-        self.lstm = nn.LSTM(input_dim, hidden_dim, layer_dim, batch_first=True, dropout=dropout)
+        self.lstm = LSTMModel(input_dim, hidden_dim, output_dim, dropout, layer_dim)
 
-        # Fully connected layer maps last LSTM output (hidden dimension) to the label dimension
-        self.fc = nn.Linear(hidden_dim, output_dim)
+        if 'FCN_PARAMETERS' in os.environ:
+            self.dropout = nn.Dropout2d(float(os.getenv('FCN_DROPOUT')))
+        else:
+            self.dropout = nn.Dropout2d(0.6)
+
+        # PyTorch initializes the conv and linear weights with kaiming_uniform
+        self.conv1 = nn.Conv1d(input_dim, 128, 8, padding='same', bias=False)
+        self.relu1 = nn.LeakyReLU()
+        self.bn1 = nn.BatchNorm1d(128)
+
+        self.conv2 = nn.Conv1d(128, 256, 8, padding='same', bias=False)
+        self.relu2 = nn.LeakyReLU()
+        self.bn2 = nn.BatchNorm1d(256)
+
+        self.conv3 = nn.Conv1d(256, 128, 8, padding='same', bias=False)
+        self.relu3 = nn.LeakyReLU()
+        self.bn3 = nn.BatchNorm1d(128)
+
+        self.glob_pool = nn.AvgPool1d()
+        self.fc = nn.Linear(128, output_dim)
+        self.softmax = nn.Softmax()
 
         self.cuda = torch.cuda.is_available()
         if self.cuda:
             self.lstm.cuda()
-            self.fc.cuda()
+            self.dropout.cuda()
         logging.info(F"Model {self.name} on GPU with cuda: {self.cuda}")
 
     def forward(self, x):
         # Initializing hidden state for first input with zeros
         if self.cuda:
             x = x.cuda()
-        h0 = torch.zeros(self.layer_dim, x.size(0), self.hidden_dim).requires_grad_()
 
-        # Initializing cell state for first input with zeros
-        c0 = torch.zeros(self.layer_dim, x.size(0), self.hidden_dim).requires_grad_()
+        # 2D LSTM
 
-        if self.cuda:
-            h0, c0 = h0.cuda(), c0.cuda()
+        x_lstm = self.lstm(x)
+        x_lstm = self.dropout(x_lstm)
 
-        # We need to detach as we are doing truncated backpropagation through time (BPTT)
-        # If we don't, we'll backprop all the way to the start even after going through another batch
-        # Forward propagation by passing in the input, hidden state, and cell state into the model
-        out, (hn, cn) = self.lstm(x, (h0.detach(), c0.detach()))
+        # 1D FCN
 
-        # Reshaping the outputs in the shape of (batch_size, seq_length, hidden_size)
-        # so that it can fit into the fully connected layer
-        out = out[:, -1, :]
-        # print(f"out BEFORE FC {out.shape}")
+        x_fcn = torch.permute(x, (2, 1)).size()
 
-        # Convert the final state to our desired output shape (batch_size, output_dim)
-        # print(f"out BEFORE {out.shape}")
+        x_fcn = self.conv1(x_fcn)
+        x_fcn = self.relu1(x_fcn)
+        x_fcn = self.bn1(x_fcn)
+
+        x_fcn = self.conv2(x_fcn)
+        x_fcn = self.relu2(x_fcn)
+        x_fcn = self.bn2(x_fcn)
+
+        x_fcn = self.conv3(x_fcn)
+        x_fcn = self.relu3(x_fcn)
+        x_fcn = self.bn3(x_fcn)
+
+        x_fcn = self.glob_pool(x_fcn)
+
+        out = torch.cat((x_lstm, x_fcn))
         out = self.fc(out)
-        # print(f"out AFTER FC {out.shape}")
+        out = self.softmax(out)
 
         return out
