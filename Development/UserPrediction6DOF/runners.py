@@ -283,7 +283,7 @@ class RNNRunner():
         else:
             self.hidden_dim = 40
             self.batch_size = 2048
-            self.n_epochs = 500
+            self.n_epochs = 100
             self.dropout = 0.1
             self.layer_dim = 1  # the number of LSTM layers stacked on top of each other
 
@@ -350,7 +350,7 @@ class RNNRunner():
             opt.train(train_loader, val_loader, batch_size=self.batch_size,
                       n_epochs=self.n_epochs, n_features=self.input_dim)
 
-            opt.plot_losses()
+            # opt.plot_losses()
 
             predictions, values = opt.evaluate(test_loader_one, batch_size=1, n_features=self.input_dim)
 
@@ -365,7 +365,7 @@ class RNNRunner():
 
             # Compute evaluation metrics LSTM
             deep_eval = DeepLearnEvaluator(predictions, values)
-            deep_eval.eval_lstm()
+            deep_eval.eval_model()
             metrics = np.array(list(deep_eval.metrics.values()))
             euc_dists = deep_eval.euc_dists
             ang_dists = np.rad2deg(deep_eval.ang_dists)

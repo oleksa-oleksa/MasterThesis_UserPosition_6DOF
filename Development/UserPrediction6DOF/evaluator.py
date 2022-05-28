@@ -147,7 +147,7 @@ class DeepLearnEvaluator():
         self.ang_dists = None
         self.metrics = {}
 
-    def eval_lstm(self):
+    def eval_model(self):
         """
         New HoloLens data of length 11:
         [x, y, z] => [:, :3] three first columns

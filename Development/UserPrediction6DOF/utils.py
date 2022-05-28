@@ -167,16 +167,9 @@ def normalize_dataset(trace_path, out_dir, norm_type):
     print(df.mean())
 
     if norm_type == "mean":
-        df['x'] = (df['x'] - df['x'].mean())/df['x'].std()
-        df['y'] = (df['y'] - df['y'].mean())/df['y'].std()
-        df['z'] = (df['z'] - df['z'].mean())/df['z'].std()
+        df = (df - df.mean())/df.std()
     elif norm_type == 'min-max':
-        df['x'] = (df['x'] - df['x'].min()) / (df['x'].max() - df['x'].min())
-        df['y'] = (df['y'] - df['y'].min()) / (df['y'].max() - df['y'].min())
-        df['z'] = (df['z'] - df['z'].min()) / (df['z'].max() - df['z'].min())
-    elif norm_type == 'full':
         df = (df - df.min()) / (df.max() - df.min())
-
     print(df.mean())
 
     # Save flipped DataFrame to csv
@@ -297,12 +290,12 @@ def log_parameters(hidden_dim, n_epochs, batch_size, dropout, layers, df_results
         result_path = os.path.join(os.getcwd(), 'results')
     csv_file = "model_parameters_adjust_log.csv"
     log_path = os.path.join(result_path, csv_file)
-    csv_columns = ['MSE_pos', 'MSE_rot', 'RMSE_pos', 'RMSE_rot', 'LAT', 'hidden_dim',
+    csv_columns = ['MAE_pos', 'MAE_rot', 'RMSE_pos', 'RMSE_rot', 'LAT', 'hidden_dim',
                    'epochs', 'batch_size', 'dropout', 'layers']
     file_exists = os.path.isfile(log_path)
 
     dict_data = [
-        {'MSE_pos': df_results.iloc[0]["mae_euc"], 'MSE_rot': df_results.iloc[0]["mae_ang"],
+        {'MAE_pos': df_results.iloc[0]["mae_euc"], 'MAE_rot': df_results.iloc[0]["mae_ang"],
          'RMSE_pos': df_results.iloc[0]["rmse_euc"], 'RMSE_rot': df_results.iloc[0]["rmse_ang"],
          'LAT': df_results.iloc[0]["LAT"], 'hidden_dim': hidden_dim, 'epochs': n_epochs, 'batch_size': batch_size,
          'dropout': dropout, 'layers': layers}]

@@ -130,7 +130,6 @@ where $|| q || $ is a magnitude and can be found with formula:
 
 During experiments with quaternions in dataset obtained from HoloLens was found that quaternion magnitudes $|| q ||$ in HoloLens dataset are equal to 1. Thus data came from HMD already normalized, so that a quaternion in dataset kept the same orientation as it was during user's movement but its magnitude is 1.0.
 
-
 \begin{figure}[htb]
 	\begin{center}
 		\includegraphics[width=1\textwidth, keepaspectratio]{gfx/Fig-1556-interpolated.pdf}
@@ -138,7 +137,7 @@ During experiments with quaternions in dataset obtained from HoloLens was found 
 	\end{center}
 \end{figure}
 
-Next, quaternions between neighboring points in obtained dataset represent the very similar orientation made by user wearing HMD step by step. The middle plot on figure \ref{fig:norm_data} has discontinuities that can be seen on $qw$ line. But regardless the discontinuity (sharp change of line from negative to positive area with the same amplitude) the two neighboring quaternions with similar rotation have significant 4D vector space between them. It makes prediction worse what can be proved by RMSE and MSE rotation metrics. Flipping the sign will not affect the rotation, but it will ensure that there are no large jumps in 4D vector space when the rotation difference in rotation space (SO(3)) is small. If negative component of quaternions will be flipped into positive then the dataset representing same rotation without creating an artificial discontinuity in the space will be available for model training. Thus after normalization step, the two representations of quaternions are blended into one data set, omitting to discontinuities in the time series as can be seen presented on Figure \ref{fig:norm_data}. Indeed, the RMSE and MSE rotation metrics were improved when model was trained with dataset with quaternions without sharp sign changes. More information can be found in sections \ref{sec:imp:experiments} and \ref{sec:imp:results}.
+Next, quaternions between neighboring points in obtained dataset represent the very similar orientation made by user wearing HMD step by step. The middle plot on figure \ref{fig:norm_data} has discontinuities that can be seen on $qw$ line. As a consequence of the discontinuity (sharp change of line from negative to positive area with the same amplitude) the two neighboring quaternions with similar rotation have significant 4D vector space between them. It makes prediction worse what can be proved by RMSE and MSE rotation metrics. Flipping the sign will not affect the rotation, but it will ensure that there are no large jumps in 4D vector space when the rotation difference in rotation space (SO(3)) is small. If negative component of quaternions will be flipped into positive then the dataset representing same rotation without creating an artificial discontinuity in the space will be available for model training. 
 
 \begin{figure}[htb]
 	\begin{center}
@@ -147,7 +146,7 @@ Next, quaternions between neighboring points in obtained dataset represent the v
 	\end{center}
 \end{figure}
 
-The figure \ref{fig:compare} represents quaternions of the original interpolated dataset on the upper part of the plot and the normalized flipped quaternions on the lower part of the plot. The quaternion's components were flipped only if the if their real part became negative. Different to figure \ref{fig:norm_data} the limit of y-axis is set to [-1, 1] on figure  \ref{fig:compare} so that the result of inverting of quaternion is easy co compare to original data.  Figure \ref{fig:norm_data} shows plotted data with length of 20 seconds in range 162 - 182 s from both datasets.
+Thus after normalization step, the two representations of quaternions are blended into one data set, omitting to discontinuities in the time series as can be seen presented on Figure \ref{fig:norm_data}. Indeed, the RMSE and MSE rotation metrics were improved when model was trained with dataset with quaternions without sharp sign changes. More information can be found in sections \ref{sec:imp:experiments} and \ref{sec:imp:results}. The figure \ref{fig:compare} represents quaternions of the original interpolated dataset on the upper part of the plot and the normalized flipped quaternions on the lower part of the plot. The quaternion's components were flipped only if the if their real part became negative. Different to figure \ref{fig:norm_data} the limit of y-axis is set to [-1, 1] on figure  \ref{fig:compare} so that the result of inverting of quaternion is easy co compare to original data.  Figure \ref{fig:norm_data} shows plotted data with length of 20 seconds in range 162 - 182 s from both datasets.
 
 \begin{figure}[htb]
 	\begin{center}
@@ -156,7 +155,9 @@ The figure \ref{fig:compare} represents quaternions of the original interpolated
 	\end{center}
 \end{figure}
 
-
+NORMALIZATION 
+MEAN
+MIN-MAX
 
 \section{Neural Network}
 \label{sec:design:nn}
@@ -166,7 +167,6 @@ The figure \ref{fig:compare} represents quaternions of the original interpolated
 
 \subsection{Network input}
 \label{sec:design:nn:input}
-
 
 \section{Training methods}
 \label{sec:design:train}

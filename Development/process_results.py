@@ -5,21 +5,21 @@ import sys
 
 def find_min():
     df = pd.read_csv(sys.argv[2], skipfooter=1, engine='python')
-    mins_pos = df.nsmallest(10, 'MSE_pos')
-    print(f"MSE Position MIN is {df['MSE_pos'].min()}")
+    mins_pos = df.nsmallest(10, 'MAE_pos')
+    print(f"MAE Position MIN is {df['MAE_pos'].min()}")
     print(mins_pos)
-    mins_rot = df.nsmallest(10, 'MSE_rot')
-    print(f"MSE Rotation MIN is {df['MSE_rot'].min()}")
+    mins_rot = df.nsmallest(10, 'MAE_rot')
+    print(f"MAE Rotation MIN is {df['MAE_rot'].min()}")
     print(mins_rot)
 
 
 def find_max():
     df = pd.read_csv(sys.argv[2], skipfooter=1, engine='python')
-    maxs_pos = df.nlargest(10, 'MSE_pos')
-    print("MSE Position MAX")
+    maxs_pos = df.nlargest(10, 'MAE_pos')
+    print("MAE Position MAX")
     print(maxs_pos)
-    maxs_rot = df.nlargest(10, 'MSE_rot')
-    print("MSE Rotation MAX")
+    maxs_rot = df.nlargest(10, 'MAE_rot')
+    print("MAE Rotation MAX")
     print(maxs_rot)
 
 
