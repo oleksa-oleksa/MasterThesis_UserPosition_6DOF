@@ -302,7 +302,7 @@ def log_parameters(hidden_dim, n_epochs, batch_size, dropout, layers, df_results
     file_exists = os.path.isfile(log_path)
 
     dict_data = [
-        {'MSE_pos': df_results.iloc[0]["mae_euc"], 'MSE_rot': df_results.iloc[0]["mae_ang"],
+        {'MAE_pos': df_results.iloc[0]["mae_euc"], 'MAE_rot': df_results.iloc[0]["mae_ang"],
          'RMSE_pos': df_results.iloc[0]["rmse_euc"], 'RMSE_rot': df_results.iloc[0]["rmse_ang"],
          'LAT': df_results.iloc[0]["LAT"], 'hidden_dim': hidden_dim, 'epochs': n_epochs, 'batch_size': batch_size,
          'dropout': dropout, 'layers': layers}]

@@ -365,7 +365,7 @@ class RNNRunner():
 
             # Compute evaluation metrics LSTM
             deep_eval = DeepLearnEvaluator(predictions, values)
-            deep_eval.eval_lstm()
+            deep_eval.eval_model()
             metrics = np.array(list(deep_eval.metrics.values()))
             euc_dists = deep_eval.euc_dists
             ang_dists = np.rad2deg(deep_eval.ang_dists)
