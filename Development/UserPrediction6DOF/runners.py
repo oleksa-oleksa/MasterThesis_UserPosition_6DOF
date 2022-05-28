@@ -51,6 +51,7 @@ from filterpy.common import Q_discrete_white_noise
 from filterpy.kalman import KalmanFilter
 from .lstm import LSTMModel
 from .gru import GRUModel
+from .lstm_fcn import LSTMFCNModel
 from .optimization import RNNOptimization
 from scipy.linalg import block_diag
 from statsmodels.iolib.smpickle import save_pickle
@@ -295,6 +296,9 @@ class RNNRunner():
                                    self.output_dim, self.dropout, self.layer_dim)
         elif model == "gru":
             self.model = GRUModel(self.input_dim, self.hidden_dim, self.output_dim, self.dropout, self.layer_dim)
+
+        elif model == "lstm-fcn":
+            self.model = LSTMFCNModel(self.input_dim, self.hidden_dim, self.output_dim, self.dropout, self.layer_dim)
 
         self.params = {'LAT':self.pred_window, 'hidden_dim': self.hidden_dim, 'epochs': self.n_epochs,
                        'batch_size': self.batch_size, 'dropout': self.dropout, 'layers': self.layer_dim}
