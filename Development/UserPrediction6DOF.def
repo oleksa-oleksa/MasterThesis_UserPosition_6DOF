@@ -9,7 +9,6 @@ From: pytorch/pytorch:1.9.1-cuda11.1-cudnn8-runtime
     ./data/average /opt/data/average
     ./data/normalized_min-max opt/data/normalized_min-max
     ./data/normalized_mean opt/data/normalized_mean
-    ./data/normalized_full opt/data/normalized_full
     ./results /opt/results
     requirements.txt /opt
     config.toml /opt
@@ -37,13 +36,10 @@ From: pytorch/pytorch:1.9.1-cuda11.1-cudnn8-runtime
     # python -m UserPrediction6DOF run -a rnn -m lstm -w 100 -d 'data/average'
 
     # run with min-max dataset
-    python -m UserPrediction6DOF run -a rnn -m lstm -w 100 -d 'data/normalized_min-max'
+    # python -m UserPrediction6DOF run -a rnn -m lstm -w 100 -d 'data/normalized_min-max'
 
     # run with mean dataset
-    # python -m UserPrediction6DOF run -a rnn -m lstm -w 100 -d 'data/normalized_mean'
-
-    # run with full normalized dataset
-    # python -m UserPrediction6DOF run -a rnn -m lstm -w 100 -d 'data/normalized_full'
+    python -m UserPrediction6DOF run -a rnn -m lstm -w 100 -d 'data/normalized_mean'
 
     # GRU
     # run with interpolated dataset
@@ -61,6 +57,5 @@ From: pytorch/pytorch:1.9.1-cuda11.1-cudnn8-runtime
     # run with mean dataset
     # python -m UserPrediction6DOF run -a rnn -m gru -w 100 -d 'data/normalized_mean'
 
-    # run with full normalized dataset
-    # python -m UserPrediction6DOF run -a rnn -m gru -w 100 -d 'data/normalized_full'
+
 
