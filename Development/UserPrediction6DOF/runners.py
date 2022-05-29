@@ -340,6 +340,7 @@ class RNNRunner():
 
             # Long Short-Term Memory TRAIN + EVAL
 
+            # ------------ LOSS FUNCTIONS --------------
             # Mean Squared Error Loss Function
             # average of the squared differences between actual values and predicted values
             loss_fn = nn.MSELoss(reduction="mean")
@@ -348,7 +349,9 @@ class RNNRunner():
             # average of the sum of absolute differences between actual values and predicted values
             # loss_fn = nn.L1Loss()
 
+            # ------------ OPTIMIZERS ------------------
             optimizer = optim.Adam(self.model.parameters(), lr=self.learning_rate, weight_decay=self.weight_decay)
+            # optimizer = optim.SGD(self.model.parameters(), lr=0.01, momentum=0.9)
 
             opt = RNNOptimization(model=self.model, loss_fn=loss_fn, optimizer=optimizer, results=self.results_path, params=self.params)
             opt.train(train_loader, val_loader, batch_size=self.batch_size,
