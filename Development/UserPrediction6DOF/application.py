@@ -276,8 +276,6 @@ class Application:
             self.norm_type = args.norm_type
             self.dataset_path = args.dataset_path
             self.norm_dataset_path = args.norm_dataset_path
-            if not os.path.exists(self.norm_dataset_path):
-                os.makedirs(self.norm_dataset_path)
         elif self.command == 'run':
             self.algorithm = args.algorithm
             self.dataset_path = args.dataset_path
@@ -471,7 +469,7 @@ class Application:
             '--model',
             dest='model',
             type=str,
-            choices=['lstm', 'gru'],
+            choices=['lstm', 'gru', 'lstm-fcn', 'lstm-gru'],
             default='lstm',
             help='Selects RNN variant'
         )
