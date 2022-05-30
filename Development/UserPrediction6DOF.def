@@ -6,7 +6,8 @@ From: pytorch/pytorch:1.9.1-cuda11.1-cudnn8-runtime
     ./UserPrediction6DOF /opt/UserPrediction6DOF
     ./data/interpolated  /opt/data/interpolated
     ./data/flipped /opt/data/flipped
-    ./data/normalized_min-max opt/data/normalized_min-max
+    ./data/normalized_interpolated_min-max opt/normalized_interpolated_min-max
+    .data/normalized_flipped_min-max opt/normalized_flipped_min-max
     ./data/normalized_mean opt/data/normalized_mean
     ./results /opt/results
     requirements.txt /opt
@@ -31,8 +32,11 @@ From: pytorch/pytorch:1.9.1-cuda11.1-cudnn8-runtime
     # run with dataset with flipped quaternions
     # python -m UserPrediction6DOF run -a rnn -m lstm -w 100 -d 'data/flipped'
 
-    # run with min-max dataset
-    # python -m UserPrediction6DOF run -a rnn -m lstm -w 100 -d 'data/normalized_min-max'
+    # run with INTERPOLATED MIN-MAX dataset
+    # python -m UserPrediction6DOF run -a rnn -m lstm -w 100 -d 'data/normalized_interpolated_min-max'
+
+    # run with FLIPPED MIN-MAX dataset
+    # python -m UserPrediction6DOF run -a rnn -m lstm -w 100 -d 'data/normalized_flipped_min-max'
 
     # run with mean dataset
     # python -m UserPrediction6DOF run -a rnn -m lstm -w 100 -d 'data/normalized_mean'
@@ -45,8 +49,11 @@ From: pytorch/pytorch:1.9.1-cuda11.1-cudnn8-runtime
     # run with dataset with flipped quaternions
     python -m UserPrediction6DOF run -a rnn -m gru -w 100 -d 'data/flipped'
 
-    # run with min-max dataset
-    # python -m UserPrediction6DOF run -a rnn -m gru -w 100 -d 'data/normalized_min-max'
+    # run with INTERPOLATED MIN-MAX dataset
+    # python -m UserPrediction6DOF run -a rnn -m gru -w 100 -d 'data/normalized_interpolated_min-max'
+
+    # run with FLIPPED MIN-MAX dataset
+    # python -m UserPrediction6DOF run -a rnn -m gru -w 100 -d 'data/normalized_flipped_min-max'
 
     # run with mean dataset
     # python -m UserPrediction6DOF run -a rnn -m gru -w 100 -d 'data/normalized_mean'
