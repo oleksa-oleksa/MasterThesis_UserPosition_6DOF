@@ -272,7 +272,7 @@ class RNNRunner():
         # -----  MODEL HYPERPARAMETERS ----------#
         self.input_dim = 10  # 11 features with velocity and speed
         self.output_dim = 7  # 3 position parameter + 4 rotation parameter
-        self.learning_rate = 1e-3
+        self.learning_rate = 0.01
         self.weight_decay = 1e-6
 
         if 'RNN_PARAMETERS' in os.environ:
@@ -284,7 +284,7 @@ class RNNRunner():
         else:
             self.hidden_dim = 40
             self.batch_size = 2048
-            self.n_epochs = 100
+            self.n_epochs = 1000
             self.dropout = 0.1
             self.layer_dim = 1  # the number of LSTM layers stacked on top of each other
 

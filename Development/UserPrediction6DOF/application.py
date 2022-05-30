@@ -108,7 +108,7 @@ class Application:
             self.report()
         elif self.command == 'plot':
             if self.plot_command == 'dataset':
-                self.plot_interpolated_datasets()
+                self.plot_datasets()
             elif self.plot_command == 'raw':
                 self.plot_raw_datasets()
             elif self.plot_command == 'flipped':
@@ -147,10 +147,10 @@ class Application:
         runner = RNNRunner(model, self.pred_window, self.dataset_path, self.results_path)
         runner.run()
 
-    def plot_interpolated_datasets(self):
+    def plot_datasets(self):
         """Plots interpolated trace"""
         plotter = DataPlotter()
-        plotter.plot_datasets(self.dataset_path, self.results_path, 'interpolated')
+        plotter.plot_datasets(self.dataset_path, self.results_path)
 
     @staticmethod
     def plot_raw_datasets(self):
@@ -160,7 +160,7 @@ class Application:
     def plot_flipped_datasets(self):
         """Plots interpolated trace"""
         plotter = DataPlotter()
-        plotter.plot_datasets(self.flipped_dataset_path, self.results_path, 'flipped')
+        plotter.plot_datasets(self.flipped_dataset_path, self.results_path)
 
     def plot_datasets_comparison(self):
         """Plots selected area of two graphs for visual comparison in thesis"""

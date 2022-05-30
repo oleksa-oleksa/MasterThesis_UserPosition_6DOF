@@ -47,7 +47,7 @@ class RNNOptimization:
 
     def train(self, train_loader, val_loader, batch_size=64, n_epochs=50, n_features=11):
         # trained model can be saved
-        model_path = f'./models/LSTM/{datetime.now().strftime("%d.%m_%H%M%S")}'
+        # model_path = f'./models/LSTM/{datetime.now().strftime("%d.%m_%H%M%S")}'
 
         for epoch in range(1, n_epochs + 1):
             batch_losses = []
@@ -76,6 +76,11 @@ class RNNOptimization:
                     batch_val_losses.append(val_loss)
                 validation_loss = np.mean(batch_val_losses)
                 self.val_losses.append(validation_loss)
+
+            if (epoch >= 30) & (epoch % 30 == 0):
+                for g in self.optimizer.param_groups:
+                    g['lr'] = g['lr'] * 0.3
+                    print(f"Learning rate is {g['lr']}")
 
             if (epoch <= 5) | (epoch % 5 == 0):
                 # print first 5 epochs and then every 5 epochs

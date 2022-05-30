@@ -61,7 +61,7 @@ dataset_lengh_sec = 600
 class DataPlotter():
     """Plots dataset traces"""
     @staticmethod
-    def plot_datasets(dataset_path, output_path, dataset_type):
+    def plot_datasets(dataset_path, output_path):
         logging.info(f"Plotting from {dataset_path} and saving to {output_path}")
         for trace_path in get_csv_files(dataset_path):
             df = pd.read_csv(trace_path)
@@ -109,8 +109,9 @@ class DataPlotter():
             ax3.yaxis.grid(which='major', linestyle='dotted', linewidth=1)
             ax3.xaxis.set_major_locator(MultipleLocator(10))
 
+            dset_type = os.path.basename(os.path.normpath(dataset_path))
             trace_id = os.path.splitext(os.path.basename(trace_path))[0]
-            dest = os.path.join(output_path, f"Fig-{trace_id}-{dataset_type}.pdf")
+            dest = os.path.join(output_path, f"Fig-{trace_id}-{dset_type}.pdf")
             fig.savefig(dest)
             logging.info("Plotting trace {} and saving to file {}".format(trace_path, dest))
 
