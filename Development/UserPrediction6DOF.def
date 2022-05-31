@@ -6,9 +6,12 @@ From: pytorch/pytorch:1.9.1-cuda11.1-cudnn8-runtime
     ./UserPrediction6DOF /opt/UserPrediction6DOF
     ./data/interpolated  /opt/data/interpolated
     ./data/flipped /opt/data/flipped
-    ./data/normalized_interpolated_min-max opt/normalized_interpolated_min-max
-    .data/normalized_flipped_min-max opt/normalized_flipped_min-max
-    ./data/normalized_mean opt/data/normalized_mean
+    ./data/normalized_flipped_mean /opt/data/normalized_flipped_mean
+    ./data/normalized_flipped_min-max /opt/data/normalized_flipped_min-max
+    ./data/normalized_flipped_min-max-double /opt/data/normalized_flipped_min-max-double
+    ./data/normalized_interpolated_mean /opt/data/normalized_interpolated_mean
+    ./data/normalized_interpolated_min-max /opt/data/normalized_interpolated_min-max
+    ./data/normalized_interpolated_min-max-double /opt/data/normalized_interpolated_min-max-double
     ./results /opt/results
     requirements.txt /opt
     config.toml /opt

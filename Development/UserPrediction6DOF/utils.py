@@ -159,7 +159,7 @@ def flip_negative_quaternions(trace_path, out_dir):
     return df
 
 
-def normalize_dataset(trace_path, out_dir, norm_type):
+def normalize_dataset(trace_path, out_dir, norm_type, dataset_path):
     case = os.path.splitext(os.path.basename(trace_path))[0]
     # A comma-separated values (csv) file is returned as two-dimensional data structure with labeled axes.
     df = pd.read_csv(trace_path, skipfooter=1, engine='python')
@@ -170,10 +170,13 @@ def normalize_dataset(trace_path, out_dir, norm_type):
         df = (df - df.mean())/df.std()
     elif norm_type == 'min-max':
         df = (df - df.min()) / (df.max() - df.min())
+    elif norm_type == 'min-max-double':
+        df = 2 * ((df - df.min()) / (df.max() - df.min())) - 1
     print(df.mean())
 
     # Save flipped DataFrame to csv
-    dest = os.path.join(out_dir + '_' + norm_type)
+    dset_type = os.path.basename(os.path.normpath(dataset_path))
+    dest = os.path.join(out_dir + '_' + dset_type + '_' + norm_type)
     print(dest)
     if not os.path.exists(dest):
         os.makedirs(dest)

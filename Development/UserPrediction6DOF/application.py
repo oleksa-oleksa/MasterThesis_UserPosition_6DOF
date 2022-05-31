@@ -210,7 +210,7 @@ class Application:
         in the data have zero-mean and unit-variance"""
         print(f"Normaizing datasets from {self.dataset_path}")
         for trace_path in get_csv_files(self.dataset_path):
-            normalize_dataset(trace_path, self.norm_dataset_path, self.norm_type)
+            normalize_dataset(trace_path, self.norm_dataset_path, self.norm_type, self.dataset_path)
 
     def report(self):
         trace_path = os.path.join(self.dataset_path, "1556.csv")
@@ -430,7 +430,7 @@ class Application:
             '--type',
             dest='norm_type',
             type=str,
-            choices=['mean', 'min-max', 'full'],
+            choices=['mean', 'min-max', 'min-max-double'],
             default='mean',
             help='Selects normalization variant'
         )
