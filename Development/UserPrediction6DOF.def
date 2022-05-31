@@ -7,7 +7,7 @@ From: pytorch/pytorch:1.9.1-cuda11.1-cudnn8-runtime
     ./data/interpolated  /opt/data/interpolated
     ./data/flipped /opt/data/flipped
     ./data/normalized_interpolated_min-max opt/normalized_interpolated_min-max
-    .data/normalized_flipped_min-max opt/normalized_flipped_min-max
+    ./data/normalized_flipped_min-max opt/normalized_flipped_min-max
     ./data/normalized_mean opt/data/normalized_mean
     ./results /opt/results
     requirements.txt /opt
@@ -50,7 +50,7 @@ From: pytorch/pytorch:1.9.1-cuda11.1-cudnn8-runtime
     python -m UserPrediction6DOF run -a rnn -m gru -w 100 -d 'data/flipped'
 
     # run with INTERPOLATED MIN-MAX dataset
-    # python -m UserPrediction6DOF run -a rnn -m gru -w 100 -d 'data/normalized_interpolated_min-max'
+    python -m UserPrediction6DOF run -a rnn -m gru -w 100 -d 'data/normalized_interpolated_min-max'
 
     # run with FLIPPED MIN-MAX dataset
     # python -m UserPrediction6DOF run -a rnn -m gru -w 100 -d 'data/normalized_flipped_min-max'
