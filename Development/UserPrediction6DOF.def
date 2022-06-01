@@ -45,9 +45,8 @@ From: pytorch/pytorch:1.9.1-cuda11.1-cudnn8-runtime
     # python -m UserPrediction6DOF run -a rnn -m lstm -w 100 -d 'data/normalized_interpolated_mean'
     # python -m UserPrediction6DOF run -a rnn -m lstm -w 100 -d 'data/normalized_flipped_mean'
 
-
     # run with MIN-MAX DOUBLE dataset
-    python -m UserPrediction6DOF run -a rnn -m lstm -w 100 -d 'data/normalized_interpolated_min-max-double'
+    # python -m UserPrediction6DOF run -a rnn -m lstm -w 100 -d 'data/normalized_interpolated_min-max-double'
     # python -m UserPrediction6DOF run -a rnn -m lstm -w 100 -d 'data/normalized_flipped_min-max-double'
 
     # ===============================
@@ -70,4 +69,4 @@ From: pytorch/pytorch:1.9.1-cuda11.1-cudnn8-runtime
 
     # run with MIN-MAX DOUBLE dataset
     # python -m UserPrediction6DOF run -a rnn -m gru -w 100 -d 'data/normalized_interpolated_min-max-double'
-    # python -m UserPrediction6DOF run -a rnn -m gru -w 100 -d 'data/normalized_flipped_min-max-double'
+    python -m UserPrediction6DOF run -a rnn -m gru -w 100 -d 'data/normalized_flipped_min-max-double'
