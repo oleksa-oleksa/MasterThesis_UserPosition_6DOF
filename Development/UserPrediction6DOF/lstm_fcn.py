@@ -46,7 +46,7 @@ class LSTMFCNModel(nn.Module):
         # setting batch_first=True requires the input to have the shape [batch_size, seq_len, input_size]
         self.lstm = LSTMModel(self.input_dim, hidden_dim, self.N_LSTM_Out, dropout, layer_dim)
 
-        self.C1 = nn.Conv1d(self.N_time, self.Conv1_NF, 8)
+        self.C1 = nn.Conv1d(self.Conv1_NF, self.N_time, 8)
         self.C2 = nn.Conv1d(self.Conv1_NF, self.Conv2_NF, 5)
         self.C3 = nn.Conv1d(self.Conv2_NF, self.Conv3_NF, 3)
         self.BN1 = nn.BatchNorm1d(self.Conv1_NF)
