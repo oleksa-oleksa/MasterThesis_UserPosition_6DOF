@@ -31,10 +31,10 @@ class LSTMFCNModel(nn.Module):
         self.hidden_dim = hidden_dim
         self.N_time = batch_size
         self.layer_dim = layer_dim
-        self.N_LSTM_Out = 128
-        self.Conv1_NF = 1
-        self.Conv2_NF = 256
-        self.Conv3_NF = 128
+        self.N_LSTM_Out = batch_size
+        self.Conv1_NF = batch_size
+        self.Conv2_NF = batch_size * 2
+        self.Conv3_NF = batch_size
         self.lstm_dropout = 0.8  # 0.8
         self.fcn_dropout = 0.3
 
