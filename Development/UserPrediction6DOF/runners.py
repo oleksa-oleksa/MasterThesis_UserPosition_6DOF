@@ -293,12 +293,14 @@ class RNNRunner():
         # SELECTS MODEL
         if model == "lstm":
             self.model = LSTMModel(self.input_dim, self.hidden_dim,
-                                   self.output_dim, self.dropout, self.layer_dim)
+                                   self.output_dim, self.dropout, self.layer_dim, self.batch_size)
         elif model == "gru":
-            self.model = GRUModel(self.input_dim, self.hidden_dim, self.output_dim, self.dropout, self.layer_dim)
+            self.model = GRUModel(self.input_dim, self.hidden_dim,
+                                  self.output_dim, self.dropout, self.layer_dim, self.batch_size)
 
         elif model == "lstm-fcn":
-            self.model = LSTMFCNModel(self.input_dim, self.hidden_dim, self.output_dim, self.dropout, self.layer_dim)
+            self.model = LSTMFCNModel(self.input_dim, self.hidden_dim,
+                                      self.output_dim, self.dropout, self.layer_dim, self.batch_size)
 
         self.params = {'LAT':self.pred_window, 'hidden_dim': self.hidden_dim, 'epochs': self.n_epochs,
                        'batch_size': self.batch_size, 'dropout': self.dropout, 'layers': self.layer_dim}

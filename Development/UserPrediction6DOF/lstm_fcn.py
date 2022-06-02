@@ -20,6 +20,94 @@ class LSTMFCNModel(nn.Module):
         will process only1time step with N variables.
 
     """
+    def __init__(self, input_dim, hidden_dim, output_dim, dropout, layer_dim=1, batch_size=2048):
+        """Works both on CPU and GPU without additional modifications"""
+        super(LSTMFCNModel, self).__init__()
+        self.name = "LSTM-FCN"
+
+        # Defining the number of layers and the nodes in each layer
+        self.input_dim = input_dim
+        self.output_dim = output_dim
+        self.hidden_dim = hidden_dim
+        self.N_time = batch_size
+        self.layer_dim = layer_dim
+        self.N_LSTM_Out = 128
+        self.Conv1_NF = 128
+        self.Conv2_NF = 256
+        self.Conv3_NF = 128
+        self.lstm_dropout = 0.8  # 0.8
+        self.fcn_dropout = 0.3
+
+        if 'FCN_PARAMETERS' in os.environ:
+            self.fcn_dropout = float(os.getenv('FCN_DROPOUT'))
+            self.lstm_dropout = float(os.getenv('LSTM_DROPOUT'))
+
+        # LSTM layers (default 1)
+        # setting batch_first=True requires the input to have the shape [batch_size, seq_len, input_size]
+        self.lstm = LSTMModel(self.input_dim, hidden_dim, self.N_LSTM_Out, dropout, layer_dim)
+
+        self.C1 = nn.Conv1d(self.N_time, self.Conv1_NF, 8)
+        self.C2 = nn.Conv1d(self.Conv1_NF, self.Conv2_NF, 5)
+        self.C3 = nn.Conv1d(self.Conv2_NF, self.Conv3_NF, 3)
+        self.BN1 = nn.BatchNorm1d(self.Conv1_NF)
+        self.BN2 = nn.BatchNorm1d(self.Conv2_NF)
+        self.BN3 = nn.BatchNorm1d(self.Conv3_NF)
+        self.relu = nn.ReLU()
+        self.lstmDrop = nn.Dropout(p=self.lstm_dropout)
+        self.ConvDrop = nn.Dropout(p=self.fcn_dropout)
+        self.FC = nn.Linear(self.Conv3_NF + self.N_LSTM_Out, self.output_dim)
+
+        self.cuda = torch.cuda.is_available()
+        if self.cuda:
+            pass
+        logging.info(F"Model {self.name} on GPU with cuda: {self.cuda}")
+
+    def init_hidden(self):
+        h0 = torch.zeros(self.layer_dim, self.N_time, self.N_LSTM_Out)  # .to(device)
+        c0 = torch.zeros(self.layer_dim, self.N_time, self.N_LSTM_Out)  # .to(device)
+        return h0, c0
+
+    def forward(self, x):
+        # Initializing hidden state for first input with zeros
+        if self.cuda:
+            x = x.cuda()
+        print(f'x input: {x.size()}')
+
+        # h0, c0 = self.init_hidden()
+        # x1, (ht, ct) = self.lstm(x, (h0, c0))
+        x1_lstm = self.lstm(x)
+        # x1 = x1[:, -1, :]
+
+        print(f'x1_lstm: {x1_lstm.size()}')
+        # x2 = x.transpose(2, 1)
+        x2 = x
+        print(f'X2: {x2.size()}')
+        x2 = self.ConvDrop(self.relu(self.BN1(self.C1(x2))))
+        x2 = self.ConvDrop(self.relu(self.BN2(self.C2(x2))))
+        x2 = self.ConvDrop(self.relu(self.BN3(self.C3(x2))))
+        x2 = torch.mean(x2, 2)
+
+        x_all = torch.cat((x1_lstm, x2), dim=1)
+        x_out = self.FC(x_all)
+        return x_out
+
+
+
+class LSTMFCNModelOld(nn.Module):
+    """
+        Implements LSTM FCN models, from the paper
+        LSTM Fully Convolutional Networks for Time Series Classification,
+        augment the fast classification performance of Temporal Convolutional
+        layers with the precise classification
+        of Long Short Term Memory Recurrent Neural Networks.
+
+        The dimension shuffle transposes the input univariate time series of
+        N time steps and1variable into a multivariate time series
+        of N variables and 1 time step. In other words, when dimension shuffle
+        is  applied  to  the  input  before  the  LSTM  block,  the LSTM block
+        will process only1time step with N variables.
+
+    """
     def __init__(self, input_dim, hidden_dim, output_dim, dropout, layer_dim=1):
         """Works both on CPU and GPU without additional modifications"""
         super(LSTMFCNModel, self).__init__()
