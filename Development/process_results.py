@@ -12,6 +12,15 @@ def find_min():
     print(f"MAE Rotation MIN is {df['MAE_rot'].min()}")
     print(mins_rot)
 
+def find_col():
+    df = pd.read_csv(sys.argv[2], skipfooter=1, engine='python')
+    mins_q = df.nsmallest(10, sys.argv[3])
+    print(f"{sys.argv[3]} MIN is {df[sys.argv[3]].min()}")
+    #print(mins_q)
+    maxs_q = df.nlargest(10, sys.argv[3])
+    print(f"{sys.argv[3]} MAX is {df[sys.argv[3]].max()}")
+    #print(maxs_q)
+
 
 def find_max():
     df = pd.read_csv(sys.argv[2], skipfooter=1, engine='python')
@@ -48,5 +57,7 @@ if __name__ == "__main__":
         find_min()
     if sys.argv[1] == "max":
         find_max()
+    if sys.argv[1] == "col":
+        find_col()
     elif sys.argv[1] == "train_size":
         get_LSTM_train_size(int(sys.argv[3]), float(sys.argv[4]))

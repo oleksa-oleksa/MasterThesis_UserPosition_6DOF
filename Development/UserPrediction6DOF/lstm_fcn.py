@@ -13,6 +13,12 @@ class LSTMFCNModel(nn.Module):
         layers with the precise classification
         of Long Short Term Memory Recurrent Neural Networks.
 
+        The dimension shuffle transposes the input univariate time series of
+        N time steps and1variable into a multivariate time series
+        of N variables and 1 time step. In other words, when dimension shuffle
+        is  applied  to  the  input  before  the  LSTM  block,  the LSTM block
+        will process only1time step with N variables.
+
     """
     def __init__(self, input_dim, hidden_dim, output_dim, dropout, layer_dim=1):
         """Works both on CPU and GPU without additional modifications"""
@@ -33,15 +39,15 @@ class LSTMFCNModel(nn.Module):
             self.dropout = nn.Dropout2d(0.6)
 
         # PyTorch initializes the conv and linear weights with kaiming_uniform
-        self.conv1 = nn.Conv1d(input_dim, 128, 8, padding='same', bias=False, stride=1)
+        self.conv1 = nn.Conv1d(in_channels=input_dim, out_channels=128, kernel_size=8, padding='valid', bias=False, stride=1)
         self.relu1 = nn.LeakyReLU()
         self.bn1 = nn.BatchNorm1d(128)
 
-        self.conv2 = nn.Conv1d(128, 256, 5, padding='same', bias=False, stride=1)
+        self.conv2 = nn.Conv1d(128, 256, 5, padding='valid', bias=False, stride=1)
         self.relu2 = nn.LeakyReLU()
         self.bn2 = nn.BatchNorm1d(256)
 
-        self.conv3 = nn.Conv1d(256, 128, 3, padding='same', bias=False, stride=1)
+        self.conv3 = nn.Conv1d(256, 128, 3, padding='valid', bias=False, stride=1)
         self.relu3 = nn.LeakyReLU()
         self.bn3 = nn.BatchNorm1d(128)
 
@@ -62,6 +68,9 @@ class LSTMFCNModel(nn.Module):
             self.conv3.cuda()
             self.relu3.cuda()
             self.bn3.cuda()
+            self.glob_pool.cuda()
+            self.fc.cuda()
+            self.softmax.cuda()
         logging.info(F"Model {self.name} on GPU with cuda: {self.cuda}")
 
     def forward(self, x):
@@ -71,12 +80,20 @@ class LSTMFCNModel(nn.Module):
 
         # 2D LSTM
 
+        print(f"x input: {x.size()}")
         x_lstm = self.lstm(x)
+        print(f'lstm after ltsm(x): {x_lstm.size()}')
         x_lstm = self.dropout(x_lstm)
 
         # 1D FCN
-        print(x.shape)
-        x_fcn = torch.permute(x, (2, 1))
+
+        # x_fcn = torch.squeeze(x)
+        # print(f"x_fcn squeeze: {x_fcn.size()}")
+        # dims in permute (tuple of python:ints) – The desired ordering of dimensions
+        # x_fcn = torch.permute(x_fcn, (1, 0))
+        x_fcn = torch.permute(x, (1, 2, 0))
+
+        print(f'fcn after permute: {x_fcn.size()}')
 
         x_fcn = self.conv1(x_fcn)
         x_fcn = self.relu1(x_fcn)
@@ -91,6 +108,20 @@ class LSTMFCNModel(nn.Module):
         x_fcn = self.bn3(x_fcn)
 
         x_fcn = self.glob_pool(x_fcn)
+        print(f'fcn after global pooling: {x_fcn.size()}')
+
+        # x_fcn = torch.squeeze(x_fcn)
+        # print(f"x_fcn squeeze: {x_fcn.size()}")
+
+        x_fcn = self.fc(x_fcn)
+        print(f'fcn after linear: {x_fcn.size()}')
+
+        x_fcn = self.softmax(x_fcn)
+        print(f'fcn after softmax: {x_fcn.size()}')
+
+
+
+        print(f'lstm before concat ltsm(x): {x_lstm.size()}')
 
         out = torch.cat((x_lstm, x_fcn))
         out = self.fc(out)

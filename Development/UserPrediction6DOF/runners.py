@@ -270,10 +270,10 @@ class RNNRunner():
         # self.features = self.cfg['pos_coords'] + self.cfg['quat_coords']
 
         # -----  MODEL HYPERPARAMETERS ----------#
-        self.input_dim = 10  # 11 features with velocity and speed
+        self.input_dim = 10
         self.output_dim = 7  # 3 position parameter + 4 rotation parameter
-        self.learning_rate = 0.01
-        self.weight_decay = 1e-6
+        self.learning_rate = 1e-3  # 1e-3 base
+        self.weight_decay = 1e-6  # 1e-6 base
 
         if 'RNN_PARAMETERS' in os.environ:
             self.hidden_dim = int(os.getenv('HIDDEN_DIM'))
@@ -282,10 +282,10 @@ class RNNRunner():
             self.dropout = float(os.getenv('DROPOUT'))
             self.layer_dim = int(os.getenv('LAYERS'))
         else:
-            self.hidden_dim = 40
-            self.batch_size = 2048
-            self.n_epochs = 1000
-            self.dropout = 0.1
+            self.hidden_dim = 500
+            self.batch_size = 8192
+            self.n_epochs = 250
+            self.dropout = 0
             self.layer_dim = 1  # the number of LSTM layers stacked on top of each other
 
         # -----  CREATE PYTORH MODEL ----------#
