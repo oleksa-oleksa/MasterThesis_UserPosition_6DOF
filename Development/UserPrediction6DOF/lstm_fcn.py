@@ -31,10 +31,10 @@ class LSTMFCNModel(nn.Module):
         self.hidden_dim = hidden_dim
         self.N_time = batch_size
         self.layer_dim = layer_dim
-        self.N_LSTM_Out = batch_size
-        self.Conv1_NF = batch_size
-        self.Conv2_NF = batch_size * 2
-        self.Conv3_NF = batch_size
+        self.N_LSTM_Out = 128
+        self.Conv1_NF = 128
+        self.Conv2_NF = 256
+        self.Conv3_NF = 128
         self.lstm_dropout = 0.8  # 0.8
         self.fcn_dropout = 0.3
 
@@ -46,9 +46,9 @@ class LSTMFCNModel(nn.Module):
         # setting batch_first=True requires the input to have the shape [batch_size, seq_len, input_size]
         self.lstm = LSTMModel(self.input_dim, hidden_dim, self.N_LSTM_Out, dropout, layer_dim)
 
-        self.C1 = nn.Conv1d(self.Conv1_NF, self.N_time, 8)
-        self.C2 = nn.Conv1d(self.Conv1_NF, self.Conv2_NF, 5)
-        self.C3 = nn.Conv1d(self.Conv2_NF, self.Conv3_NF, 3)
+        self.C1 = nn.Conv1d(self.input_dim, 128, 1)
+        self.C2 = nn.Conv1d(self.Conv1_NF, self.Conv2_NF, 1)
+        self.C3 = nn.Conv1d(self.Conv2_NF, self.Conv3_NF, 1)
         self.BN1 = nn.BatchNorm1d(self.Conv1_NF)
         self.BN2 = nn.BatchNorm1d(self.Conv2_NF)
         self.BN3 = nn.BatchNorm1d(self.Conv3_NF)
@@ -71,17 +71,19 @@ class LSTMFCNModel(nn.Module):
         # Initializing hidden state for first input with zeros
         if self.cuda:
             x = x.cuda()
-        print(f'x input: {x.size()}')
+        # print(f'x input: {x.size()}')
 
         # h0, c0 = self.init_hidden()
         # x1, (ht, ct) = self.lstm(x, (h0, c0))
         x1_lstm = self.lstm(x)
         # x1 = x1[:, -1, :]
 
-        print(f'x1_lstm: {x1_lstm.size()}')
-        # x2 = x.transpose(2, 1)
-        x2 = x
-        print(f'X2: {x2.size()}')
+        # print(f'x1_lstm: {x1_lstm.size()}')
+        x2 = x.transpose(2, 1)
+        # x2 = x
+        # print(f'X2: {x2.size()}')
+        # is [8192, 1, 10]
+        # must [128, 10, 8]
         x2 = self.ConvDrop(self.relu(self.BN1(self.C1(x2))))
         x2 = self.ConvDrop(self.relu(self.BN2(self.C2(x2))))
         x2 = self.ConvDrop(self.relu(self.BN3(self.C3(x2))))
