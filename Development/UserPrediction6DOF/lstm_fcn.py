@@ -51,9 +51,10 @@ class LSTMFCNModel(nn.Module):
         self.relu3 = nn.LeakyReLU()
         self.bn3 = nn.BatchNorm1d(128)
 
-        self.glob_pool = nn.AvgPool1d(3)
         self.fc = nn.Linear(128, output_dim)
         self.softmax = nn.Softmax()
+        self.glob_pool = nn.AvgPool1d(3)
+
 
         self.cuda = torch.cuda.is_available()
         if self.cuda:
@@ -107,19 +108,17 @@ class LSTMFCNModel(nn.Module):
         x_fcn = self.relu3(x_fcn)
         x_fcn = self.bn3(x_fcn)
 
+        x_fcn = self.fc(x_fcn)
+        print(f'fcn after linear: {x_fcn.size()}')
+
         x_fcn = self.glob_pool(x_fcn)
         print(f'fcn after global pooling: {x_fcn.size()}')
 
         # x_fcn = torch.squeeze(x_fcn)
         # print(f"x_fcn squeeze: {x_fcn.size()}")
 
-        x_fcn = self.fc(x_fcn)
-        print(f'fcn after linear: {x_fcn.size()}')
-
         x_fcn = self.softmax(x_fcn)
         print(f'fcn after softmax: {x_fcn.size()}')
-
-
 
         print(f'lstm before concat ltsm(x): {x_lstm.size()}')
 
