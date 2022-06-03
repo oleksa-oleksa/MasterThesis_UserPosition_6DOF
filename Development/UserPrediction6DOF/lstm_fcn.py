@@ -94,7 +94,6 @@ class LSTMFCNModel(nn.Module):
         return x_out
 
 
-
 class LSTMFCNModelOld(nn.Module):
     """
         Implements LSTM FCN models, from the paper
