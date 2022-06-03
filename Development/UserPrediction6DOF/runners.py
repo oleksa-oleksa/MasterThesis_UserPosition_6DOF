@@ -49,7 +49,7 @@ import torch.nn as nn
 import torch.optim as optim
 from filterpy.common import Q_discrete_white_noise
 from filterpy.kalman import KalmanFilter
-from .lstm import LSTMModel, LSTMModelSlidingWindow
+from .lstm import LSTMModel, LSTMModelSlidingWindow, LSTMModelCustom
 from .gru import GRUModel
 from .lstm_fcn import LSTMFCNModel
 from .optimization import RNNOptimization
@@ -254,7 +254,7 @@ class RNNRunner():
         self.dists_path = os.path.join(self.results_path, 'distances')
         self.model = None
         self.pred_step = int(self.pred_window / self.dt)
-        self.num_past = 100  # number of past time series to predict future
+        self.num_past = 50  # number of past time series to predict future
 
         # -----  CUDA FOR CPU ----------#
         # for running in Singularity container paths must be modified
@@ -289,7 +289,7 @@ class RNNRunner():
             self.layer_dim = int(os.getenv('LAYERS'))
         else:
             self.hidden_dim = 32
-            self.batch_size = 64
+            self.batch_size = 2048
             self.n_epochs = 100
             self.dropout = 0
             self.layer_dim = 1  # the number of LSTM layers stacked on top of each other
@@ -299,10 +299,14 @@ class RNNRunner():
         # SELECTS MODEL
         if model == "lstm":
             self.model = LSTMModelSlidingWindow(self.input_dim, self.hidden_dim,
-                                   self.output_dim, self.dropout, self.layer_dim, self.batch_size)
+                                                self.output_dim, self.dropout, self.layer_dim)
+        elif model == "lstm-custom":
+            self.model = LSTMModelCustom(self.input_dim, self.hidden_dim,
+                                         self.output_dim, self.dropout, self.layer_dim)
+
         elif model == "gru":
             self.model = GRUModel(self.input_dim, self.hidden_dim,
-                                  self.output_dim, self.dropout, self.layer_dim, self.batch_size)
+                                  self.output_dim, self.dropout, self.layer_dim)
 
         elif model == "lstm-fcn":
             self.model = LSTMFCNModel(self.input_dim, self.hidden_dim,
@@ -329,7 +333,7 @@ class RNNRunner():
             X = df_trace[self.features].to_numpy()
             print(f'X.shape: {X.shape}')
             print(f'len(X): {len(X)}')
-            print(f'Past {self.num_past} values for predict +: {self.pred_step}')
+            print(f'Past {self.num_past} values for predict in {self.pred_step} in future')
 
             # output is created from the features shifted corresponding to given latency
             # y = X[self.pred_step:, :]

@@ -18,7 +18,7 @@ class GRUModel(nn.Module):
     the reset gate decides how much of the past information to forget.
     Doing fewer tensor operations, GRUs are often faster and require less memory than LSTMs.
     """
-    def __init__(self, input_dim, hidden_dim, output_dim, dropout_prob, layer_dim=1, batch_size=2048):
+    def __init__(self, input_dim, hidden_dim, output_dim, dropout_prob, layer_dim=1):
         super(GRUModel, self).__init__()
         self.name = "GRU"
 

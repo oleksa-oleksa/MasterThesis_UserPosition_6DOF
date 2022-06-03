@@ -7,7 +7,7 @@ from matplotlib import pyplot as plt
 import logging
 
 
-class LSTMModelBase(nn.Module):
+class LSTMModelCustom(nn.Module):
 
     """
     Implements a sequential network named Long Short Term Memory Network.
@@ -74,7 +74,7 @@ class LSTMModelBase(nn.Module):
 
     """
 
-    def __init__(self, input_dim, hidden_dim):
+    def __init__(self, input_dim, hidden_dim, output_dim, dropout, layer_dim=1):
 
         """
         Instantiate an LSTM layer and provides it with the necessary arguments
@@ -99,103 +99,121 @@ class LSTMModelBase(nn.Module):
 
         """
         super().__init__()
+        self.name = "LSTM Custom"
+        # Defining the number of layers and the nodes in each layer
         self.input_dim = input_dim
         self.hidden_dim = hidden_dim
+        self.layer_dim = layer_dim
+        self.output_dim = output_dim
 
         # Input Gate
-        self.W_input1 = nn.Parameter(torch.Tensor(input_dim, hidden_dim))
-        self.bias_input1 = nn.Parameter(torch.Tensor(hidden_dim))
-        self.W_input2 = nn.Parameter(torch.Tensor(input_dim, hidden_dim))
-        self.bias_input2 = nn.Parameter(torch.Tensor(hidden_dim))
+        self.W_input1 = nn.Parameter(torch.Tensor(self.input_dim, self.hidden_dim))
+        self.bias_input1 = nn.Parameter(torch.Tensor(self.hidden_dim))
+        self.W_input2 = nn.Parameter(torch.Tensor(self.input_dim, self.hidden_dim))
+        self.bias_input2 = nn.Parameter(torch.Tensor(self.hidden_dim))
 
         # Forget Gate
-        self.W_forget = nn.Parameter(torch.Tensor(input_dim, hidden_dim))
-        self.bias_forget = nn.Parameter(torch.Tensor(hidden_dim))
+        self.W_forget = nn.Parameter(torch.Tensor(self.input_dim, self.hidden_dim))
+        self.bias_forget = nn.Parameter(torch.Tensor(self.hidden_dim))
 
         # Output Gate
-        self.W_output1 = nn.Parameter(torch.Tensor(input_dim, hidden_dim))
-        self.bias_output1 = nn.Parameter(torch.Tensor(hidden_dim))
-        self.W_output2 = nn.Parameter(torch.Tensor(input_dim, hidden_dim))
-        self.bias_output2 = nn.Parameter(torch.Tensor(hidden_dim))
+        self.W_output1 = nn.Parameter(torch.Tensor(self.input_dim, self.hidden_dim))
+        self.bias_output1 = nn.Parameter(torch.Tensor(self.hidden_dim))
+        self.W_output2 = nn.Parameter(torch.Tensor(self.input_dim, self.hidden_dim))
+        self.bias_output2 = nn.Parameter(torch.Tensor(self.hidden_dim))
+
+        # Fully connected layer maps last LSTM output (hidden dimension) to the label dimension
+        self.fc = nn.Linear(self.hidden_dim, self.output_dim)
+
+        self.cuda = torch.cuda.is_available()
+        if self.cuda:
+            self.fc.cuda()
+        logging.info(F"Model {self.name} on GPU with cuda: {self.cuda}")
 
         self.init_weights()
 
-        def init_weights(self):
-            stdv = 1.0 / math.sqrt(self.hidden_size)
-            for weight in self.parameters():
-                weight.data.uniform_(-stdv, stdv)
+    def init_weights(self):
+        stdv = 1.0 / math.sqrt(self.hidden_dim)
+        for weight in self.parameters():
+            weight.data.uniform_(-stdv, stdv)
 
-        def forward(self, X, init_states=None):
+    def forward(self, X, init_states=None):
 
-            """
-            assumes x.shape represents (batch_size, sequence_size, input_size)
-            init_states is a tuple with the (Ht, Ct) parameters, set to zero if not introduced
-
-            firstly Ht and Ct represent previous cell parameter Ht_1 and Ct_1
-            new Ct will be created with forget gate calculations
-            new Ht will be created with output gate calculations
-            """
-            batch_size, sequence_length, _ = X.size()
-            hidden_seq = []
-
-            if init_states is None:
-                Ht, Ct = (
-                    torch.zeros(batch_size, self.hidden_size).to(X.device),
-                    torch.zeros(batch_size, self.hidden_size).to(X.device),
-                )
-
-            else:
-                Ht, Ct = init_states
-
-            for t in range(sequence_length):
-                Xt = X[:, t, :]
-
-                input_layer1 = torch.sigmoid(self.W_input1 @ Ht + self.W_input1 @ Xt + self.bias_input1)
-
-                input_layer2 = torch.tanh(self.W_input2 @ Ht + self.W_input2 @ Xt + self.bias_input2)
-
-                input_gate = input_layer1 @ input_layer2
-
-                forget_gate = torch.sigmoid(self.W_forget @ Ht + self.W_forget @ Xt + self.bias_forget)
-
-                #  New long-term memory is created from previous  Ct_1
-                Ct = Ct * forget_gate + input_gate
-
-                # Gate takes the current input Xt, the previous short-term memory Ht_1 (hidden state)
-                # and long-term memory Ct computed in current step and ouputs the new hidden state Ht
-                output_layer1 = torch.sigmoid(self.W_output1 @ Ht + self.W_output1 @ Xt + self.bias_output1)
-
-                output_layer2 = torch.tanh(self.W_output2 * Ct + self.bias_output2)
-
-                output_gate = output_layer1 @ output_layer2
-
-                Ht = output_gate
-
-                hidden_seq.append(Ht.unsqueeze(0))
-
-            # reshape hidden_seq p/ retornar
-            hidden_seq = torch.cat(hidden_seq, dim=0)
-            hidden_seq = hidden_seq.transpose(0, 1).contiguous()
-            return hidden_seq, (Ht, Ct)
-
-
-class LSTMNetBase(nn.Module):
-    def __init__(self, input_dim, hidden_dim, output_dim):
         """
-        LSTM Network uses LSTMModel as cell structure
+        assumes x.shape represents (batch_size, sequence_size, input_size)
+        init_states is a tuple with the (Ht, Ct) parameters, set to zero if not introduced
 
-        input dimension dont't need to match the cell state (hidden state) dimension
-        As we're working with a time series (position, rotation, velocity, speed) we have a vector on input
-        The length of the hidden state is the summary of the history in LSTM
+        firstly Ht and Ct represent previous cell parameter Ht_1 and Ct_1
+        new Ct will be created with forget gate calculations
+        new Ht will be created with output gate calculations
         """
-        super().__init__()
-        self.lstm = LSTMModelBase(input_dim, hidden_dim)  # nn.LSTM(32, 32, batch_first=True)
-        self.fc1 = nn.Linear(hidden_dim, output_dim)
+        batch_size, sequence_length, _ = X.size()
+        hidden_seq = []
+        print(X.shape)
+        # X.shape is [batch_size, sequence_length, features]
+        # x[1] @ y[0]
 
-    def forward(self, X):
-        hidden_seq, (Ht, Ct) = self.lstm(X)
-        X = self.fc1(X)
-        return X
+        if init_states is None:
+            Ht, Ct = (
+                torch.zeros(self.hidden_dim, batch_size).to(X.device),
+                torch.zeros(batch_size, self.hidden_dim).to(X.device),
+            )
+
+        else:
+            Ht, Ct = init_states
+
+        for t in range(sequence_length):
+            Xt = X[:, t, :]
+            Xxt = torch.transpose(Xt, 0, 1)
+            print(f'Xt.shape: {Xt.shape}')
+            print(f'Xxt.shape: {Xxt.shape}')
+            print(f'W_input1.shape: {self.W_input1.shape}')
+            print(f'Ht.shape: {Ht.shape}')
+
+            a = self.W_input1 @ Ht
+            print(a.shape)
+            b = torch.transpose(self.W_input1, 0, 1) @ torch.transpose(Xt, 0, 1)
+            print(b.shape)
+
+            input_layer1 = torch.sigmoid((self.W_input1 @ Ht + torch.transpose(self.W_input1, 0, 1) @ torch.transpose(Xt, 0, 1)) + self.bias_input1)
+
+            input_layer2 = torch.tanh(self.W_input2 @ Ht + self.W_input2 @ Xt + self.bias_input2)
+
+            input_gate = input_layer1 @ input_layer2
+
+            forget_gate = torch.sigmoid(self.W_forget @ Ht + self.W_forget @ Xt + self.bias_forget)
+
+            #  New long-term memory is created from previous  Ct_1
+            Ct = Ct * forget_gate + input_gate
+
+            # Gate takes the current input Xt, the previous short-term memory Ht_1 (hidden state)
+            # and long-term memory Ct computed in current step and ouputs the new hidden state Ht
+            output_layer1 = torch.sigmoid(self.W_output1 @ Ht + self.W_output1 @ Xt + self.bias_output1)
+
+            output_layer2 = torch.tanh(self.W_output2 * Ct + self.bias_output2)
+
+            output_gate = output_layer1 @ output_layer2
+
+            Ht = output_gate
+
+            hidden_seq.append(Ht.unsqueeze(0))
+
+        # reshape hidden_seq p/ retornar
+        hidden_seq = torch.cat(hidden_seq, dim=0)
+        hidden_seq = hidden_seq.transpose(0, 1).contiguous()
+        # return hidden_seq, (Ht, Ct)
+        # Reshaping the outputs in the shape of (batch_size, seq_length, hidden_size)
+        # so that it can fit into the fully connected layer
+        out = hidden_seq[:, -1, :]
+        # print(f"out BEFORE FC {out.shape}")
+
+        # Convert the final state to our desired output shape (batch_size, output_dim)
+        # print(f"out BEFORE {out.shape}")
+        out = self.fc(out)
+        # print(f"out AFTER FC {out.shape}")
+        out = out.view([batch_size, -1, self.output_dim])
+        # print(f"out AFTER -1 {out.shape}")
+        return out
 
 
 class LSTMModelSlidingWindow(nn.Module):
@@ -264,11 +282,10 @@ class LSTMModelSlidingWindow(nn.Module):
 
         """
 
-    def __init__(self, input_dim, hidden_dim, output_dim, dropout, layer_dim=1, batch_size=2048):
+    def __init__(self, input_dim, hidden_dim, output_dim, dropout, layer_dim=1):
         """Works both on CPU and GPU without additional modifications"""
         super(LSTMModelSlidingWindow, self).__init__()
         self.name = "LSTM with Sliding Window"
-        self.batch_size = batch_size
 
         # Defining the number of layers and the nodes in each layer
         self.hidden_dim = hidden_dim
@@ -289,9 +306,7 @@ class LSTMModelSlidingWindow(nn.Module):
         logging.info(F"Model {self.name} on GPU with cuda: {self.cuda}")
 
     def forward(self, x):
-        # train has shape[0] = batch_size
-        # eval shape[0] = 1
-        batch = x.shape[0]
+        batch_size, sequence_length, _ = x.shape[0], x.shape[1]
         # Initializing hidden state for first input with zeros
         if self.cuda:
             x = x.cuda()
@@ -318,7 +333,7 @@ class LSTMModelSlidingWindow(nn.Module):
         # print(f"out BEFORE {out.shape}")
         out = self.fc(out)
         # print(f"out AFTER FC {out.shape}")
-        out = out.view([batch, -1, self.output_dim])
+        out = out.view([batch_size, -1, self.output_dim])
         # print(f"out AFTER -1 {out.shape}")
         return out
 
