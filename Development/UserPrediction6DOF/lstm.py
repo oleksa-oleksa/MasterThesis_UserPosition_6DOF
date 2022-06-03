@@ -98,29 +98,19 @@ class LSTMModelCustom(nn.Module):
                 to be reached after ms of latency
 
         """
-        super().__init__()
+        super(LSTMModelCustom).__init__()
         self.name = "LSTM Custom"
         # Defining the number of layers and the nodes in each layer
-        self.input_dim = input_dim
-        self.hidden_dim = hidden_dim
+
         self.layer_dim = layer_dim
         self.output_dim = output_dim
 
-        # Input Gate
-        self.W_input1 = nn.Parameter(torch.Tensor(self.input_dim, self.hidden_dim))
-        self.bias_input1 = nn.Parameter(torch.Tensor(self.hidden_dim))
-        self.W_input2 = nn.Parameter(torch.Tensor(self.input_dim, self.hidden_dim))
-        self.bias_input2 = nn.Parameter(torch.Tensor(self.hidden_dim))
-
-        # Forget Gate
-        self.W_forget = nn.Parameter(torch.Tensor(self.input_dim, self.hidden_dim))
-        self.bias_forget = nn.Parameter(torch.Tensor(self.hidden_dim))
-
-        # Output Gate
-        self.W_output1 = nn.Parameter(torch.Tensor(self.input_dim, self.hidden_dim))
-        self.bias_output1 = nn.Parameter(torch.Tensor(self.hidden_dim))
-        self.W_output2 = nn.Parameter(torch.Tensor(self.input_dim, self.hidden_dim))
-        self.bias_output2 = nn.Parameter(torch.Tensor(self.hidden_dim))
+        self.input_sz = input_dim
+        self.hidden_size = hidden_dim
+        self.W = nn.Parameter(torch.Tensor(input_dim, hidden_dim * 4))
+        self.U = nn.Parameter(torch.Tensor(hidden_dim, hidden_dim * 4))
+        self.bias = nn.Parameter(torch.Tensor(hidden_dim * 4))
+        self.init_weights()
 
         # Fully connected layer maps last LSTM output (hidden dimension) to the label dimension
         self.fc = nn.Linear(self.hidden_dim, self.output_dim)
@@ -133,11 +123,11 @@ class LSTMModelCustom(nn.Module):
         self.init_weights()
 
     def init_weights(self):
-        stdv = 1.0 / math.sqrt(self.hidden_dim)
+        stdv = 1.0 / math.sqrt(self.hidden_size)
         for weight in self.parameters():
             weight.data.uniform_(-stdv, stdv)
 
-    def forward(self, X, init_states=None):
+    def forward(self, x, init_states=None):
 
         """
         assumes x.shape represents (batch_size, sequence_size, input_size)
@@ -147,61 +137,34 @@ class LSTMModelCustom(nn.Module):
         new Ct will be created with forget gate calculations
         new Ht will be created with output gate calculations
         """
-        batch_size, sequence_length, _ = X.size()
+        """Assumes x is of shape (batch, sequence, feature)"""
+        bs, seq_sz, _ = x.size()
         hidden_seq = []
-        print(X.shape)
-        # X.shape is [batch_size, sequence_length, features]
-        # x[1] @ y[0]
-
         if init_states is None:
-            Ht, Ct = (
-                torch.zeros(self.hidden_dim, batch_size).to(X.device),
-                torch.zeros(batch_size, self.hidden_dim).to(X.device),
-            )
-
+            h_t, c_t = (torch.zeros(bs, self.hidden_size).to(x.device),
+                        torch.zeros(bs, self.hidden_size).to(x.device))
         else:
-            Ht, Ct = init_states
+            h_t, c_t = init_states
 
-        for t in range(sequence_length):
-            Xt = X[:, t, :]
-            Xxt = torch.transpose(Xt, 0, 1)
-            print(f'Xt.shape: {Xt.shape}')
-            print(f'Xxt.shape: {Xxt.shape}')
-            print(f'W_input1.shape: {self.W_input1.shape}')
-            print(f'Ht.shape: {Ht.shape}')
-
-            a = self.W_input1 @ Ht
-            print(a.shape)
-            b = torch.transpose(self.W_input1, 0, 1) @ torch.transpose(Xt, 0, 1)
-            print(b.shape)
-
-            input_layer1 = torch.sigmoid((self.W_input1 @ Ht + torch.transpose(self.W_input1, 0, 1) @ torch.transpose(Xt, 0, 1)) + self.bias_input1)
-
-            input_layer2 = torch.tanh(self.W_input2 @ Ht + self.W_input2 @ Xt + self.bias_input2)
-
-            input_gate = input_layer1 @ input_layer2
-
-            forget_gate = torch.sigmoid(self.W_forget @ Ht + self.W_forget @ Xt + self.bias_forget)
-
-            #  New long-term memory is created from previous  Ct_1
-            Ct = Ct * forget_gate + input_gate
-
-            # Gate takes the current input Xt, the previous short-term memory Ht_1 (hidden state)
-            # and long-term memory Ct computed in current step and ouputs the new hidden state Ht
-            output_layer1 = torch.sigmoid(self.W_output1 @ Ht + self.W_output1 @ Xt + self.bias_output1)
-
-            output_layer2 = torch.tanh(self.W_output2 * Ct + self.bias_output2)
-
-            output_gate = output_layer1 @ output_layer2
-
-            Ht = output_gate
-
-            hidden_seq.append(Ht.unsqueeze(0))
-
-        # reshape hidden_seq p/ retornar
+        HS = self.hidden_size
+        for t in range(seq_sz):
+            x_t = x[:, t, :]
+            # batch the computations into a single matrix multiplication
+            gates = x_t @ self.W + h_t @ self.U + self.bias
+            i_t, f_t, g_t, o_t = (
+                torch.sigmoid(gates[:, :HS]),  # input
+                torch.sigmoid(gates[:, HS:HS * 2]),  # forget
+                torch.tanh(gates[:, HS * 2:HS * 3]),
+                torch.sigmoid(gates[:, HS * 3:]),  # output
+            )
+            c_t = f_t * c_t + i_t * g_t
+            h_t = o_t * torch.tanh(c_t)
+            hidden_seq.append(h_t.unsqueeze(0))
         hidden_seq = torch.cat(hidden_seq, dim=0)
+        # reshape from shape (sequence, batch, feature) to (batch, sequence, feature)
         hidden_seq = hidden_seq.transpose(0, 1).contiguous()
-        # return hidden_seq, (Ht, Ct)
+        # return hidden_seq, (h_t, c_t)
+
         # Reshaping the outputs in the shape of (batch_size, seq_length, hidden_size)
         # so that it can fit into the fully connected layer
         out = hidden_seq[:, -1, :]
