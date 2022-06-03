@@ -198,7 +198,7 @@ class LSTMNetBase(nn.Module):
         return X
 
 
-class LSTMModel(nn.Module):
+class LSTMModelSlidingWindow(nn.Module):
     """
         Implements a sequential network named Long Short Term Memory Network.
         It is capable of learning order dependence in sequence prediction problems and
@@ -266,12 +266,14 @@ class LSTMModel(nn.Module):
 
     def __init__(self, input_dim, hidden_dim, output_dim, dropout, layer_dim=1, batch_size=2048):
         """Works both on CPU and GPU without additional modifications"""
-        super(LSTMModel, self).__init__()
-        self.name = "LSTM"
+        super(LSTMModelSlidingWindow, self).__init__()
+        self.name = "LSTM with Sliding Window"
+        self.batch_size = batch_size
 
         # Defining the number of layers and the nodes in each layer
         self.hidden_dim = hidden_dim
         self.layer_dim = layer_dim
+        self.output_dim = output_dim
 
         # LSTM layers (default 1)
         # setting batch_first=True requires the input to have the shape [batch_size, seq_len, input_size]
@@ -287,11 +289,15 @@ class LSTMModel(nn.Module):
         logging.info(F"Model {self.name} on GPU with cuda: {self.cuda}")
 
     def forward(self, x):
+        # train has shape[0] = batch_size
+        # eval shape[0] = 1
+        batch = x.shape[0]
         # Initializing hidden state for first input with zeros
         if self.cuda:
             x = x.cuda()
         h0 = torch.zeros(self.layer_dim, x.size(0), self.hidden_dim).requires_grad_()
 
+        # print(f"x input in forward is {x.shape}")
         # Initializing cell state for first input with zeros
         c0 = torch.zeros(self.layer_dim, x.size(0), self.hidden_dim).requires_grad_()
 
@@ -312,11 +318,12 @@ class LSTMModel(nn.Module):
         # print(f"out BEFORE {out.shape}")
         out = self.fc(out)
         # print(f"out AFTER FC {out.shape}")
-
+        out = out.view([batch, -1, self.output_dim])
+        # print(f"out AFTER -1 {out.shape}")
         return out
 
 
-class LSTMModelSlidingWindow(nn.Module):
+class LSTMModel(nn.Module):
     """
         Implements a sequential network named Long Short Term Memory Network.
         It is capable of learning order dependence in sequence prediction problems and

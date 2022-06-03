@@ -49,7 +49,7 @@ import torch.nn as nn
 import torch.optim as optim
 from filterpy.common import Q_discrete_white_noise
 from filterpy.kalman import KalmanFilter
-from .lstm import LSTMModel
+from .lstm import LSTMModel, LSTMModelSlidingWindow
 from .gru import GRUModel
 from .lstm_fcn import LSTMFCNModel
 from .optimization import RNNOptimization
@@ -277,7 +277,7 @@ class RNNRunner():
 
         # -----  MODEL HYPERPARAMETERS ----------#
         self.input_dim = len(self.features)
-        self.output_dim = 7  # 3 position parameter + 4 rotation parameter
+        self.output_dim = len(self.outputs)  # 3 position parameter + 4 rotation parameter
         self.learning_rate = 1e-3  # 1e-3 base
         self.weight_decay = 1e-6  # 1e-6 base
 
@@ -288,9 +288,9 @@ class RNNRunner():
             self.dropout = float(os.getenv('DROPOUT'))
             self.layer_dim = int(os.getenv('LAYERS'))
         else:
-            self.hidden_dim = 100
-            self.batch_size = 512
-            self.n_epochs = 10
+            self.hidden_dim = 32
+            self.batch_size = 64
+            self.n_epochs = 100
             self.dropout = 0
             self.layer_dim = 1  # the number of LSTM layers stacked on top of each other
 
@@ -298,7 +298,7 @@ class RNNRunner():
         # batch_first=True --> input is [batch_size, seq_len, input_size]
         # SELECTS MODEL
         if model == "lstm":
-            self.model = LSTMModel(self.input_dim, self.hidden_dim,
+            self.model = LSTMModelSlidingWindow(self.input_dim, self.hidden_dim,
                                    self.output_dim, self.dropout, self.layer_dim, self.batch_size)
         elif model == "gru":
             self.model = GRUModel(self.input_dim, self.hidden_dim,
@@ -329,38 +329,35 @@ class RNNRunner():
             X = df_trace[self.features].to_numpy()
             print(f'X.shape: {X.shape}')
             print(f'len(X): {len(X)}')
-            print(f'Past values in pred_step: {self.pred_step}')
+            print(f'Past {self.num_past} values for predict +: {self.pred_step}')
 
             # output is created from the features shifted corresponding to given latency
             # y = X[self.pred_step:, :]
             y = df_trace[self.outputs].to_numpy()
             print(f'y.shape: {y.shape}')
 
-            # prepare features and labels
-            #X_cut = cut_dataset_lenght(X, y)
-            #y_cut = cut_extra_labels(y)
-
-            X_train = []
-            y_train = []
+            X_w = []
+            y_w = []
 
             # SLIDING WINDOW LOOKING INTO PAST TO PREDICT 1 ROW FROM FUTURE
             for i in range(self.num_past, len(X) - self.pred_step + 1):
-                X_train.append(X[i - self.num_past:i, 0:X.shape[1]])
-                y_train.append(y[i + self.pred_step - 1:i + self.pred_step, 0:y.shape[1]])
+                X_w.append(X[i - self.num_past:i, 0:X.shape[1]])
+                y_w.append(y[i + self.pred_step - 1:i + self.pred_step, 0:y.shape[1]])
 
-            X_train, y_train = np.array(X_train), np.array(y_train)
+            X_w, y_w = np.array(X_w), np.array(y_w)
 
-            print(f'X_train.shape: {X_train}')
-            print(f'y_train.shape: {y_train}')
+            print(f'X_w.shape: {X_w.shape}')
+            print(f'y_w.shape: {y_w.shape}')
 
             # Splitting the data into train, validation, and test sets
-            #X_train, X_val, X_test, y_train, y_val, y_test = train_val_test_split(X_cut, y_cut, 0.2)
+            X_train, X_val, X_test, y_train, y_val, y_test = train_val_test_split(X_w, y_w, 0.2)
 
             logging.info(f"X_train {X_train.shape}, X_val {X_val.shape}, X_test{X_test.shape}, "
                          f"y_train {y_train.shape}, y_val {y_val.shape}, y_test {y_test.shape}")
 
-            train_loader, val_loader, test_loader, test_loader_one = load_data(X_train, X_val, X_test,
-                                                                               y_train, y_val, y_test, batch_size=self.batch_size)
+            train_loader, val_loader, \
+            test_loader, test_loader_one = load_data(X_train, X_val, X_test,
+                                                     y_train, y_val, y_test, batch_size=self.batch_size)
 
             # Long Short-Term Memory TRAIN + EVAL
 
@@ -377,7 +374,8 @@ class RNNRunner():
             optimizer = optim.Adam(self.model.parameters(), lr=self.learning_rate, weight_decay=self.weight_decay)
             # optimizer = optim.SGD(self.model.parameters(), lr=0.01, momentum=0.9)
 
-            opt = RNNOptimization(model=self.model, loss_fn=loss_fn, optimizer=optimizer, results=self.results_path, params=self.params)
+            opt = RNNOptimization(model=self.model, loss_fn=loss_fn,
+                                  optimizer=optimizer, results=self.results_path, params=self.params)
             opt.train(train_loader, val_loader, batch_size=self.batch_size,
                       n_epochs=self.n_epochs, n_features=self.input_dim)
 
@@ -417,6 +415,7 @@ class RNNRunner():
 
         # log model parameters
         log_parameters(self.hidden_dim, self.n_epochs, self.batch_size, self.dropout, self.layer_dim, df_results)
+
 
 class RNNRunnerSWP():
     """Runs the RNN over all traces
