@@ -324,10 +324,11 @@ class RNNRunner():
             print(f'X.shape: {X.shape}')
 
             pred_step = int(self.pred_window / self.dt)
-            print(f'pred_step: {pred_step}')
+            print(f'Past values in pred_step: {pred_step}')
 
             # output is created from the features shifted corresponding to given latency
-            y = X[pred_step:, :]  # Assumption: LAT = E2E latency
+            y = X[pred_step:, :]
+            print(f'y.shape: {y.shape}')
 
             # prepare features and labels
             X_cut = cut_dataset_lenght(X, y)
