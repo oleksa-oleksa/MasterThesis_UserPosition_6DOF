@@ -253,6 +253,8 @@ class RNNRunner():
         self.results_path = results_path
         self.dists_path = os.path.join(self.results_path, 'distances')
         self.model = None
+        self.pred_step = int(self.pred_window / self.dt)
+        self.num_past = 100  # number of past time series to predict future
 
         # -----  CUDA FOR CPU ----------#
         # for running in Singularity container paths must be modified
@@ -268,6 +270,10 @@ class RNNRunner():
         self.features = self.cfg['pos_coords'] + self.cfg['quat_coords'] + self.cfg['velocity']
         # only position and rotation without velocity and speed
         # self.features = self.cfg['pos_coords'] + self.cfg['quat_coords']
+
+        # -----  OUTPUTS ----------#
+        # position and rotation in future will be predicted
+        self.outputs = self.cfg['pos_coords'] + self.cfg['quat_coords']
 
         # -----  MODEL HYPERPARAMETERS ----------#
         self.input_dim = len(self.features)
@@ -322,26 +328,39 @@ class RNNRunner():
             df_trace = pd.read_csv(trace_path)
             X = df_trace[self.features].to_numpy()
             print(f'X.shape: {X.shape}')
-
-            pred_step = int(self.pred_window / self.dt)
-            print(f'Past values in pred_step: {pred_step}')
+            print(f'len(X): {len(X)}')
+            print(f'Past values in pred_step: {self.pred_step}')
 
             # output is created from the features shifted corresponding to given latency
-            y = X[pred_step:, :]
+            # y = X[self.pred_step:, :]
+            y = df_trace[self.outputs].to_numpy()
             print(f'y.shape: {y.shape}')
 
             # prepare features and labels
-            X_cut = cut_dataset_lenght(X, y)
-            y_cut = cut_extra_labels(y)
+            #X_cut = cut_dataset_lenght(X, y)
+            #y_cut = cut_extra_labels(y)
+
+            X_train = []
+            y_train = []
+
+            # SLIDING WINDOW LOOKING INTO PAST TO PREDICT 1 ROW FROM FUTURE
+            for i in range(self.num_past, len(X) - self.pred_step + 1):
+                X_train.append(X[i - self.num_past:i, 0:X.shape[1]])
+                y_train.append(y[i + self.pred_step - 1:i + self.pred_step, 0:y.shape[1]])
+
+            X_train, y_train = np.array(X_train), np.array(y_train)
+
+            print(f'X_train.shape: {X_train.shape}')
+            print(f'y_train.shape: {y_train.shape}')
 
             # Splitting the data into train, validation, and test sets
-            X_train, X_val, X_test, y_train, y_val, y_test = train_val_test_split(X_cut, y_cut, 0.2)
+            #X_train, X_val, X_test, y_train, y_val, y_test = train_val_test_split(X_cut, y_cut, 0.2)
 
-            # logging.info(f"X_train {X_train.shape}, X_val {X_val.shape}, X_test{X_test.shape}, "
-            #             f"y_train {y_train.shape}, y_val {y_val.shape}, y_test {y_test.shape}")
+            logging.info(f"X_train {X_train.shape}, X_val {X_val.shape}, X_test{X_test.shape}, "
+                         f"y_train {y_train.shape}, y_val {y_val.shape}, y_test {y_test.shape}")
 
             train_loader, val_loader, test_loader, test_loader_one = load_data(X_train, X_val, X_test,
-                                                              y_train, y_val, y_test, batch_size=self.batch_size)
+                                                                               y_train, y_val, y_test, batch_size=self.batch_size)
 
             # Long Short-Term Memory TRAIN + EVAL
 
