@@ -289,10 +289,19 @@ class RNNRunner():
             self.layer_dim = int(os.getenv('LAYERS'))
         else:
             self.hidden_dim = 32
-            self.batch_size = 32
+            self.batch_size = 128
             self.n_epochs = 2000
             self.dropout = 0
             self.layer_dim = 1  # the number of LSTM layers stacked on top of each other
+
+        # TODO after vacation in June
+        # TODO automatically grid search for Pytorch
+        # TODO LSTM Grid Search or test with Bash
+        # TODO Fixing LSTM-FCN in order to work with batched sequence
+        # TODO Try Bi-LSTM build in Pytorch
+        # TODO Check Custom LSTM
+        # TODO Fixing GRU in order to work with batched sequence
+        # TODO Implement smoothing with stacked LSTM kinda Kalman
 
         # -----  CREATE PYTORH MODEL ----------#
         # batch_first=True --> input is [batch_size, seq_len, input_size]
