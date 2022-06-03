@@ -98,7 +98,7 @@ class LSTMModelCustom(nn.Module):
                 to be reached after ms of latency
 
         """
-        super(LSTMModelCustom).__init__()
+        super().__init__()
         self.name = "LSTM Custom"
         # Defining the number of layers and the nodes in each layer
 
@@ -106,7 +106,7 @@ class LSTMModelCustom(nn.Module):
         self.output_dim = output_dim
 
         self.input_sz = input_dim
-        self.hidden_size = hidden_dim
+        self.hidden_dim = hidden_dim
         self.W = nn.Parameter(torch.Tensor(input_dim, hidden_dim * 4))
         self.U = nn.Parameter(torch.Tensor(hidden_dim, hidden_dim * 4))
         self.bias = nn.Parameter(torch.Tensor(hidden_dim * 4))
@@ -123,7 +123,7 @@ class LSTMModelCustom(nn.Module):
         self.init_weights()
 
     def init_weights(self):
-        stdv = 1.0 / math.sqrt(self.hidden_size)
+        stdv = 1.0 / math.sqrt(self.hidden_dim)
         for weight in self.parameters():
             weight.data.uniform_(-stdv, stdv)
 
@@ -141,12 +141,12 @@ class LSTMModelCustom(nn.Module):
         bs, seq_sz, _ = x.size()
         hidden_seq = []
         if init_states is None:
-            h_t, c_t = (torch.zeros(bs, self.hidden_size).to(x.device),
-                        torch.zeros(bs, self.hidden_size).to(x.device))
+            h_t, c_t = (torch.zeros(bs, self.hidden_dim).to(x.device),
+                        torch.zeros(bs, self.hidden_dim).to(x.device))
         else:
             h_t, c_t = init_states
 
-        HS = self.hidden_size
+        HS = self.hidden_dim
         for t in range(seq_sz):
             x_t = x[:, t, :]
             # batch the computations into a single matrix multiplication
@@ -174,7 +174,7 @@ class LSTMModelCustom(nn.Module):
         # print(f"out BEFORE {out.shape}")
         out = self.fc(out)
         # print(f"out AFTER FC {out.shape}")
-        out = out.view([batch_size, -1, self.output_dim])
+        out = out.view([bs, -1, self.output_dim])
         # print(f"out AFTER -1 {out.shape}")
         return out
 
@@ -269,7 +269,7 @@ class LSTMModelSlidingWindow(nn.Module):
         logging.info(F"Model {self.name} on GPU with cuda: {self.cuda}")
 
     def forward(self, x):
-        batch_size, sequence_length, _ = x.shape[0], x.shape[1]
+        batch_size, sequence_length = x.shape[0], x.shape[1]
         # Initializing hidden state for first input with zeros
         if self.cuda:
             x = x.cuda()

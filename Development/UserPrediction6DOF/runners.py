@@ -254,7 +254,7 @@ class RNNRunner():
         self.dists_path = os.path.join(self.results_path, 'distances')
         self.model = None
         self.pred_step = int(self.pred_window / self.dt)
-        self.num_past = 50  # number of past time series to predict future
+        self.num_past = 100  # number of past time series to predict future
 
         # -----  CUDA FOR CPU ----------#
         # for running in Singularity container paths must be modified
@@ -289,8 +289,8 @@ class RNNRunner():
             self.layer_dim = int(os.getenv('LAYERS'))
         else:
             self.hidden_dim = 32
-            self.batch_size = 2048
-            self.n_epochs = 100
+            self.batch_size = 32
+            self.n_epochs = 2000
             self.dropout = 0
             self.layer_dim = 1  # the number of LSTM layers stacked on top of each other
 

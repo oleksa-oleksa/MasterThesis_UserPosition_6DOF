@@ -68,6 +68,8 @@ class LSTMFCNModel(nn.Module):
         return h0, c0
 
     def forward(self, x):
+        batch_size, sequence_length = x.shape[0], x.shape[1]
+
         # Initializing hidden state for first input with zeros
         if self.cuda:
             x = x.cuda()
@@ -91,6 +93,7 @@ class LSTMFCNModel(nn.Module):
 
         x_all = torch.cat((x1_lstm, x2), dim=1)
         x_out = self.FC(x_all)
+        x_out = x_out.view([batch_size, -1, self.output_dim])
         return x_out
 
 
