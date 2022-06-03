@@ -350,8 +350,8 @@ class RNNRunner():
 
             X_train, y_train = np.array(X_train), np.array(y_train)
 
-            print(f'X_train.shape: {X_train.shape}')
-            print(f'y_train.shape: {y_train.shape}')
+            print(f'X_train.shape: {X_train}')
+            print(f'y_train.shape: {y_train}')
 
             # Splitting the data into train, validation, and test sets
             #X_train, X_val, X_test, y_train, y_val, y_test = train_val_test_split(X_cut, y_cut, 0.2)
