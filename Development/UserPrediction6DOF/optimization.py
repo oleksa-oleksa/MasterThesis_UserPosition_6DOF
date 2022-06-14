@@ -13,6 +13,7 @@ class RNNOptimization:
         self.optimizer = optimizer
         self.train_losses = []
         self.val_losses = []
+        self.test_losses = []
         self.results_path = results
         self.cuda = torch.cuda.is_available()
         self.params = params
@@ -135,8 +136,11 @@ class RNNOptimization:
         with torch.no_grad():
             predictions = []
             values = []
+            batch_test_losses = []
+            batch_counter = 0
 
             for x_test_batch, y_test_batch in test_loader:
+                batch_counter += 1
                 if self.cuda:
                     x_test_batch, y_test_batch = x_test_batch.cuda(), y_test_batch.cuda()
 
@@ -149,10 +153,21 @@ class RNNOptimization:
                 yhat = self.model(x_test_batch)
                 print(f"yhat: {yhat.shape}")
 
+                test_loss = self.loss_fn(y_test_batch, yhat).item()
+                batch_test_losses.append(test_loss)
+                testing_loss = np.mean(batch_test_losses)
+                self.test_losses.append(testing_loss)
+
                 predictions.extend(yhat.cpu().detach().numpy())
                 print(f"predictions: {np.array(predictions).shape}")
                 values.extend(y_test_batch.cpu().detach().numpy())
                 print(f"values: {np.array(values).shape}")
+
+                if (batch_counter <= 5) | (batch_counter % 5 == 0):
+                    # print first 5 batches and then every 5 batches
+                    logging.info(
+                        f"[{batch_counter}] Test loss: {testing_loss:.4f}"
+                    )
 
         return predictions, values
 
