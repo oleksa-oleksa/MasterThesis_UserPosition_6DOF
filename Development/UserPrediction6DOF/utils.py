@@ -249,6 +249,22 @@ def train_val_test_split(X, y, test_ratio):
 
 
 def load_data(X_train, X_val, X_test, y_train, y_val, y_test, batch_size=64):
+    """
+
+    :param X_train:
+    :param X_val:
+    :param X_test:
+    :param y_train:
+    :param y_val:
+    :param y_test:
+    :param batch_size:
+    :return:
+
+    The drop_last=True parameter ignores the last batch
+    (when the number of examples in a dataset is not divisible
+    by a batch_size) while drop_last=False will make the last batch
+    smaller than a batch_size
+    """
 
     train_features = torch.Tensor(X_train)
     train_targets = torch.Tensor(y_train)

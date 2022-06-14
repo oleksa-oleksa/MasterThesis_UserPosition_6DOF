@@ -45,7 +45,7 @@ class RNNOptimization:
         # Returns the loss
         return loss.item()
 
-    def train(self, train_loader, val_loader, batch_size=64, n_epochs=50, n_features=11):
+    def train(self, train_loader, val_loader, batch_size=64, n_epochs=50, n_features=10):
         # trained model can be saved
         # model_path = f'./models/LSTM/{datetime.now().strftime("%d.%m_%H%M%S")}'
 
@@ -59,6 +59,7 @@ class RNNOptimization:
                 # print(f"y_batch: {y_batch.shape}")
                 # x_batch = x_batch.view([batch_size, -1, n_features])
                 # print(f"x_batch: {x_batch.shape}")
+                # print(f"y_batch: {y_batch.shape}")
                 loss = self.train_step(x_batch, y_batch)
                 batch_losses.append(loss)
             training_loss = np.mean(batch_losses)
@@ -70,8 +71,8 @@ class RNNOptimization:
                     if self.cuda:
                         x_val, y_val = x_val.cuda(), y_val.cuda()
                     # creates 3D Tensor
-                    x_val = x_val.view([batch_size, -1, n_features])
-                    y_val = y_val
+                    # x_val = x_val.view([batch_size, -1, n_features])
+                    # y_val = y_val
                     self.model.eval()
                     yhat = self.model(x_val)
                     val_loss = self.loss_fn(y_val, yhat).item()
@@ -94,7 +95,7 @@ class RNNOptimization:
         # saves model after training
         # torch.save(self.model.state_dict(), model_path)
 
-    def evaluate(self, test_loader, batch_size=1, n_features=1):
+    def evaluate(self, test_loader, batch_size=1, n_features=7):
         """
         predictions: list[float] The values predicted by the model
         values: list[float] The actual values in the test set.
@@ -118,6 +119,40 @@ class RNNOptimization:
                 yhat = self.model(x_test)
                 predictions.append(yhat.cpu().detach().numpy())
                 values.append(y_test.cpu().detach().numpy())
+
+        return predictions, values
+
+    def predict(self, test_loader, batch_size=64, n_features=7):
+        """
+        predictions: list[float] The values predicted by the model
+        values: list[float] The actual values in the test set.
+
+        Typically validation loss should be similar to but slightly higher than training loss.
+         As long as validation loss is lower than or even equal to training loss one should keep doing more training.
+        If training loss is reducing without increase in validation loss then again keep doing more training
+        If validation loss starts increasing then it is time to stop
+        """
+        with torch.no_grad():
+            predictions = []
+            values = []
+
+            for x_test_batch, y_test_batch in test_loader:
+                if self.cuda:
+                    x_test_batch, y_test_batch = x_test_batch.cuda(), y_test_batch.cuda()
+
+                # print(f"x_test before -1: {x_test_batch.shape}")
+                # print(f"y_batch: {y_test_batch.shape}")
+
+                # x_test = x_test.view([batch_size, -1, n_features])
+                # y_test = y_test
+                self.model.eval()
+                yhat = self.model(x_test_batch)
+                print(f"yhat: {yhat.shape}")
+
+                predictions.extend(yhat.cpu().detach().numpy())
+                print(f"predictions: {np.array(predictions).shape}")
+                values.extend(y_test_batch.cpu().detach().numpy())
+                print(f"values: {np.array(values).shape}")
 
         return predictions, values
 
