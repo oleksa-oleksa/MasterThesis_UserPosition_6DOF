@@ -254,7 +254,7 @@ class RNNRunner():
         self.dists_path = os.path.join(self.results_path, 'distances')
         self.model = None
         self.pred_step = int(self.pred_window / self.dt)
-        self.num_past = 100  # number of past time series to predict future
+        self.num_past = 10  # number of past time series to predict future
 
         # -----  CUDA FOR CPU ----------#
         # for running in Singularity container paths must be modified
@@ -290,7 +290,7 @@ class RNNRunner():
         else:
             self.hidden_dim = 32
             self.batch_size = 512
-            self.n_epochs = 1000
+            self.n_epochs = 50
             self.dropout = 0
             self.layer_dim = 1  # the number of LSTM layers stacked on top of each other
 
@@ -398,16 +398,17 @@ class RNNRunner():
 
             # ------------ PREDICTION ON TEST DATA ------------------
             logging.info('Training finshed. Starting prediction on test data!')
+            # predictions: list[float] The values predicted by the model
+            # values: list[float] The actual values in the test set.
             predictions, values = opt.evaluate(test_loader_one, batch_size=1, n_features=self.input_dim)
 
-            # predictions.shape is [(2400, 1, 7)]
             # Remove axes of length one from predictions.
             predictions = np.array(predictions).squeeze()
             values = np.array(values).squeeze()
 
             # ------------ DEBUG INFO ------------------
-            # print_result(predictions, values)
-            logging.info(f"y_test is close to values? {np.allclose(y_test, values, atol=1e-08)}")
+            print_result(predictions, values)
+            logging.info(f"y_test is close to values? {np.allclose(y_test[:100,:], values[:100,:], atol=1e-08)}")
 
             # Compute evaluation metrics LSTM
             deep_eval = DeepLearnEvaluator(predictions, values)
