@@ -254,7 +254,7 @@ class RNNRunner():
         self.dists_path = os.path.join(self.results_path, 'distances')
         self.model = None
         self.pred_step = int(self.pred_window / self.dt)
-        self.num_past = 25  # number of past time series to predict future
+        self.num_past = 100  # number of past time series to predict future
 
         # -----  CUDA FOR CPU ----------#
         # for running in Singularity container paths must be modified
