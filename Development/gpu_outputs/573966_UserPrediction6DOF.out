@@ -1,0 +1,6 @@
+INFO:root:Model LSTM with Sliding Window on GPU with cuda: True
+INFO:root:RNN model is LSTM with Sliding Window: hidden_dim: 32, batch_size: 32, n_epochs: 2000, dropout: 0, layers: 1, window: [100.]
+INFO:root:-------------------------------------------------------------------------
+INFO:root:Trace path: data/flipped/1556.csv
+INFO:root:-------------------------------------------------------------------------
+slurmstepd: error: *** JOB 573966 ON vca-gpu-51-06 CANCELLED AT 2022-06-07T01:37:17 DUE TO TIME LIMIT ***
