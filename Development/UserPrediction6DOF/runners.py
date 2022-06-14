@@ -359,6 +359,7 @@ class RNNRunner():
                 y_w.append(y[i + self.pred_step - 1:i + self.pred_step, 0:y.shape[1]])
 
             X_w, y_w = np.array(X_w), np.array(y_w)
+            print(y_w)
 
             print(f'X_w.shape: {X_w.shape}')
             print(f'y_w.shape: {y_w.shape}')
@@ -401,18 +402,18 @@ class RNNRunner():
             # predictions: list[float] The values predicted by the model
             # values: list[float] The actual values in the test set.
             # predictions, values = opt.evaluate(test_loader_one, batch_size=1, n_features=self.input_dim)
-            predictions, values = opt.predict(test_loader, batch_size=self.batch_size, n_features=self.input_dim)
+            predictions, values = opt.predict(test_loader_one)
             predictions = np.array(predictions)
             values = np.array(values)
-            # print_result(predictions, values)
+            # print_result(y_test, values)
 
             # Remove axes of length one from predictions.
             predictions = predictions.squeeze()
             values = values.squeeze()
 
             # ------------ DEBUG INFO ------------------
-            print_result(predictions, values)
-            logging.info(f"y_test is close to values? {np.allclose(y_test[:100,:], values[:100,:], atol=1e-08)}")
+            print_result(predictions, values, start_row=10000, stop_row=10005)
+            logging.info(f"y_test is close to values? {np.allclose(y_test[10000:10005,:], values[10000:10005,:], atol=1e-08)}")
 
             # Compute evaluation metrics LSTM
             deep_eval = DeepLearnEvaluator(predictions, values)

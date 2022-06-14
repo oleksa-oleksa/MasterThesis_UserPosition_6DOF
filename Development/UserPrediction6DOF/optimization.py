@@ -123,7 +123,7 @@ class RNNOptimization:
 
         return predictions, values
 
-    def predict(self, test_loader, batch_size=64, n_features=7):
+    def predict(self, test_loader):
         """
         predictions: list[float] The values predicted by the model
         values: list[float] The actual values in the test set.
@@ -151,7 +151,7 @@ class RNNOptimization:
                 # y_test = y_test
                 self.model.eval()
                 yhat = self.model(x_test_batch)
-                print(f"yhat: {yhat.shape}")
+                # print(f"yhat: {yhat.shape}")
 
                 test_loss = self.loss_fn(y_test_batch, yhat).item()
                 batch_test_losses.append(test_loss)
@@ -159,11 +159,11 @@ class RNNOptimization:
                 self.test_losses.append(testing_loss)
 
                 predictions.extend(yhat.cpu().detach().numpy())
-                print(f"predictions: {np.array(predictions).shape}")
+                # print(f"predictions: {np.array(predictions).shape}")
                 values.extend(y_test_batch.cpu().detach().numpy())
-                print(f"values: {np.array(values).shape}")
+                # print(f"values: {np.array(values).shape}")
 
-                if (batch_counter <= 5) | (batch_counter % 5 == 0):
+                if batch_counter % 1000 == 0:
                     # print first 5 batches and then every 5 batches
                     logging.info(
                         f"[{batch_counter}] Test loss: {testing_loss:.4f}"

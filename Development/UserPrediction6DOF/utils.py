@@ -285,18 +285,18 @@ def load_data(X_train, X_val, X_test, y_train, y_val, y_test, batch_size=64):
     return train_loader, val_loader, test_loader, test_loader_one
 
 
-def print_result(predictions, values):
+def print_result(predictions, values, start_row, stop_row):
     """
     prints on terminal 10 elements of array near the end of prediction.
     we expect the model predicts better on the end of the dataset
     """
     logging.info("---------------- PREDICTIONS ---------------------------------")
     logging.info(f"predictions.shape: {predictions.shape}")
-    logging.info(predictions[2000:2010, :])
+    logging.info(predictions[start_row:stop_row, :])
 
-    logging.info("------------------- VALUES -----------------------------------")
+    logging.info("------------------- REAL VALUES -----------------------------------")
     logging.info(f"values.shape: {values.shape}")
-    logging.info(values[2000:2010, :])
+    logging.info(values[start_row:stop_row, :])
 
     logging.info("-------------------------------------------------------------")
 
