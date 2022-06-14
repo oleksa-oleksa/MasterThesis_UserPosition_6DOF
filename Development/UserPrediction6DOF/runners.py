@@ -289,10 +289,19 @@ class RNNRunner():
             self.layer_dim = int(os.getenv('LAYERS'))
         else:
             self.hidden_dim = 32
-            self.batch_size = 32
-            self.n_epochs = 2000
+            self.batch_size = 512
+            self.n_epochs = 1000
             self.dropout = 0
             self.layer_dim = 1  # the number of LSTM layers stacked on top of each other
+
+        # TODO after vacation in June
+        # TODO automatically grid search for Pytorch
+        # TODO LSTM Grid Search or test with Bash
+        # TODO Fixing LSTM-FCN in order to work with batched sequence
+        # TODO Try Bi-LSTM build in Pytorch
+        # TODO Check Custom LSTM
+        # TODO Fixing GRU in order to work with batched sequence
+        # TODO Implement smoothing with stacked LSTM kinda Kalman
 
         # -----  CREATE PYTORH MODEL ----------#
         # batch_first=True --> input is [batch_size, seq_len, input_size]
@@ -313,7 +322,8 @@ class RNNRunner():
                                       self.output_dim, self.dropout, self.layer_dim, self.batch_size)
 
         self.params = {'LAT':self.pred_window, 'hidden_dim': self.hidden_dim, 'epochs': self.n_epochs,
-                       'batch_size': self.batch_size, 'dropout': self.dropout, 'layers': self.layer_dim}
+                       'batch_size': self.batch_size, 'dropout': self.dropout, 'layers': self.layer_dim,
+                       'model': model, 'model_class': self.model }
 
     def run(self):
         logging.info(f"RNN model is {self.model.name}: hidden_dim: {self.hidden_dim}, batch_size: {self.batch_size}, "
@@ -383,8 +393,11 @@ class RNNRunner():
             opt.train(train_loader, val_loader, batch_size=self.batch_size,
                       n_epochs=self.n_epochs, n_features=self.input_dim)
 
-            # opt.plot_losses()
+            # ------------ PLOT LOSSES ------------------
+            opt.plot_losses()
 
+            # ------------ PREDICTION ON TEST DATA ------------------
+            logging.info('Training finshed. Starting prediction on test data!')
             predictions, values = opt.evaluate(test_loader_one, batch_size=1, n_features=self.input_dim)
 
             # predictions.shape is [(2400, 1, 7)]
@@ -392,9 +405,9 @@ class RNNRunner():
             predictions = np.array(predictions).squeeze()
             values = np.array(values).squeeze()
 
-            # Debug info
+            # ------------ DEBUG INFO ------------------
             # print_result(predictions, values)
-            # logging.info(f"y_test is close to values? {np.allclose(y_test, values, atol=1e-08)}")
+            logging.info(f"y_test is close to values? {np.allclose(y_test, values, atol=1e-08)}")
 
             # Compute evaluation metrics LSTM
             deep_eval = DeepLearnEvaluator(predictions, values)
