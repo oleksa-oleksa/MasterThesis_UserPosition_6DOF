@@ -81,7 +81,7 @@ class RNNOptimization:
                 validation_loss = np.mean(batch_val_losses)
                 self.val_losses.append(validation_loss)
 
-            if self.params['lr_reducing'] is not None:
+            if self.params['lr_reducing'] != 0:
                 if (epoch >= 30) & (epoch % 30 == 0):
                     for g in self.optimizer.param_groups:
                         g['lr'] = g['lr'] * 0.3
