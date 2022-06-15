@@ -81,12 +81,12 @@ class RNNOptimization:
                 validation_loss = np.mean(batch_val_losses)
                 self.val_losses.append(validation_loss)
 
-            '''
-            if (epoch >= 30) & (epoch % 30 == 0):
-                for g in self.optimizer.param_groups:
-                    g['lr'] = g['lr'] * 0.3
-                    print(f"Learning rate is {g['lr']}")
-            '''
+            if self.params['lr_reducing'] is not None:
+                if (epoch >= 30) & (epoch % 30 == 0):
+                    for g in self.optimizer.param_groups:
+                        g['lr'] = g['lr'] * 0.3
+                        print(f"Learning rate is {g['lr']}")
+
             if (epoch <= 5) | (epoch % 5 == 0):
                 # print first 5 epochs and then every 5 epochs
                 logging.info(
@@ -175,7 +175,7 @@ class RNNOptimization:
         plt.plot(self.train_losses, label="Training loss")
         plt.plot(self.val_losses, label="Validation loss")
         plt.legend()
-        plt.title(f"Train/Val losses: {int(self.params['LAT'][0]*1e3)}ms "
+        plt.title(f"Train/Val losses: {int(self.params['LAT']*1e3)}ms "
                   f"hidden: {self.params['hidden_dim']}, batch: "
                   f"{self.params['batch_size']}, dropout: {self.params['dropout']}, "
                   f"layers: {self.params['layers']}")
@@ -187,7 +187,7 @@ class RNNOptimization:
         out = os.path.join(head, 'losses')
         if not os.path.exists(out):
             os.makedirs(out)
-        dest = os.path.join(out, f"Fig-LAT{int(self.params['LAT'][0]*1e3)}_"
+        dest = os.path.join(out, f"Fig-LAT{int(self.params['LAT']*1e3)}_"
                             f"hid{self.params['hidden_dim']}_epochs{self.params['epochs']}_"
                             f"batch{self.params['batch_size']}_drop{self.params['dropout']}_"
                             f"layers{self.params['layers']}.pdf")

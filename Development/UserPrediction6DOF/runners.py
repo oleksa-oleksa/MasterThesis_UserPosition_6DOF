@@ -291,7 +291,7 @@ class RNNRunner():
         else:
             self.hidden_dim = 32
             self.batch_size = 256
-            self.n_epochs = 1
+            self.n_epochs = 1500
             self.dropout = 0
             self.layer_dim = 1  # the number of LSTM layers stacked on top of each other
 
@@ -322,14 +322,15 @@ class RNNRunner():
             self.model = LSTMFCNModel(self.input_dim, self.hidden_dim,
                                       self.output_dim, self.dropout, self.layer_dim, self.batch_size)
 
-        self.params = {'LAT':self.pred_window, 'hidden_dim': self.hidden_dim, 'epochs': self.n_epochs,
+        self.params = {'LAT':self.pred_window[0], 'hidden_dim': self.hidden_dim, 'epochs': self.n_epochs,
                        'batch_size': self.batch_size, 'dropout': self.dropout, 'layers': self.layer_dim,
-                       'model': model_name, 'self.num_past': self.num_past, 'lr': self.learning_rate,
+                       'model': model_name, 'num_past': self.num_past, 'lr': self.learning_rate,
                        'lr_reducing': self.is_reducing_learning_rate, 'weight_decay': self.weight_decay}
 
     def run(self):
         logging.info(f"RNN model is {self.model.name}: hidden_dim: {self.hidden_dim}, batch_size: {self.batch_size}, "
-                     f"n_epochs: {self.n_epochs}, dropout: {self.dropout}, layers: {self.layer_dim}, window: {self.pred_window * 1e3}")
+                     f"n_epochs: {self.n_epochs}, dropout: {self.dropout}, layers: {self.layer_dim}, "
+                     f"window: {self.pred_window[0] * 1e3}")
         results = []
         if not os.path.exists(self.dists_path):
             os.makedirs(self.dists_path, exist_ok=True)
@@ -415,7 +416,6 @@ class RNNRunner():
 
             # ------------ DEBUG INFO ------------------
             print_result(predictions, values, start_row=10000, stop_row=10005)
-            logging.info(f"y_test is close to values? {np.allclose(y_test[10000:10005,:], values[10000:10005,:], atol=1e-08)}")
 
             # Compute evaluation metrics LSTM
             deep_eval = DeepLearnEvaluator(predictions, values)
@@ -439,7 +439,7 @@ class RNNRunner():
         df_results.to_csv(os.path.join(self.results_path, 'res_lstm.csv'), index=False)
 
         # log model parameters
-        log_parameters(self.params, df_results)
+        log_parameters(df_results, self.params)
 
 
 class RNNRunnerSWP():
