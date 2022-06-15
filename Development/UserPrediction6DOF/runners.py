@@ -58,6 +58,7 @@ from statsmodels.iolib.smpickle import save_pickle
 from statsmodels.tsa.ar_model import AutoReg, AutoRegResults, ar_select_order
 from .evaluator import Evaluator, DeepLearnEvaluator
 from sklearn.preprocessing import minmax_scale
+from sklearn.preprocessing import MinMaxScaler
 from .utils import *
 
 cuda_path = "/mnt/output"
@@ -248,6 +249,7 @@ class RNNRunner():
         # -----  PRESET ----------#
         config_path = os.path.join(os.getcwd(), 'config.toml')
         self.cfg = toml.load(config_path)
+        self.scaler = MinMaxScaler(feature_range=(0, 1))
         self.dt = self.cfg['dt']
         self.pred_window = pred_window * 1e-3  # convert to seconds
         self.dataset_path = dataset_path
@@ -260,8 +262,9 @@ class RNNRunner():
         # ----------  FLAGS  --------------------#
         self.is_reducing_learning_rate = 1  # set to 0 in order not to decrease LR every 30 epochs for 70%
         self.is_with_ts = 1  # set to 0 in order not to include timestamp to features
-        self.is_scaled_ts = 1  # set to 0 in order not to apply min-max normalization to timestamp column
-        self.is_scaled_pos = 1  # set to 0 in order not to apply min-max normalization to position columns
+        self.is_scaled_ts = 0  # set to 0 in order not to apply min-max normalization to timestamp column
+        self.is_scaled_pos = 0  # set to 0 in order not to apply min-max normalization to position columns
+        self.is_scaled_all = 1  # set to 0 in order not to apply min-max normalization whole dataset
 
         # -----  CUDA FOR CPU ----------#
         # for running in Singularity container paths must be modified
@@ -363,16 +366,12 @@ class RNNRunner():
 
             # ------------ MIN-MAX SCALING FOR TIMESTAMP -------------------
             if self.is_scaled_ts != 0 and self.is_with_ts != 0:
-                print(X[:5, :])
                 X[:, 0] = minmax_scale(X[:, 0])
                 logging.info("TIMESTAMP was scaled MIN-MAX [0..1]")
-                print(X[:5, :])
 
-            if self.is_scaled_pos != 0:
-                print(X[:5, :])
-                X[:, 1:4] = minmax_scale(X[:, 1:4])
-                logging.info("POSITION COLUMNS was scaled MIN-MAX [0..1]")
-                print(X[:5, :])
+            elif self.is_scaled_all:
+                X = self.scaler.fit_transform(X)
+                print(X)
 
             # output is created from the features shifted corresponding to given latency
             # y = X[self.pred_step:, :]
