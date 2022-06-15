@@ -268,7 +268,7 @@ class RNNRunner():
 
         # -----  FEATURES ----------#
         # features with velocity
-        self.features = self.cfg['pos_coords'] + self.cfg['quat_coords'] + self.cfg['velocity']
+        self.features = self.cfg['ts'] + self.cfg['pos_coords'] + self.cfg['quat_coords'] + self.cfg['velocity']
         # only position and rotation without velocity and speed
         # self.features = self.cfg['pos_coords'] + self.cfg['quat_coords']
 
@@ -291,7 +291,7 @@ class RNNRunner():
         else:
             self.hidden_dim = 32
             self.batch_size = 256
-            self.n_epochs = 1500
+            self.n_epochs = 500
             self.dropout = 0
             self.layer_dim = 1  # the number of LSTM layers stacked on top of each other
 
@@ -330,7 +330,7 @@ class RNNRunner():
     def run(self):
         logging.info(f"RNN model is {self.model.name}: hidden_dim: {self.hidden_dim}, batch_size: {self.batch_size}, "
                      f"n_epochs: {self.n_epochs}, dropout: {self.dropout}, layers: {self.layer_dim}, "
-                     f"window: {self.pred_window[0] * 1e3}")
+                     f"window: {self.pred_window[0] * 1e3}, LR: {self.learning_rate}")
         results = []
         if not os.path.exists(self.dists_path):
             os.makedirs(self.dists_path, exist_ok=True)
