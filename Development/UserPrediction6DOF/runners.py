@@ -255,7 +255,7 @@ class RNNRunner():
         self.model = None
         self.pred_step = int(self.pred_window / self.dt)
         self.num_past = 60  # number of past time series to predict future
-        self.is_reducing_learning_rate = 0
+        self.is_reducing_learning_rate = 1  # set to 0 in order not to decrease LR every 30 epochs for 70%
 
         # -----  CUDA FOR CPU ----------#
         # for running in Singularity container paths must be modified
