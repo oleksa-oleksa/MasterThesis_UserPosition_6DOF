@@ -276,18 +276,19 @@ class RNNRunner():
         if self.is_with_ts != 0:
             # features timestamp
             logging.info("TIMESTAMP is in features")
-            self.features = self.cfg['ts'] + self.cfg['pos_coords'] # + self.cfg['quat_coords'] + self.cfg['velocity']
+            self.features = self.cfg['ts'] + self.cfg['pos_coords'] + self.cfg['quat_coords'] + self.cfg['velocity']
+            # only position and rotation
+            # self.features = self.cfg['ts'] + self.cfg['pos_coords'] + self.cfg['quat_coords']
         elif self.is_with_ts == 0:
             # features without timestamp
             logging.info("WITHOUT TIMESTAMP in features")
             self.features = self.cfg['pos_coords'] + self.cfg['quat_coords'] + self.cfg['velocity']
-
-        # only position and rotation without velocity and speed
-        # self.features = self.cfg['pos_coords'] + self.cfg['quat_coords']
+            # only position and rotation
+            # self.features = self.cfg['pos_coords'] + self.cfg['quat_coords']
 
         # -----  OUTPUTS ----------#
         # position and rotation in future will be predicted
-        self.outputs = self.cfg['pos_coords'] # + self.cfg['quat_coords']
+        self.outputs = self.cfg['pos_coords'] + self.cfg['quat_coords']
 
         # -----  MODEL HYPERPARAMETERS ----------#
         self.input_dim = len(self.features)
