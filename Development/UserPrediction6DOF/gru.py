@@ -20,11 +20,12 @@ class GRUModel(nn.Module):
     """
     def __init__(self, input_dim, hidden_dim, output_dim, dropout_prob, layer_dim=1):
         super(GRUModel, self).__init__()
-        self.name = "GRU"
+        self.name = "GRU with Sliding Window"
 
         # Defining the number of layers and the nodes in each layer
         self.layer_dim = layer_dim
         self.hidden_dim = hidden_dim
+        self.output_dim = output_dim
 
         # GRU layers
         self.gru = nn.GRU(
@@ -41,6 +42,7 @@ class GRUModel(nn.Module):
         logging.info(F"Model {self.name} on GPU with cuda: {self.cuda}")
 
     def forward(self, x):
+        batch_size, sequence_length = x.shape[0], x.shape[1]
         if self.cuda:
             x = x.cuda()
         # Initializing hidden state for first input with zeros
@@ -58,5 +60,6 @@ class GRUModel(nn.Module):
 
         # Convert the final state to our desired output shape (batch_size, output_dim)
         out = self.fc(out)
+        out = out.view([batch_size, -1, self.output_dim])
 
         return out

@@ -48,7 +48,7 @@ class RNNOptimization:
 
     def train(self, train_loader, val_loader, batch_size=64, n_epochs=50, n_features=10):
         # trained model can be saved
-        # model_path = f'./models/LSTM/{datetime.now().strftime("%d.%m_%H%M%S")}'
+        model_path = f'./models/LSTM_Sliding/{datetime.now().strftime("%d.%m_%H%M%S")}'
 
         for epoch in range(1, n_epochs + 1):
             batch_losses = []
@@ -94,7 +94,7 @@ class RNNOptimization:
                 )
 
         # saves model after training
-        # torch.save(self.model.state_dict(), model_path)
+        torch.save(self.model.state_dict(), model_path)
 
     def evaluate(self, test_loader, batch_size=1, n_features=7):
         """

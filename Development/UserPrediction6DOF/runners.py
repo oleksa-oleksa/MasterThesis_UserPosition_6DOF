@@ -243,7 +243,7 @@ class RNNRunner():
 
     """
 
-    def __init__(self, model, pred_window, dataset_path, results_path):
+    def __init__(self, model_name, pred_window, dataset_path, results_path):
         # -----  PRESET ----------#
         config_path = os.path.join(os.getcwd(), 'config.toml')
         self.cfg = toml.load(config_path)
@@ -254,7 +254,8 @@ class RNNRunner():
         self.dists_path = os.path.join(self.results_path, 'distances')
         self.model = None
         self.pred_step = int(self.pred_window / self.dt)
-        self.num_past = 100  # number of past time series to predict future
+        self.num_past = 60  # number of past time series to predict future
+        self.is_reducing_learning_rate = 0
 
         # -----  CUDA FOR CPU ----------#
         # for running in Singularity container paths must be modified
@@ -306,24 +307,25 @@ class RNNRunner():
         # -----  CREATE PYTORH MODEL ----------#
         # batch_first=True --> input is [batch_size, seq_len, input_size]
         # SELECTS MODEL
-        if model == "lstm":
+        if model_name == "lstm":
             self.model = LSTMModelSlidingWindow(self.input_dim, self.hidden_dim,
                                                 self.output_dim, self.dropout, self.layer_dim)
-        elif model == "lstm-custom":
+        elif model_name == "lstm-custom":
             self.model = LSTMModelCustom(self.input_dim, self.hidden_dim,
                                          self.output_dim, self.dropout, self.layer_dim)
 
-        elif model == "gru":
+        elif model_name == "gru":
             self.model = GRUModel(self.input_dim, self.hidden_dim,
                                   self.output_dim, self.dropout, self.layer_dim)
 
-        elif model == "lstm-fcn":
+        elif model_name == "lstm-fcn":
             self.model = LSTMFCNModel(self.input_dim, self.hidden_dim,
                                       self.output_dim, self.dropout, self.layer_dim, self.batch_size)
 
         self.params = {'LAT':self.pred_window, 'hidden_dim': self.hidden_dim, 'epochs': self.n_epochs,
                        'batch_size': self.batch_size, 'dropout': self.dropout, 'layers': self.layer_dim,
-                       'model': model}
+                       'model': model_name, 'self.num_past': self.num_past, 'lr': self.learning_rate,
+                       'lr_reducing': self.is_reducing_learning_rate, 'weight_decay': self.weight_decay}
 
     def run(self):
         logging.info(f"RNN model is {self.model.name}: hidden_dim: {self.hidden_dim}, batch_size: {self.batch_size}, "
@@ -359,7 +361,7 @@ class RNNRunner():
                 y_w.append(y[i + self.pred_step - 1:i + self.pred_step, 0:y.shape[1]])
 
             X_w, y_w = np.array(X_w), np.array(y_w)
-            print(y_w)
+            # print(y_w)
 
             print(f'X_w.shape: {X_w.shape}')
             print(f'y_w.shape: {y_w.shape}')
@@ -437,7 +439,7 @@ class RNNRunner():
         df_results.to_csv(os.path.join(self.results_path, 'res_lstm.csv'), index=False)
 
         # log model parameters
-        log_parameters(self.hidden_dim, self.n_epochs, self.batch_size, self.dropout, self.layer_dim, df_results)
+        log_parameters(self.params, df_results)
 
 
 class RNNRunnerSWP():
