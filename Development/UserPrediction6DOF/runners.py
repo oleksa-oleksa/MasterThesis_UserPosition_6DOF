@@ -57,6 +57,7 @@ from scipy.linalg import block_diag
 from statsmodels.iolib.smpickle import save_pickle
 from statsmodels.tsa.ar_model import AutoReg, AutoRegResults, ar_select_order
 from .evaluator import Evaluator, DeepLearnEvaluator
+from sklearn.preprocessing import minmax_scale
 from .utils import *
 
 cuda_path = "/mnt/output"
@@ -254,8 +255,13 @@ class RNNRunner():
         self.dists_path = os.path.join(self.results_path, 'distances')
         self.model = None
         self.pred_step = int(self.pred_window / self.dt)
-        self.num_past = 60  # number of past time series to predict future
+        self.num_past = 20  # number of past time series to predict future
+
+        # ----------  FLAGS  --------------------#
         self.is_reducing_learning_rate = 1  # set to 0 in order not to decrease LR every 30 epochs for 70%
+        self.is_with_ts = 1  # set to 0 in order not to include timestamp to features
+        self.is_scaled_ts = 1  # set to 0 in order not to apply min-max normalization to timestamp column
+        self.is_scaled_pos = 1  # set to 0 in order not to apply min-max normalization to position columns
 
         # -----  CUDA FOR CPU ----------#
         # for running in Singularity container paths must be modified
@@ -267,14 +273,21 @@ class RNNRunner():
             # logging.info(f"Cuda true. dists_path {self.dists_path}")
 
         # -----  FEATURES ----------#
-        # features with velocity
-        self.features = self.cfg['ts'] + self.cfg['pos_coords'] + self.cfg['quat_coords'] + self.cfg['velocity']
+        if self.is_with_ts != 0:
+            # features timestamp
+            logging.info("TIMESTAMP is in features")
+            self.features = self.cfg['ts'] + self.cfg['pos_coords'] + self.cfg['quat_coords'] + self.cfg['velocity']
+        elif self.is_with_ts == 0:
+            # features without timestamp
+            logging.info("WITHOUT TIMESTAMP in features")
+            self.features = self.cfg['pos_coords'] + self.cfg['quat_coords'] + self.cfg['velocity']
+
         # only position and rotation without velocity and speed
         # self.features = self.cfg['pos_coords'] + self.cfg['quat_coords']
 
         # -----  OUTPUTS ----------#
         # position and rotation in future will be predicted
-        self.outputs = self.cfg['pos_coords'] + self.cfg['quat_coords']
+        self.outputs = self.cfg['pos_coords'] #+ self.cfg['quat_coords']
 
         # -----  MODEL HYPERPARAMETERS ----------#
         self.input_dim = len(self.features)
@@ -291,7 +304,7 @@ class RNNRunner():
         else:
             self.hidden_dim = 32
             self.batch_size = 256
-            self.n_epochs = 500
+            self.n_epochs = 60
             self.dropout = 0
             self.layer_dim = 1  # the number of LSTM layers stacked on top of each other
 
@@ -301,10 +314,9 @@ class RNNRunner():
         # TODO Fixing LSTM-FCN in order to work with batched sequence
         # TODO Try Bi-LSTM build in Pytorch
         # TODO Check Custom LSTM
-        # TODO Fixing GRU in order to work with batched sequence
         # TODO Implement smoothing with stacked LSTM kinda Kalman
 
-        # -----  CREATE PYTORH MODEL ----------#
+        # -----  CREATE PYTORCH MODEL ----------#
         # batch_first=True --> input is [batch_size, seq_len, input_size]
         # SELECTS MODEL
         if model_name == "lstm":
@@ -347,6 +359,19 @@ class RNNRunner():
             print(f'X.shape: {X.shape}')
             print(f'len(X): {len(X)}')
             print(f'Past {self.num_past} values for predict in {self.pred_step} in future')
+
+            # ------------ MIN-MAX SCALING FOR TIMESTAMP -------------------
+            if self.is_scaled_ts != 0 and self.is_with_ts != 0:
+                print(X[:5, :])
+                X[:, 0] = minmax_scale(X[:, 0])
+                logging.info("TIMESTAMP was scaled MIN-MAX [0..1]")
+                print(X[:5, :])
+
+            if self.is_scaled_pos != 0:
+                print(X[:5, :])
+                X[:, 1:4] = minmax_scale(X[:, 1:4])
+                logging.info("POSITION COLUMNS was scaled MIN-MAX [0..1]")
+                print(X[:5, :])
 
             # output is created from the features shifted corresponding to given latency
             # y = X[self.pred_step:, :]
