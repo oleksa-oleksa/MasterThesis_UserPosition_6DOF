@@ -266,7 +266,7 @@ class RNNRunner():
         self.lr_epochs = 10
         self.is_with_ts = 'yes'  # in order not to include timestamp to features
         self.is_scaled_ts = 'yes'  # set to 0 in order not to apply min-max normalization to timestamp column
-        self.is_scaled_pos = 'no'  # set to 0 in order not to apply min-max normalization to position columns
+        self.is_scaled_pos = 'yes'  # set to 0 in order not to apply min-max normalization to position columns
         self.is_scaled_all = 'no'  # set to 0 in order not to apply min-max normalization whole dataset
 
         # -----  CUDA FOR CPU ----------#
@@ -401,28 +401,25 @@ class RNNRunner():
 
             # ------------ MIN-MAX SCALING -------------------
             if self.is_scaled_ts == 'yes' and self.is_with_ts == 'yes':
-                X_train[:, :, 0] = self.scaler_x.fit(X_train[:, :, 0])
-                X_train[:, :, 0] = self.scaler_x.transform(X_train[:, :, 0])
-                X_val[:, :, 0] = self.scaler_x.transform(X_val[:, :, 0])
-                X_test[:, :, 0] = self.scaler_x.transform(X_test[:, :, 0])
+                X[:, 0] = minmax_scale(X[:, 0])
                 logging.info("TIMESTAMP was scaled MIN-MAX [0..1]")
 
             if self.is_scaled_pos == 'yes':
                 # fit features
-                self.scaler_x = self.scaler_x.fit(X[:, :, 1:4])
+                self.scaler_x = self.scaler_x.fit(X[:, 1:4])
 
                 # scale
                 X_train[:, :, 1:4] = self.scaler_x.transform(X_train[:, :, 1:4])
-                X_val[:, :, 1:4] = self.scaler_x.transform(X_val[:, :, 1:4])
-                X_test[:, :, 1:4] = self.scaler_x.transform(X_test[:, :, 1:4])
+                X_val[:, 1:4] = self.scaler_x.transform(X_val[:, 1:4])
+                X_test[:, 1:4] = self.scaler_x.transform(X_test[:, 1:4])
 
                 # fit
-                self.scaler_y = self.scaler_y.fit(y[:, :, 0:3])
+                self.scaler_y = self.scaler_y.fit(y[:, 0:3])
 
                 # scale
-                y_train[:, :, 0:3] = self.scaler_y.transform(y_train[:, :, 0:3])
-                y_val[:, :, 0:3] = self.scaler_y.transform(y_val[:, :, 0:3])
-                X_test[:, :, 0:3] = self.scaler_y.transform(X_test[:, :, 0:3])
+                y_train[:, 0:3] = self.scaler_y.transform(y_train[:, 0:3])
+                y_val[:, 0:3] = self.scaler_y.transform(y_val[:, 0:3])
+                X_test[:, 0:3] = self.scaler_y.transform(X_test[:, 0:3])
 
                 logging.info("POSITION was scaled MIN-MAX [0..1]")
 
