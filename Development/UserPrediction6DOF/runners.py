@@ -266,7 +266,7 @@ class RNNRunner():
         self.lr_epochs = 10
         self.is_with_ts = 'yes'  # in order not to include timestamp to features
         self.is_scaled_ts = 'yes'  # set to 0 in order not to apply min-max normalization to timestamp column
-        self.is_scaled_pos = 'yes'  # set to 0 in order not to apply min-max normalization to position columns
+        self.is_scaled_pos = 'no'  # set to 0 in order not to apply min-max normalization to position columns
         self.is_scaled_all = 'no'  # set to 0 in order not to apply min-max normalization whole dataset
 
         # -----  CUDA FOR CPU ----------#
