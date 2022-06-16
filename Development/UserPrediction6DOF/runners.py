@@ -311,7 +311,7 @@ class RNNRunner():
         else:
             self.hidden_dim = 32
             self.batch_size = 256
-            self.n_epochs = 3
+            self.n_epochs = 1
             self.dropout = 0
             self.layer_dim = 1  # the number of LSTM layers stacked on top of each other
 
@@ -388,7 +388,7 @@ class RNNRunner():
                 self.scaler_y = self.scaler_y.fit(y[:, 0:3])
 
                 # scale
-                X[:, 1:4] = self.scaler_x.transform(X_[:, 1:4])
+                X[:, 1:4] = self.scaler_x.transform(X[:, 1:4])
                 y[:, 0:3] = self.scaler_y.transform(y[:, 0:3])
                 logging.info("POSITION was scaled MIN-MAX [0..1]")
 
@@ -455,13 +455,15 @@ class RNNRunner():
             predictions, values = opt.predict(test_loader_one)
             predictions = np.array(predictions)
             values = np.array(values)
-            # print_result(y_test, values)
+            logging.info('Y_TEST VS VALUES:')
+            print_result(y_test, values, start_row=10000, stop_row=10005)
 
             # Remove axes of length one from predictions.
             predictions = predictions.squeeze()
             values = values.squeeze()
 
             # ------------ DEBUG INFO ------------------
+            logging.info('PREDICTION VS VALUES:')
             print_result(predictions, values, start_row=10000, stop_row=10005)
 
             # Compute evaluation metrics LSTM
@@ -483,6 +485,8 @@ class RNNRunner():
                 # Compute evaluation metrics after inverse transform
                 deep_eval_transform = DeepLearnEvaluator(predictions, values)
                 deep_eval_transform.eval_model()
+                logging.info('UNSCALED PREDICTIONS VS VALUES:')
+                print_result(y_test, values, start_row=10000, stop_row=10005)
 
             metrics = np.array(list(deep_eval.metrics.values()))
             euc_dists = deep_eval.euc_dists

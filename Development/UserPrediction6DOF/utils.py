@@ -290,7 +290,7 @@ def print_result(predictions, values, start_row, stop_row):
     prints on terminal 10 elements of array near the end of prediction.
     we expect the model predicts better on the end of the dataset
     """
-    logging.info("---------------- PREDICTIONS ---------------------------------")
+    logging.info("---------------- COMPARE ---------------------------------")
     logging.info(f"predictions.shape: {predictions.shape}")
     logging.info(predictions[start_row:stop_row, :])
 
