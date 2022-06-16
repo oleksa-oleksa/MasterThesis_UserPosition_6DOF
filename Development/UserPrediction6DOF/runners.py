@@ -249,7 +249,8 @@ class RNNRunner():
         # -----  PRESET ----------#
         config_path = os.path.join(os.getcwd(), 'config.toml')
         self.cfg = toml.load(config_path)
-        self.scaler = MinMaxScaler(feature_range=(0, 1))
+        self.scaler_x = MinMaxScaler(feature_range=(0, 1))
+        self.scaler_y = MinMaxScaler(feature_range=(0, 1))
         self.dt = self.cfg['dt']
         self.pred_window = pred_window * 1e-3  # convert to seconds
         self.dataset_path = dataset_path
@@ -257,14 +258,16 @@ class RNNRunner():
         self.dists_path = os.path.join(self.results_path, 'distances')
         self.model = None
         self.pred_step = int(self.pred_window / self.dt)
-        self.num_past = 20  # number of past time series to predict future
+        self.num_past = 100  # number of past time series to predict future
 
         # ----------  FLAGS  --------------------#
-        self.is_reducing_learning_rate = 1  # set to 0 in order not to decrease LR every 30 epochs for 70%
-        self.is_with_ts = 1  # set to 0 in order not to include timestamp to features
-        self.is_scaled_ts = 0  # set to 0 in order not to apply min-max normalization to timestamp column
-        self.is_scaled_pos = 0  # set to 0 in order not to apply min-max normalization to position columns
-        self.is_scaled_all = 1  # set to 0 in order not to apply min-max normalization whole dataset
+        # flags are to set to 'yes'/'no'
+        self.is_reducing_learning_rate = 'yes'  # decreases LR every ls_epochs for 70%
+        self.lr_epochs = 10
+        self.is_with_ts = 'yes'  # in order not to include timestamp to features
+        self.is_scaled_ts = 'yes'  # set to 0 in order not to apply min-max normalization to timestamp column
+        self.is_scaled_pos = 'yes'  # set to 0 in order not to apply min-max normalization to position columns
+        self.is_scaled_all = 'no'  # set to 0 in order not to apply min-max normalization whole dataset
 
         # -----  CUDA FOR CPU ----------#
         # for running in Singularity container paths must be modified
@@ -308,7 +311,7 @@ class RNNRunner():
         else:
             self.hidden_dim = 32
             self.batch_size = 256
-            self.n_epochs = 60
+            self.n_epochs = 3
             self.dropout = 0
             self.layer_dim = 1  # the number of LSTM layers stacked on top of each other
 
@@ -341,12 +344,14 @@ class RNNRunner():
         self.params = {'LAT':self.pred_window[0], 'hidden_dim': self.hidden_dim, 'epochs': self.n_epochs,
                        'batch_size': self.batch_size, 'dropout': self.dropout, 'layers': self.layer_dim,
                        'model': model_name, 'num_past': self.num_past, 'lr': self.learning_rate,
-                       'lr_reducing': self.is_reducing_learning_rate, 'weight_decay': self.weight_decay}
+                       'lr_reducing': self.is_reducing_learning_rate, 'lr_epochs': self.lr_epochs,
+                       'weight_decay': self.weight_decay}
 
     def run(self):
         logging.info(f"RNN model is {self.model.name}: hidden_dim: {self.hidden_dim}, batch_size: {self.batch_size}, "
                      f"n_epochs: {self.n_epochs}, dropout: {self.dropout}, layers: {self.layer_dim}, "
-                     f"window: {self.pred_window[0] * 1e3}, LR: {self.learning_rate}")
+                     f"window: {self.pred_window[0] * 1e3}, \n LR starts {self.learning_rate} "
+                     f"and reduces every {self.lr_epochs} epochs.")
         results = []
         if not os.path.exists(self.dists_path):
             os.makedirs(self.dists_path, exist_ok=True)
@@ -359,24 +364,35 @@ class RNNRunner():
 
             # Read trace from CSV file
             df_trace = pd.read_csv(trace_path)
+
+            # ------------ RAW FEATURES  -------------------
             X = df_trace[self.features].to_numpy()
             print(f'X.shape: {X.shape}')
             print(f'len(X): {len(X)}')
             print(f'Past {self.num_past} values for predict in {self.pred_step} in future')
 
-            # ------------ MIN-MAX SCALING FOR TIMESTAMP -------------------
-            if self.is_scaled_ts != 0 and self.is_with_ts != 0:
-                X[:, 0] = minmax_scale(X[:, 0])
-                logging.info("TIMESTAMP was scaled MIN-MAX [0..1]")
-
-            elif self.is_scaled_all:
-                X = self.scaler.fit_transform(X)
-                print(X)
-
+            # ------------ RAW OUTPUTS -------------------
             # output is created from the features shifted corresponding to given latency
             # y = X[self.pred_step:, :]
             y = df_trace[self.outputs].to_numpy()
             print(f'y.shape: {y.shape}')
+
+            # ------------ MIN-MAX SCALING -------------------
+            if self.is_scaled_ts == 'yes' and self.is_with_ts == 'yes':
+                X[:, 0] = minmax_scale(X[:, 0])
+                logging.info("TIMESTAMP was scaled MIN-MAX [0..1]")
+
+            if self.is_scaled_pos == 'yes':
+                X[:, 1:4] = minmax_scale(X[:, 1:4])
+                logging.info("POSITION was scaled MIN-MAX [0..1]")
+                y[:, 0:3] = self.scaler_y.fit_transform(y[:, 0:3])
+
+            if self.is_scaled_all == 'yes':
+                X = self.scaler_x.fit_transform(X)
+                logging.info("DATASET was scaled MIN-MAX [0..1]")
+                y = self.scaler_y.fit_transform(y)
+
+            # ------------ FEATURES AND OUTPUTS WITH SEQUENCE_LEN = SLIDING WINDOW -------------------
 
             X_w = []
             y_w = []
@@ -445,6 +461,23 @@ class RNNRunner():
             # Compute evaluation metrics LSTM
             deep_eval = DeepLearnEvaluator(predictions, values)
             deep_eval.eval_model()
+
+            # ------------- INVERSE TRANSFORM -----------------
+            if self.is_scaled_pos == 'yes':
+                predictions[:, 0:3] = self.scaler_y.inverse_transform(predictions[:, 0:3])
+                values[:, 0:3] = self.scaler_y.inverse_transform(values[:, 0:3])
+                logging.info('Predicted position scaled back with inverse transform')
+
+            if self.is_scaled_all == 'yes':
+                predictions = self.scaler_y.inverse_transform(predictions)
+                values = self.scaler_y.inverse_transform(values)
+                logging.info('Whole prediction scaled back with inverse transform')
+
+            if self.is_scaled_pos == 'yes' or self.is_scaled_all == 'yes':
+                # Compute evaluation metrics after inverse transform
+                deep_eval_transform = DeepLearnEvaluator(predictions, values)
+                deep_eval_transform.eval_model()
+
             metrics = np.array(list(deep_eval.metrics.values()))
             euc_dists = deep_eval.euc_dists
             ang_dists = np.rad2deg(deep_eval.ang_dists)

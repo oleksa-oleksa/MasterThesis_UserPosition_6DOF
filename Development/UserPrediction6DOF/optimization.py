@@ -81,8 +81,8 @@ class RNNOptimization:
                 validation_loss = np.mean(batch_val_losses)
                 self.val_losses.append(validation_loss)
 
-            if self.params['lr_reducing'] != 0:
-                if (epoch >= 30) & (epoch % 30 == 0):
+            if self.params['lr_reducing'] == 'yes':
+                if (epoch >= self.params['lr_epochs']) & (epoch % self.params['lr_epochs'] == 0):
                     for g in self.optimizer.param_groups:
                         g['lr'] = g['lr'] * 0.3
                         print(f"Learning rate is {g['lr']}")
