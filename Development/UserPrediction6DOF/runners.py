@@ -263,10 +263,9 @@ class RNNRunner():
         # ----------  FLAGS  --------------------#
         # flags are to set to 'yes'/'no'
         self.is_reducing_learning_rate = 'yes'  # decreases LR every ls_epochs for 70%
-        self.lr_epochs = 10
         self.is_with_ts = 'yes'  # in order not to include timestamp to features
         self.is_scaled_ts = 'yes'  # set to 0 in order not to apply min-max normalization to timestamp column
-        self.is_scaled_pos = 'yes'  # set to 0 in order not to apply min-max normalization to position columns
+        self.is_scaled_pos = 'no'  # set to 0 in order not to apply min-max normalization to position columns
         self.is_scaled_all = 'no'  # set to 0 in order not to apply min-max normalization whole dataset
 
         # -----  CUDA FOR CPU ----------#
@@ -300,6 +299,7 @@ class RNNRunner():
         self.input_dim = len(self.features)
         self.output_dim = len(self.outputs)  # 3 position parameter + 4 rotation parameter
         self.learning_rate = 1e-3  # 1e-3 base
+        self.lr_epochs = 30
         self.weight_decay = 1e-6  # 1e-6 base
 
         if 'RNN_PARAMETERS' in os.environ:
@@ -309,9 +309,9 @@ class RNNRunner():
             self.dropout = float(os.getenv('DROPOUT'))
             self.layer_dim = int(os.getenv('LAYERS'))
         else:
-            self.hidden_dim = 32
+            self.hidden_dim = 70
             self.batch_size = 256
-            self.n_epochs = 1
+            self.n_epochs = 250
             self.dropout = 0
             self.layer_dim = 1  # the number of LSTM layers stacked on top of each other
 
@@ -403,11 +403,18 @@ class RNNRunner():
             X_w = []
             y_w = []
 
-            # SLIDING WINDOW LOOKING INTO PAST TO PREDICT 1 ROW FROM FUTURE
+            # SLIDING WINDOW LOOKING INTO PAST TO PREDICT 20 + 1 ROW FROM FUTURE
+            # TODO THIS
             for i in range(self.num_past, len(X) - self.pred_step + 1):
                 X_w.append(X[i - self.num_past:i, 0:X.shape[1]])
                 y_w.append(y[i + self.pred_step - 1:i + self.pred_step, 0:y.shape[1]])
 
+            '''
+            # SLIDING WINDOW LOOKING INTO PAST TO PREDICT 1 ROW FROM FUTURE
+            for i in range(self.num_past, len(X) - self.pred_step + 1):
+                X_w.append(X[i - self.num_past:i, 0:X.shape[1]])
+                y_w.append(y[i + self.pred_step - 1:i + self.pred_step, 0:y.shape[1]])
+            '''
             X_w, y_w = np.array(X_w), np.array(y_w)
             # print(y_w)
 
@@ -464,15 +471,18 @@ class RNNRunner():
 
             # ------------ DEBUG INFO ------------------
             logging.info('PREDICTION VS VALUES:')
-            print_result(predictions, values, start_row=10000, stop_row=10005)
+            print_result(predictions[self.num_past:, :], values, start_row=10000, stop_row=10005)
 
             # Compute evaluation metrics LSTM
             deep_eval = DeepLearnEvaluator(predictions, values)
             deep_eval.eval_model()
+            print(predictions.shape[0])
+
+            #prediction_scaled = np.empty([self.num_past:(predictions.shape[0]), predictions.shape[1]])
 
             # ------------- INVERSE TRANSFORM -----------------
             if self.is_scaled_pos == 'yes':
-                predictions[:, 0:3] = self.scaler_y.inverse_transform(predictions[:, 0:3])
+                prediction_scaled = self.scaler_y.inverse_transform(predictions[self.num_past:, 0:3])
                 values[:, 0:3] = self.scaler_y.inverse_transform(values[:, 0:3])
                 logging.info('Predicted position scaled back with inverse transform')
 
