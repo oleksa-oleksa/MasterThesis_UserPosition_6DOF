@@ -53,10 +53,12 @@ class GRUModel(nn.Module):
 
         # Forward propagation by passing in the input and hidden state into the model
         out, _ = self.gru(x, h0.detach())
+        print(f"out BEFORE -1 {out.shape}")
 
         # Reshaping the outputs in the shape of (batch_size, seq_length, hidden_size)
         # so that it can fit into the fully connected layer
         out = out[:, -1, :]
+        print(f"out AFTER -1 {out.shape}")
 
         # Convert the final state to our desired output shape (batch_size, output_dim)
         out = self.fc(out)

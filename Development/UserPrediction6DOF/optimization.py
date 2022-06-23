@@ -29,9 +29,9 @@ class RNNOptimization:
         if self.cuda:
             yhat = yhat.cuda()
         # DEBUG
-        # print(f"step x: {x.shape}")
-        # print(f"step y: {y.shape}")
-        # print(f"step yhat: {yhat.shape}")
+        print(f"step x: {x.shape}")
+        print(f"step y: {y.shape}")
+        print(f"step yhat: {yhat.shape}")
 
         # Computes loss
         loss = self.loss_fn(y, yhat)
@@ -57,10 +57,9 @@ class RNNOptimization:
                     x_batch, y_batch = x_batch.cuda(), y_batch.cuda()
                 # creates 3D Tensor
                 # print(f"x_batch before -1: {x_batch.shape}")
-                # print(f"y_batch: {y_batch.shape}")
+                #print(f"y_batch: {y_batch.shape}")
                 # x_batch = x_batch.view([batch_size, -1, n_features])
-                # print(f"x_batch: {x_batch.shape}")
-                # print(f"y_batch: {y_batch.shape}")
+                # print(f"x_batch after: {x_batch.shape}")
                 loss = self.train_step(x_batch, y_batch)
                 batch_losses.append(loss)
             training_loss = np.mean(batch_losses)

@@ -278,13 +278,13 @@ class RNNRunner():
             # logging.info(f"Cuda true. dists_path {self.dists_path}")
 
         # -----  FEATURES ----------#
-        if self.is_with_ts != 0:
+        if self.is_with_ts == 'yes':
             # features timestamp
             logging.info("TIMESTAMP is in features")
             self.features = self.cfg['ts'] + self.cfg['pos_coords'] + self.cfg['quat_coords'] + self.cfg['velocity']
             # only position and rotation
             # self.features = self.cfg['ts'] + self.cfg['pos_coords'] + self.cfg['quat_coords']
-        elif self.is_with_ts == 0:
+        elif self.is_with_ts == 'no':
             # features without timestamp
             logging.info("WITHOUT TIMESTAMP in features")
             self.features = self.cfg['pos_coords'] + self.cfg['quat_coords'] + self.cfg['velocity']
@@ -393,7 +393,7 @@ class RNNRunner():
                 logging.info("POSITION was scaled MIN-MAX [0..1]")
 
             if self.is_scaled_all == 'yes':
-                # TODO: Finish this section
+                # TODO: CHECK SCALING
                 X = self.scaler_x.fit_transform(X)
                 logging.info("DATASET was scaled MIN-MAX [0..1]")
                 y = self.scaler_y.fit_transform(y)
@@ -403,14 +403,14 @@ class RNNRunner():
             X_w = []
             y_w = []
 
-            # SLIDING WINDOW LOOKING INTO PAST TO PREDICT 20 + 1 ROW FROM FUTURE
+            # SLIDING WINDOW LOOKING INTO PAST TO PREDICT 20 ROWS INTO FUTURE
             # TODO THIS
             for i in range(self.num_past, len(X) - self.pred_step + 1):
                 X_w.append(X[i - self.num_past:i, 0:X.shape[1]])
-                y_w.append(y[i + self.pred_step - 1:i + self.pred_step, 0:y.shape[1]])
+                y_w.append(y[i:i + self.pred_step, 0:y.shape[1]])
 
             '''
-            # SLIDING WINDOW LOOKING INTO PAST TO PREDICT 1 ROW FROM FUTURE
+            # SLIDING WINDOW LOOKING INTO PAST TO PREDICT 1 ROW AFTER 20 ROWS IN FUTURE
             for i in range(self.num_past, len(X) - self.pred_step + 1):
                 X_w.append(X[i - self.num_past:i, 0:X.shape[1]])
                 y_w.append(y[i + self.pred_step - 1:i + self.pred_step, 0:y.shape[1]])
@@ -448,6 +448,9 @@ class RNNRunner():
 
             opt = RNNOptimization(model=self.model, loss_fn=loss_fn,
                                   optimizer=optimizer, results=self.results_path, params=self.params)
+
+            # ------------ TRAIN MODEL ------------------
+
             opt.train(train_loader, val_loader, batch_size=self.batch_size,
                       n_epochs=self.n_epochs, n_features=self.input_dim)
 
@@ -462,23 +465,25 @@ class RNNRunner():
             predictions, values = opt.predict(test_loader_one)
             predictions = np.array(predictions)
             values = np.array(values)
-            logging.info('Y_TEST VS VALUES:')
-            print_result(y_test, values, start_row=10000, stop_row=10005)
+
+            # ------------ DEBUG INFO ------------------
+            # logging.info('Y_TEST VS VALUES:')
+            # print_result(y_test, values, start_row=10000, stop_row=10005)
 
             # Remove axes of length one from predictions.
             predictions = predictions.squeeze()
             values = values.squeeze()
 
             # ------------ DEBUG INFO ------------------
-            logging.info('PREDICTION VS VALUES:')
-            print_result(predictions[self.num_past:, :], values, start_row=10000, stop_row=10005)
+            # logging.info('PREDICTION VS VALUES:')
+            # print_result(predictions[self.num_past:, :], values, start_row=10000, stop_row=10005)
 
             # Compute evaluation metrics LSTM
             deep_eval = DeepLearnEvaluator(predictions, values)
             deep_eval.eval_model()
             print(predictions.shape[0])
 
-            #prediction_scaled = np.empty([self.num_past:(predictions.shape[0]), predictions.shape[1]])
+            # prediction_scaled = np.empty([self.num_past:(predictions.shape[0]), predictions.shape[1]])
 
             # ------------- INVERSE TRANSFORM -----------------
             if self.is_scaled_pos == 'yes':
