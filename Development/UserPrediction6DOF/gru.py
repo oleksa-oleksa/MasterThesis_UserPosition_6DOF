@@ -39,10 +39,11 @@ class GRUModel(nn.Module):
         if self.cuda:
             self.gru.cuda()
             self.fc.cuda()
-        logging.info(F"Model {self.name} on GPU with cuda: {self.cuda}")
+        logging.info(F"Model {self.name}. GPU with cuda: {self.cuda}")
 
     def forward(self, x):
         batch_size, sequence_length = x.shape[0], x.shape[1]
+        print(f'batch_size: {batch_size}, sequence_length: {sequence_length}')
         if self.cuda:
             x = x.cuda()
         # Initializing hidden state for first input with zeros
@@ -57,11 +58,17 @@ class GRUModel(nn.Module):
 
         # Reshaping the outputs in the shape of (batch_size, seq_length, hidden_size)
         # so that it can fit into the fully connected layer
-        out = out[:, -1, :]
-        print(f"out AFTER -1 {out.shape}")
+
+        # prediction only 1 row
+        # out = out[:, -1, :]
+        # print(f"out AFTER -1 {out.shape}")
 
         # Convert the final state to our desired output shape (batch_size, output_dim)
         out = self.fc(out)
+        print(f"out AFTER FC {out.shape}")
+
         out = out.view([batch_size, -1, self.output_dim])
+        print(f"out AFTER -1 to batch {out.shape}")
+
 
         return out
