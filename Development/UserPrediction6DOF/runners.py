@@ -49,13 +49,11 @@ import torch.nn as nn
 import torch.optim as optim
 from filterpy.common import Q_discrete_white_noise
 from filterpy.kalman import KalmanFilter
-from .lstm import LSTMModel, LSTMModelSlidingWindow, LSTMModelCustom
+from .lstm import LSTMModel, LSTMModelCustom
 from .gru import GRUModel
 from .lstm_fcn import LSTMFCNModel
 from .optimization import RNNOptimization
 from scipy.linalg import block_diag
-from statsmodels.iolib.smpickle import save_pickle
-from statsmodels.tsa.ar_model import AutoReg, AutoRegResults, ar_select_order
 from .evaluator import Evaluator, DeepLearnEvaluator
 from sklearn.preprocessing import minmax_scale
 from sklearn.preprocessing import MinMaxScaler
@@ -254,17 +252,6 @@ class RNNRunner():
         self.results_path = results_path
         self.dists_path = os.path.join(self.results_path, 'distances')
         self.model = None
-        self.pred_step = int(self.pred_window / self.dt)
-        self.num_past = 20  # number of past time series to predict future
-
-        # -----  CUDA FOR CPU ----------#
-        # for running in Singularity container paths must be modified
-        self.cuda = torch.cuda.is_available()
-        if self.cuda:
-            self.results_path = os.path.join(cuda_path, 'job_results/tabular')
-            # logging.info(f"Cuda true. results_path {self.results_path}")
-            self.dists_path = os.path.join(self.results_path, 'distances')
-            # logging.info(f"Cuda true. dists_path {self.dists_path}")
 
         # -------------  FEATURES ---------------#
         self.features = self.cfg['pos_coords'] + self.cfg['quat_coords'] + self.cfg['velocity']
@@ -278,6 +265,8 @@ class RNNRunner():
         # ---------  MODEL HYPERPARAMETERS ----------#
         self.input_dim = len(self.features)
         self.output_dim = len(self.outputs)  # 3 position parameter + 4 rotation parameter
+        self.pred_step = int(self.pred_window / self.dt)
+        self.num_past = 20  # number of past time series to predict future
         self.is_reducing_learning_rate = 'yes'  # decreases LR every ls_epochs for 70%
         self.learning_rate = 1e-3  # 1e-3 base
         self.lr_epochs = 30
@@ -300,8 +289,9 @@ class RNNRunner():
         # batch_first=True --> input is [batch_size, seq_len, input_size]
         # SELECTS MODEL
         if model_name == "lstm":
-            self.model = LSTMModelSlidingWindow(self.input_dim, self.hidden_dim,
-                                                self.output_dim, self.dropout, self.layer_dim)
+            self.model = LSTMModel(self.input_dim, self.hidden_dim,
+                                   self.output_dim, self.dropout, self.layer_dim)
+
         elif model_name == "lstm-custom":
             self.model = LSTMModelCustom(self.input_dim, self.hidden_dim,
                                          self.output_dim, self.dropout, self.layer_dim)
@@ -319,6 +309,15 @@ class RNNRunner():
                        'model': model_name, 'num_past': self.num_past, 'lr': self.learning_rate,
                        'lr_reducing': self.is_reducing_learning_rate, 'lr_epochs': self.lr_epochs,
                        'weight_decay': self.weight_decay}
+
+        # -----  CUDA FOR CPU FOR RUNNING IN CONTAINER ----------#
+        # for running in Singularity container paths must be modified
+        self.cuda = torch.cuda.is_available()
+        if self.cuda:
+            self.results_path = os.path.join(cuda_path, 'job_results/tabular')
+            # logging.info(f"Cuda true. results_path {self.results_path}")
+            self.dists_path = os.path.join(self.results_path, 'distances')
+            # logging.info(f"Cuda true. dists_path {self.dists_path}")
 
     def run(self):
         logging.info(f"RNN model is {self.model.name}: hidden_dim: {self.hidden_dim}, batch_size: {self.batch_size}, "
@@ -355,13 +354,6 @@ class RNNRunner():
             X_w = []
             y_w = []
 
-            '''
-            # SLIDING WINDOW LOOKING INTO PAST TO PREDICT 20 ROWS INTO FUTURE
-            for i in range(self.num_past, len(X) - self.pred_step + 1):
-                X_w.append(X[i - self.num_past:i, 0:X.shape[1]])
-                y_w.append(y[i:i + self.pred_step, 0:y.shape[1]])
-
-            '''
             # SLIDING WINDOW LOOKING INTO PAST TO PREDICT 1 ROW AFTER 20 ROWS IN FUTURE
             for i in range(self.num_past, len(X) - self.pred_step + 1):
                 X_w.append(X[i - self.num_past:i, 0:X.shape[1]])
@@ -372,6 +364,9 @@ class RNNRunner():
 
             print(f'X_w.shape: {X_w.shape}')
             print(f'y_w.shape: {y_w.shape}')
+
+            np.savetxt(self.dataset_path + "X_w.csv", X_w, delimiter=",")
+            np.savetxt(self.dataset_path + "y_w.csv", y_w, delimiter=",")
 
             # Splitting the data into train, validation, and test sets
             X_train, X_val, X_test, y_train, y_val, y_test = train_val_test_split(X_w, y_w, 0.2)

@@ -179,7 +179,7 @@ class LSTMModelCustom(nn.Module):
         return out
 
 
-class LSTMModelSlidingWindow(nn.Module):
+class LSTMModel(nn.Module):
     """
         Implements a sequential network named Long Short Term Memory Network.
         It is capable of learning order dependence in sequence prediction problems and
@@ -247,7 +247,7 @@ class LSTMModelSlidingWindow(nn.Module):
 
     def __init__(self, input_dim, hidden_dim, output_dim, dropout, layer_dim=1):
         """Works both on CPU and GPU without additional modifications"""
-        super(LSTMModelSlidingWindow, self).__init__()
+        super(LSTMModel, self).__init__()
         self.name = "LSTM with Sliding Window"
 
         # Defining the number of layers and the nodes in each layer
@@ -303,7 +303,7 @@ class LSTMModelSlidingWindow(nn.Module):
         return out
 
 
-class LSTMModel(nn.Module):
+class LSTMModelSVP_1to1(nn.Module):
     """
         Implements a sequential network named Long Short Term Memory Network.
         It is capable of learning order dependence in sequence prediction problems and
