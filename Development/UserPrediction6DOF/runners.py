@@ -365,8 +365,8 @@ class RNNRunner():
             print(f'X_w.shape: {X_w.shape}')
             print(f'y_w.shape: {y_w.shape}')
 
-            np.savetxt(self.dataset_path + "X_w.csv", X_w, delimiter=",")
-            np.savetxt(self.dataset_path + "y_w.csv", y_w, delimiter=",")
+            np.save(os.path.join(self.dataset_path, 'X_w.npy'), X_w)
+            np.save(os.path.join(self.dataset_path, 'y_w.npy'), y_w)
 
             # Splitting the data into train, validation, and test sets
             X_train, X_val, X_test, y_train, y_val, y_test = train_val_test_split(X_w, y_w, 0.2)
@@ -431,24 +431,6 @@ class RNNRunner():
             print(predictions.shape[0])
 
             # prediction_scaled = np.empty([self.num_past:(predictions.shape[0]), predictions.shape[1]])
-
-            # ------------- INVERSE TRANSFORM -----------------
-            if self.is_scaled_pos == 'yes':
-                prediction_scaled = self.scaler_y.inverse_transform(predictions[self.num_past:, 0:3])
-                values[:, 0:3] = self.scaler_y.inverse_transform(values[:, 0:3])
-                logging.info('Predicted position scaled back with inverse transform')
-
-            if self.is_scaled_all == 'yes':
-                predictions = self.scaler_y.inverse_transform(predictions)
-                values = self.scaler_y.inverse_transform(values)
-                logging.info('Whole prediction scaled back with inverse transform')
-
-            if self.is_scaled_pos == 'yes' or self.is_scaled_all == 'yes':
-                # Compute evaluation metrics after inverse transform
-                deep_eval_transform = DeepLearnEvaluator(predictions, values)
-                deep_eval_transform.eval_model()
-                logging.info('UNSCALED PREDICTIONS VS VALUES:')
-                print_result(y_test, values, start_row=10000, stop_row=10005)
 
             metrics = np.array(list(deep_eval.metrics.values()))
             euc_dists = deep_eval.euc_dists
