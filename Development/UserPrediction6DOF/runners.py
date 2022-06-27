@@ -258,12 +258,12 @@ class RNNRunner():
         self.dists_path = os.path.join(self.results_path, 'distances')
         self.model = None
         self.pred_step = int(self.pred_window / self.dt)
-        self.num_past = 100  # number of past time series to predict future
+        self.num_past = 20  # number of past time series to predict future
 
         # ----------  FLAGS  --------------------#
         # flags are to set to 'yes'/'no'
         self.is_reducing_learning_rate = 'yes'  # decreases LR every ls_epochs for 70%
-        self.is_with_ts = 'yes'  # in order not to include timestamp to features
+        self.is_with_ts = 'no'  # in order not to include timestamp to features
         self.is_scaled_ts = 'yes'  # set to 0 in order not to apply min-max normalization to timestamp column
         self.is_scaled_pos = 'no'  # set to 0 in order not to apply min-max normalization to position columns
         self.is_scaled_all = 'no'  # set to 0 in order not to apply min-max normalization whole dataset
@@ -309,19 +309,11 @@ class RNNRunner():
             self.dropout = float(os.getenv('DROPOUT'))
             self.layer_dim = int(os.getenv('LAYERS'))
         else:
-            self.hidden_dim = 70
+            self.hidden_dim = 50
             self.batch_size = 256
-            self.n_epochs = 250
+            self.n_epochs = 100
             self.dropout = 0
             self.layer_dim = 1  # the number of LSTM layers stacked on top of each other
-
-        # TODO after vacation in June
-        # TODO automatically grid search for Pytorch
-        # TODO LSTM Grid Search or test with Bash
-        # TODO Fixing LSTM-FCN in order to work with batched sequence
-        # TODO Try Bi-LSTM build in Pytorch
-        # TODO Check Custom LSTM
-        # TODO Implement smoothing with stacked LSTM kinda Kalman
 
         # -----  CREATE PYTORCH MODEL ----------#
         # batch_first=True --> input is [batch_size, seq_len, input_size]
@@ -403,8 +395,8 @@ class RNNRunner():
             X_w = []
             y_w = []
 
+            '''
             # SLIDING WINDOW LOOKING INTO PAST TO PREDICT 20 ROWS INTO FUTURE
-            # TODO THIS
             for i in range(self.num_past, len(X) - self.pred_step + 1):
                 X_w.append(X[i - self.num_past:i, 0:X.shape[1]])
                 y_w.append(y[i:i + self.pred_step, 0:y.shape[1]])
@@ -414,7 +406,7 @@ class RNNRunner():
             for i in range(self.num_past, len(X) - self.pred_step + 1):
                 X_w.append(X[i - self.num_past:i, 0:X.shape[1]])
                 y_w.append(y[i + self.pred_step - 1:i + self.pred_step, 0:y.shape[1]])
-            '''
+            # '''
             X_w, y_w = np.array(X_w), np.array(y_w)
             # print(y_w)
 

@@ -29,12 +29,14 @@ class RNNOptimization:
         if self.cuda:
             yhat = yhat.cuda()
         # DEBUG
-        print(f"step x: {x.shape}")
-        print(f"step y: {y.shape}")
-        print(f"step yhat: {yhat.shape}")
+        # print(f"step x: {x.shape}")
+        #print(f"step y: {y.shape}")
+        #print(y)
+        #print(f"step yhat: {yhat.shape}")
+        #print(yhat)
 
         # Computes loss
-        loss = self.loss_fn(y, yhat)
+        loss = self.loss_fn(input=yhat, target=y)
 
         # Computes gradients
         loss.backward()

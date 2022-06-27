@@ -287,19 +287,19 @@ class LSTMModelSlidingWindow(nn.Module):
         # Forward propagation by passing in the input, hidden state, and cell state into the model
         out, (hn, cn) = self.lstm(x, (h0.detach(), c0.detach()))
 
-        print(f"out after lstm before -1 {out.shape}")
+        # print(f"out after lstm before -1 {out.shape}")
 
         # Reshaping the outputs in the shape of (batch_size, seq_length, hidden_size)
         # so that it can fit into the fully connected layer
         out = out[:, -1, :]
-        print(f"out after -1 BEFORE FC {out.shape}")
+        # print(f"out after -1 BEFORE FC {out.shape}")
 
         # Convert the final state to our desired output shape (batch_size, output_dim)
         # print(f"out BEFORE {out.shape}")
         out = self.fc(out)
-        print(f"out AFTER FC {out.shape}")
+        # print(f"out AFTER FC {out.shape}")
         out = out.view([batch_size, -1, self.output_dim])
-        print(f"out AFTER -1 {out.shape}")
+        # print(f"out AFTER -1 {out.shape}")
         return out
 
 
