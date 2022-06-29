@@ -187,25 +187,25 @@ def normalize_dataset(trace_path, out_dir, norm_type, dataset_path):
 
 
 def load_dataset(dataset_path):
-    logging.info("-------------------------------------------------------------------------")
-    logging.info(f"Reading dataset from {dataset_path}")
-
+    logging.info(f"---------------- Reading 2D dataset from {dataset_path} ----------------")
     df = pd.read_csv(os.path.join(dataset_path, "dataset.csv"))
     logging.info(f"Dataset shape: {df.shape}")
     logging.info(f'Columns: {list(df.columns)}')
-    logging.info("-------------------------------------------------------------------------")
+    logging.info("--------")
 
     return df
 
 
 def prepare_X_y(df, features, num_past, pred_step, outputs):
     X = df[features].to_numpy()
-    print(f'X.shape: {X.shape}')
-    print(f'len(X): {len(X)}')
-    print(f'Past {num_past} values for predict in {pred_step} in future')
+    logging.info("------------------ Creating 2D X and y datasets  -----------------------")
+    logging.info(f'X.shape: {X.shape}')
+    logging.info(f'Using past {num_past} values for predict in {pred_step} in future')
 
     y = df[outputs].to_numpy()
-    print(f'y.shape: {y.shape}')
+    logging.info(f'y.shape: {y.shape}')
+    logging.info('2D datasets X and y created')
+    logging.info("--------")
 
     return X, y
 
@@ -220,17 +220,19 @@ def add_sliding_window(X, y, num_past, pred_step):
         y_w.append(y[i:i + pred_step, 0:y.shape[1]])
 
     X_w, y_w = np.array(X_w), np.array(y_w)
-    # print(y_w)
 
-    print(f'X_w.shape: {X_w.shape}')
-    print(f'y_w.shape: {y_w.shape}')
+    logging.info("------------- Creating 3D datasets and adding sliding window ------------")
+    logging.info(f'X_w.shape: {X_w.shape}')
+    logging.info(f'y_w.shape: {y_w.shape}')
+    logging.info(f"Sliding window of {num_past} added and 3D datasets are created!")
+    logging.info("--------")
 
     return X_w, y_w
 
 
 def save_numpy_array(dataset_path, filename, np_array):
     np.save(os.path.join(dataset_path, f'{filename}.npy'), np_array)
-    logging.info(f'{filename} saved to {dataset_path}')
+    logging.info(f'WRITE: {filename} saved to {dataset_path}')
 
 
 def get_csv_files(dataset_path):
