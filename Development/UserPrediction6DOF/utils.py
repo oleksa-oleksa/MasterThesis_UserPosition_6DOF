@@ -186,6 +186,9 @@ def normalize_dataset(trace_path, out_dir, norm_type, dataset_path):
     return df
 
 
+def load_dataset(dataset_path):
+    
+
 
 def get_csv_files(dataset_path):
     """
