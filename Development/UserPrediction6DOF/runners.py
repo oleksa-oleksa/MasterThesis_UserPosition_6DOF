@@ -248,13 +248,17 @@ class RNNRunner():
         self.cuda = torch.cuda.is_available()
         self.cfg = toml.load(config_path)
         self.dt = self.cfg['dt']
+        self.pred_window = pred_window * 1e-3  # convert to seconds
+        self.pred_step = int(self.pred_window / self.dt)
         self.dataset_path = dataset_path
         self.results_path = results_path
         self.dists_path = None  # set by prepare_environment()
-        self.pred_window = pred_window * 1e-3  # convert to seconds
-        self.pred_step = int(self.pred_window / self.dt)
         self.model = None  # set by select_model()
         self.params = None  # set by select_model()
+        self.prepare_dataset = False
+        self.add_sliding_window = False
+        self.load_before_split = False
+        self.load_split = True
 
         # -------------  FEATURES ---------------#
         self.features = self.cfg['pos_coords'] + self.cfg['quat_coords'] + self.cfg['velocity']
@@ -266,7 +270,7 @@ class RNNRunner():
         self.outputs = self.cfg['pos_coords'] + self.cfg['quat_coords']
 
         # ---------  MODEL HYPERPARAMETERS ----------#
-        self.is_reducing_learning_rate = 'yes'  # decreases LR every ls_epochs for 70%
+        self.reducing_learning_rate = True  # decreases LR every ls_epochs for 70%
         # Adam Optimizer
         self.learning_rate = 1e-3  # 1e-3 base Adam optimizer
         self.lr_epochs = 30
@@ -341,7 +345,7 @@ class RNNRunner():
         self.params = {'LAT': self.pred_window[0], 'hidden_dim': self.hidden_dim, 'epochs': self.n_epochs,
                        'batch_size': self.batch_size, 'dropout': self.dropout, 'layers': self.layer_dim,
                        'model': model_name, 'num_past': self.num_past, 'lr': self.learning_rate,
-                       'lr_reducing': self.is_reducing_learning_rate, 'lr_epochs': self.lr_epochs,
+                       'lr_reducing': self.reducing_learning_rate, 'lr_epochs': self.lr_epochs,
                        'weight_decay': self.weight_decay}
 
     def print_model_info(self):
@@ -360,25 +364,48 @@ class RNNRunner():
 
     def run(self):
         self.print_model_info()
-
+        # preparing arrays for future initialization
+        X_w, y_w = [], []
+        X_train , X_val , X_test = [], [], []
+        y_train, y_val, y_test = [], [], []
         results = []
 
-        # Read full dataset from CSV file
-        df = load_dataset(self.dataset_path)
+        if self.prepare_dataset:
+            # Read full dataset from CSV file
+            df = load_dataset(self.dataset_path)
+            # create 2D arrays of features and outputs
+            X, y = prepare_X_y(df, self.features, self.num_past, self.pred_step, self.outputs)
 
-        # create 2D arrays of features and outputs
-        X, y = prepare_X_y(df, self.features, self.num_past, self.pred_step, self.outputs)
+        if self.add_sliding_window:
+            # Features and outputs with sequence_len = sliding window
+            X_w, y_w = add_sliding_window(X, y, self.num_past, self.pred_step)
+            save_numpy_array(self.dataset_path, 'X_w', X_w)
+            save_numpy_array(self.dataset_path, 'y_w', y_w)
 
-        # Features and outputs with sequence_len = sliding window
-        X_w, y_w = add_sliding_window(X, y, self.num_past, self.pred_step)
-        save_numpy_array(self.dataset_path, 'X_w', X_w)
-        save_numpy_array(self.dataset_path, 'y_w', y_w)
+        if self.load_before_split:
+            X_w = load_numpy_array(self.dataset_path, 'X_w')
+            y_w = load_numpy_array(self.dataset_path, 'y_w')
 
-        # Splitting the data into train, validation, and test sets
-        X_train, X_val, X_test, y_train, y_val, y_test = train_val_test_split(X_w, y_w, 0.2)
+            # Splitting the data into train, validation, and test sets
+            X_train, X_val, X_test, y_train, y_val, y_test = train_val_test_split(X_w, y_w, 0.2)
+            logging.info(f"X_train {X_train.shape}, X_val {X_val.shape}, X_test{X_test.shape}, "
+                         f"y_train {y_train.shape}, y_val {y_val.shape}, y_test {y_test.shape}")
 
-        logging.info(f"X_train {X_train.shape}, X_val {X_val.shape}, X_test{X_test.shape}, "
-                     f"y_train {y_train.shape}, y_val {y_val.shape}, y_test {y_test.shape}")
+            save_numpy_array(self.dataset_path, 'X_train', X_train)
+            save_numpy_array(self.dataset_path, 'X_val', X_val)
+            save_numpy_array(self.dataset_path, 'X_test', X_test)
+            save_numpy_array(self.dataset_path, 'y_train', y_train)
+            save_numpy_array(self.dataset_path, 'y_val', y_val)
+            save_numpy_array(self.dataset_path, 'y_test', y_test)
+
+        elif self.load_split:
+            X_train = load_numpy_array(self.dataset_path, 'X_train')
+            X_val = load_numpy_array(self.dataset_path, 'X_val')
+            X_test = load_numpy_array(self.dataset_path, 'X_test')
+            y_train = load_numpy_array(self.dataset_path, 'y_train')
+            y_val = load_numpy_array(self.dataset_path, 'y_val')
+            y_test = load_numpy_array(self.dataset_path, 'y_test')
+
 
         train_loader, val_loader, \
         test_loader, test_loader_one = load_data(X_train, X_val, X_test,

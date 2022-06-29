@@ -126,7 +126,6 @@ def preprocess_trace(trace_path, dt, out_dir):
         os.makedirs(out_dir)
     df_intp = df_intp.iloc[:data_lenght]   # Make length of all traces the same.
     df_intp.to_csv(os.path.join(out_dir, case + '.csv'), index=False)
-    
     return df_intp
 
 
@@ -155,7 +154,6 @@ def flip_negative_quaternions(trace_path, out_dir):
     if not os.path.exists(out_dir):
         os.makedirs(out_dir)
     df.to_csv(os.path.join(out_dir, case + '.csv'), index=False)
-
     return df
 
 
@@ -182,7 +180,6 @@ def normalize_dataset(trace_path, out_dir, norm_type, dataset_path):
         os.makedirs(dest)
     df.to_csv(os.path.join(dest, case + '.csv'), index=False)
     logging.info(f"Normalized traces written to {dest}")
-
     return df
 
 
@@ -192,7 +189,6 @@ def load_dataset(dataset_path):
     logging.info(f"Dataset shape: {df.shape}")
     logging.info(f'Columns: {list(df.columns)}')
     logging.info("--------")
-
     return df
 
 
@@ -206,7 +202,6 @@ def prepare_X_y(df, features, num_past, pred_step, outputs):
     logging.info(f'y.shape: {y.shape}')
     logging.info('2D datasets X and y created')
     logging.info("--------")
-
     return X, y
 
 
@@ -226,13 +221,19 @@ def add_sliding_window(X, y, num_past, pred_step):
     logging.info(f'y_w.shape: {y_w.shape}')
     logging.info(f"Sliding window of {num_past} added and 3D datasets are created!")
     logging.info("--------")
-
     return X_w, y_w
 
 
 def save_numpy_array(dataset_path, filename, np_array):
     np.save(os.path.join(dataset_path, f'{filename}.npy'), np_array)
     logging.info(f'WRITE: {filename} saved to {dataset_path}')
+
+
+def load_numpy_array(dataset_path, filename):
+    data = np.load(os.path.join(dataset_path, f'{filename}.npy'))
+    logging.info(f'READ: {filename} loaded from {dataset_path}')
+    logging.info(f'{filename}.shape: {data.shape}')
+    return data
 
 
 def get_csv_files(dataset_path):
@@ -259,7 +260,6 @@ def get_csv_files(dataset_path):
     for f in numerical_filenames_ints:
         file = str(f) + ".csv"
         numerical_files_sorted.append(os.path.join(dataset_path, file))
-
     return numerical_files_sorted
 
 
