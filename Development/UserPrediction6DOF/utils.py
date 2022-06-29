@@ -197,12 +197,40 @@ def load_dataset(dataset_path):
 
     return df
 
-def prepare_raw_features(df, features, num_past):
+
+def prepare_X_y(df, features, num_past, pred_step, outputs):
     X = df[features].to_numpy()
     print(f'X.shape: {X.shape}')
     print(f'len(X): {len(X)}')
-    print(f'Past {num_past} values for predict in {self.pred_step} in future')
-    return X
+    print(f'Past {num_past} values for predict in {pred_step} in future')
+
+    y = df[outputs].to_numpy()
+    print(f'y.shape: {y.shape}')
+
+    return X, y
+
+
+def add_sliding_window(X, y, num_past, pred_step):
+    X_w = []
+    y_w = []
+
+    # SLIDING WINDOW LOOKING INTO PAST TO PREDICT 20 ROWS INTO FUTURE
+    for i in range(num_past, len(X) - pred_step + 1):
+        X_w.append(X[i - num_past:i, 0:X.shape[1]])
+        y_w.append(y[i:i + pred_step, 0:y.shape[1]])
+
+    X_w, y_w = np.array(X_w), np.array(y_w)
+    # print(y_w)
+
+    print(f'X_w.shape: {X_w.shape}')
+    print(f'y_w.shape: {y_w.shape}')
+
+    return X_w, y_w
+
+
+def save_numpy_array(dataset_path, filename, np_array):
+    np.save(os.path.join(dataset_path, f'{filename}.npy'), np_array)
+    logging.info(f'{filename} saved to {dataset_path}')
 
 
 def get_csv_files(dataset_path):

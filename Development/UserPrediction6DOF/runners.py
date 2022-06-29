@@ -344,45 +344,31 @@ class RNNRunner():
                        'lr_reducing': self.is_reducing_learning_rate, 'lr_epochs': self.lr_epochs,
                        'weight_decay': self.weight_decay}
 
+    def print_model_info(self):
+        logging.info(f"RNN model is {self.model.name}.")
+        logging.info("Using VCA GPU Cluster ") if self.cuda else print("Using CPU")
+        logging.info(f"hidden_dim: {self.params.get('hidden_dim')}, batch_size: {self.params.get('batch_size')}, "
+                     f"n_epochs: {self.params.get('epochs')}, dropout: {self.params.get('dropout')}, "
+                     f"layers: {self.params.get('layers')}, window: {self.pred_window[0] * 1e3} \n" 
+                     f"LR starts {self.params.get('lr')} and reduces every {self.params.get('lr_epochs')} epochs.")
+
     # --------------- RUN RNN PREDICTOR --------------------- #
+
     def run(self):
-        logging.info(f"RNN model is {self.model.name}: hidden_dim: {self.hidden_dim}, batch_size: {self.batch_size}, "
-                     f"n_epochs: {self.n_epochs}, dropout: {self.dropout}, layers: {self.layer_dim}, "
-                     f"window: {self.pred_window[0] * 1e3}, \n LR starts {self.learning_rate} "
-                     f"and reduces every {self.lr_epochs} epochs.")
+        self.print_model_info()
+
         results = []
 
         # Read full dataset from CSV file
-        df_trace = load_dataset(self.dataset_path)
+        df = load_dataset(self.dataset_path)
 
-        X = prepare_raw_features(df_trace)
+        # create 2D arrays of features and outputs
+        X, y = prepare_X_y(df, self.features, self.num_past, self.pred_step, self.outputs)
 
-        # ------------ RAW FEATURES  -------------------
-
-        # ------------ RAW OUTPUTS -------------------
-        # output is created from the features shifted corresponding to given latency
-        # y = X[self.pred_step:, :]
-        y = df_trace[self.outputs].to_numpy()
-        print(f'y.shape: {y.shape}')
-
-        # ------------ FEATURES AND OUTPUTS WITH SEQUENCE_LEN = SLIDING WINDOW -------------------
-
-        X_w = []
-        y_w = []
-
-        # SLIDING WINDOW LOOKING INTO PAST TO PREDICT 20 ROWS INTO FUTURE
-        for i in range(self.num_past, len(X) - self.pred_step + 1):
-            X_w.append(X[i - self.num_past:i, 0:X.shape[1]])
-            y_w.append(y[i:i + self.pred_step, 0:y.shape[1]])
-
-        X_w, y_w = np.array(X_w), np.array(y_w)
-        # print(y_w)
-
-        print(f'X_w.shape: {X_w.shape}')
-        print(f'y_w.shape: {y_w.shape}')
-
-        np.save(os.path.join(self.dataset_path, 'X_w.npy'), X_w)
-        np.save(os.path.join(self.dataset_path, 'y_w.npy'), y_w)
+        # Features and outputs with sequence_len = sliding window
+        X_w, y_w = add_sliding_window(X, y, self.num_past, self.pred_step)
+        save_numpy_array(self.dataset_path, 'X_w', X_w)
+        save_numpy_array(self.dataset_path, 'y_w', y_w)
 
         # Splitting the data into train, validation, and test sets
         X_train, X_val, X_test, y_train, y_val, y_test = train_val_test_split(X_w, y_w, 0.2)

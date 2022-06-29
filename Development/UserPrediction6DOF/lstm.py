@@ -266,7 +266,7 @@ class LSTMModel(nn.Module):
         if self.cuda:
             self.lstm.cuda()
             self.fc.cuda()
-        logging.info(F"Model {self.name} on GPU with cuda: {self.cuda}")
+        logging.info(F"Init model {self.name}")
 
     def forward(self, x):
         batch_size, sequence_length = x.shape[0], x.shape[1]
