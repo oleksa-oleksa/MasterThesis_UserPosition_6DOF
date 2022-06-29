@@ -91,6 +91,7 @@ main*.gz
 # Dev data #
 # ======= # 
 models
+*.npy
 # HHI GPU Singularity Container
 *.sif
 *stats*

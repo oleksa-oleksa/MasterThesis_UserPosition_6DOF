@@ -354,11 +354,11 @@ class RNNRunner():
             X_w = []
             y_w = []
 
-            # SLIDING WINDOW LOOKING INTO PAST TO PREDICT 1 ROW AFTER 20 ROWS IN FUTURE
+            # SLIDING WINDOW LOOKING INTO PAST TO PREDICT 20 ROWS INTO FUTURE
             for i in range(self.num_past, len(X) - self.pred_step + 1):
                 X_w.append(X[i - self.num_past:i, 0:X.shape[1]])
-                y_w.append(y[i + self.pred_step - 1:i + self.pred_step, 0:y.shape[1]])
-            # '''
+                y_w.append(y[i:i + self.pred_step, 0:y.shape[1]])
+
             X_w, y_w = np.array(X_w), np.array(y_w)
             # print(y_w)
 
