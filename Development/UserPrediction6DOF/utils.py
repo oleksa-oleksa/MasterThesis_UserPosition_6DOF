@@ -187,7 +187,22 @@ def normalize_dataset(trace_path, out_dir, norm_type, dataset_path):
 
 
 def load_dataset(dataset_path):
-    
+    logging.info("-------------------------------------------------------------------------")
+    logging.info(f"Reading dataset from {dataset_path}")
+
+    df = pd.read_csv(os.path.join(dataset_path, "dataset.csv"))
+    logging.info(f"Dataset shape: {df.shape}")
+    logging.info(f'Columns: {list(df.columns)}')
+    logging.info("-------------------------------------------------------------------------")
+
+    return df
+
+def prepare_raw_features(df, features, num_past):
+    X = df[features].to_numpy()
+    print(f'X.shape: {X.shape}')
+    print(f'len(X): {len(X)}')
+    print(f'Past {num_past} values for predict in {self.pred_step} in future')
+    return X
 
 
 def get_csv_files(dataset_path):

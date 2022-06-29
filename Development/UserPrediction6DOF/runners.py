@@ -245,13 +245,16 @@ class RNNRunner():
     def __init__(self, model_name, pred_window, dataset_path, results_path):
         # -----  PRESET ----------#
         config_path = os.path.join(os.getcwd(), 'config.toml')
+        self.cuda = torch.cuda.is_available()
         self.cfg = toml.load(config_path)
         self.dt = self.cfg['dt']
-        self.pred_window = pred_window * 1e-3  # convert to seconds
         self.dataset_path = dataset_path
         self.results_path = results_path
-        self.dists_path = os.path.join(self.results_path, 'distances')
-        self.model = None
+        self.dists_path = None  # set by prepare_environment()
+        self.pred_window = pred_window * 1e-3  # convert to seconds
+        self.pred_step = int(self.pred_window / self.dt)
+        self.model = None  # set by select_model()
+        self.params = None  # set by select_model()
 
         # -------------  FEATURES ---------------#
         self.features = self.cfg['pos_coords'] + self.cfg['quat_coords'] + self.cfg['velocity']
@@ -263,29 +266,60 @@ class RNNRunner():
         self.outputs = self.cfg['pos_coords'] + self.cfg['quat_coords']
 
         # ---------  MODEL HYPERPARAMETERS ----------#
-        self.input_dim = len(self.features)
-        self.output_dim = len(self.outputs)  # 3 position parameter + 4 rotation parameter
-        self.pred_step = int(self.pred_window / self.dt)
-        self.num_past = 20  # number of past time series to predict future
         self.is_reducing_learning_rate = 'yes'  # decreases LR every ls_epochs for 70%
-        self.learning_rate = 1e-3  # 1e-3 base
+        # Adam Optimizer
+        self.learning_rate = 1e-3  # 1e-3 base Adam optimizer
         self.lr_epochs = 30
         self.weight_decay = 1e-6  # 1e-6 base Adam optimizer
-
-        if 'RNN_PARAMETERS' in os.environ:
-            self.hidden_dim = int(os.getenv('HIDDEN_DIM'))
-            self.batch_size = int(os.getenv('BATCH_SIZE'))
-            self.n_epochs = int(os.getenv('N_EPOCHS'))
-            self.dropout = float(os.getenv('DROPOUT'))
-            self.layer_dim = int(os.getenv('LAYERS'))
-        else:
-            self.hidden_dim = 50
-            self.batch_size = 256
-            self.n_epochs = 100
-            self.dropout = 0
-            self.layer_dim = 1  # the number of LSTM layers stacked on top of each other
+        self.num_past = 20  # number of past time series to predict future
+        self.input_dim = len(self.features)
+        self.output_dim = len(self.outputs)  # 3 position parameter + 4 rotation parameter
+        self.hidden_dim = 50
+        self.batch_size = 256
+        self.n_epochs = 100
+        self.dropout = 0
+        self.layer_dim = 1  # the number of LSTM layers stacked on top of each other
 
         # -----  CREATE PYTORCH MODEL ----------#
+        # prepare paths for environment
+        self.prepare_paths()
+        # sets hyperparameters if they are in os.environ
+        self.set_model_hyperparams()
+        # create a RNN model with hyperparameters
+        self.create_model(model_name)
+
+    def prepare_paths(self):
+        self.dists_path = os.path.join(self.results_path, 'distances')
+        if not os.path.exists(self.dists_path):
+            os.makedirs(self.dists_path, exist_ok=True)
+
+        # -----  CUDA FOR CPU FOR RUNNING IN CONTAINER ----------#
+        # for running in Singularity container paths must be modified
+        if self.cuda:
+            self.results_path = os.path.join(cuda_path, 'job_results/tabular')
+            # logging.info(f"Cuda true. results_path {self.results_path}")
+            self.dists_path = os.path.join(self.results_path, 'distances')
+            # logging.info(f"Cuda true. dists_path {self.dists_path}")
+
+    def set_model_hyperparams(self):
+        if 'RNN_PARAMETERS' in os.environ:
+            logging.info("Using hyperparameters from os.environ")
+            if 'HIDDEN_DIM' in os.environ:
+                self.hidden_dim = int(os.getenv('HIDDEN_DIM'))
+            if 'BATCH_SIZE' in os.environ:
+                self.batch_size = int(os.getenv('BATCH_SIZE'))
+            if 'N_EPOCHS' in os.environ:
+                self.n_epochs = int(os.getenv('N_EPOCHS'))
+            if 'DROPOUT' in os.environ:
+                self.dropout = float(os.getenv('DROPOUT'))
+            if 'LAYERS' in os.environ:
+                self.layer_dim = int(os.getenv('LAYERS'))
+            if 'LR_ADAM' in os.environ:
+                self.learning_rate = int(os.getenv('LR'))
+            if 'WEIGHT_DECAY_ADAM' in os.environ:
+                self.weight_decay = int(os.getenv('WEIGHT_DECAY'))
+
+    def create_model(self, model_name):
         # batch_first=True --> input is [batch_size, seq_len, input_size]
         # SELECTS MODEL
         if model_name == "lstm":
@@ -304,147 +338,129 @@ class RNNRunner():
             self.model = LSTMFCNModel(self.input_dim, self.hidden_dim,
                                       self.output_dim, self.dropout, self.layer_dim, self.batch_size)
 
-        self.params = {'LAT':self.pred_window[0], 'hidden_dim': self.hidden_dim, 'epochs': self.n_epochs,
+        self.params = {'LAT': self.pred_window[0], 'hidden_dim': self.hidden_dim, 'epochs': self.n_epochs,
                        'batch_size': self.batch_size, 'dropout': self.dropout, 'layers': self.layer_dim,
                        'model': model_name, 'num_past': self.num_past, 'lr': self.learning_rate,
                        'lr_reducing': self.is_reducing_learning_rate, 'lr_epochs': self.lr_epochs,
                        'weight_decay': self.weight_decay}
 
-        # -----  CUDA FOR CPU FOR RUNNING IN CONTAINER ----------#
-        # for running in Singularity container paths must be modified
-        self.cuda = torch.cuda.is_available()
-        if self.cuda:
-            self.results_path = os.path.join(cuda_path, 'job_results/tabular')
-            # logging.info(f"Cuda true. results_path {self.results_path}")
-            self.dists_path = os.path.join(self.results_path, 'distances')
-            # logging.info(f"Cuda true. dists_path {self.dists_path}")
-
+    # --------------- RUN RNN PREDICTOR --------------------- #
     def run(self):
         logging.info(f"RNN model is {self.model.name}: hidden_dim: {self.hidden_dim}, batch_size: {self.batch_size}, "
                      f"n_epochs: {self.n_epochs}, dropout: {self.dropout}, layers: {self.layer_dim}, "
                      f"window: {self.pred_window[0] * 1e3}, \n LR starts {self.learning_rate} "
                      f"and reduces every {self.lr_epochs} epochs.")
         results = []
-        if not os.path.exists(self.dists_path):
-            os.makedirs(self.dists_path, exist_ok=True)
 
-        for trace_path in get_csv_files(self.dataset_path):
-            basename = os.path.splitext(os.path.basename(trace_path))[0]
-            logging.info("-------------------------------------------------------------------------")
-            logging.info("Trace path: %s", trace_path)
-            logging.info("-------------------------------------------------------------------------")
+        # Read full dataset from CSV file
+        df_trace = load_dataset(self.dataset_path)
 
-            # Read trace from CSV file
-            df_trace = pd.read_csv(trace_path)
+        X = prepare_raw_features(df_trace)
 
-            # ------------ RAW FEATURES  -------------------
-            X = df_trace[self.features].to_numpy()
-            print(f'X.shape: {X.shape}')
-            print(f'len(X): {len(X)}')
-            print(f'Past {self.num_past} values for predict in {self.pred_step} in future')
+        # ------------ RAW FEATURES  -------------------
 
-            # ------------ RAW OUTPUTS -------------------
-            # output is created from the features shifted corresponding to given latency
-            # y = X[self.pred_step:, :]
-            y = df_trace[self.outputs].to_numpy()
-            print(f'y.shape: {y.shape}')
+        # ------------ RAW OUTPUTS -------------------
+        # output is created from the features shifted corresponding to given latency
+        # y = X[self.pred_step:, :]
+        y = df_trace[self.outputs].to_numpy()
+        print(f'y.shape: {y.shape}')
 
-            # ------------ FEATURES AND OUTPUTS WITH SEQUENCE_LEN = SLIDING WINDOW -------------------
+        # ------------ FEATURES AND OUTPUTS WITH SEQUENCE_LEN = SLIDING WINDOW -------------------
 
-            X_w = []
-            y_w = []
+        X_w = []
+        y_w = []
 
-            # SLIDING WINDOW LOOKING INTO PAST TO PREDICT 20 ROWS INTO FUTURE
-            for i in range(self.num_past, len(X) - self.pred_step + 1):
-                X_w.append(X[i - self.num_past:i, 0:X.shape[1]])
-                y_w.append(y[i:i + self.pred_step, 0:y.shape[1]])
+        # SLIDING WINDOW LOOKING INTO PAST TO PREDICT 20 ROWS INTO FUTURE
+        for i in range(self.num_past, len(X) - self.pred_step + 1):
+            X_w.append(X[i - self.num_past:i, 0:X.shape[1]])
+            y_w.append(y[i:i + self.pred_step, 0:y.shape[1]])
 
-            X_w, y_w = np.array(X_w), np.array(y_w)
-            # print(y_w)
+        X_w, y_w = np.array(X_w), np.array(y_w)
+        # print(y_w)
 
-            print(f'X_w.shape: {X_w.shape}')
-            print(f'y_w.shape: {y_w.shape}')
+        print(f'X_w.shape: {X_w.shape}')
+        print(f'y_w.shape: {y_w.shape}')
 
-            np.save(os.path.join(self.dataset_path, 'X_w.npy'), X_w)
-            np.save(os.path.join(self.dataset_path, 'y_w.npy'), y_w)
+        np.save(os.path.join(self.dataset_path, 'X_w.npy'), X_w)
+        np.save(os.path.join(self.dataset_path, 'y_w.npy'), y_w)
 
-            # Splitting the data into train, validation, and test sets
-            X_train, X_val, X_test, y_train, y_val, y_test = train_val_test_split(X_w, y_w, 0.2)
+        # Splitting the data into train, validation, and test sets
+        X_train, X_val, X_test, y_train, y_val, y_test = train_val_test_split(X_w, y_w, 0.2)
 
-            logging.info(f"X_train {X_train.shape}, X_val {X_val.shape}, X_test{X_test.shape}, "
-                         f"y_train {y_train.shape}, y_val {y_val.shape}, y_test {y_test.shape}")
+        logging.info(f"X_train {X_train.shape}, X_val {X_val.shape}, X_test{X_test.shape}, "
+                     f"y_train {y_train.shape}, y_val {y_val.shape}, y_test {y_test.shape}")
 
-            train_loader, val_loader, \
-            test_loader, test_loader_one = load_data(X_train, X_val, X_test,
-                                                     y_train, y_val, y_test, batch_size=self.batch_size)
+        train_loader, val_loader, \
+        test_loader, test_loader_one = load_data(X_train, X_val, X_test,
+                                                 y_train, y_val, y_test, batch_size=self.batch_size)
 
-            # Long Short-Term Memory TRAIN + EVAL
+        # Long Short-Term Memory TRAIN + EVAL
 
-            # ------------ LOSS FUNCTIONS --------------
-            # Mean Squared Error Loss Function
-            # average of the squared differences between actual values and predicted values
-            loss_fn = nn.MSELoss(reduction="mean")
+        # ------------ LOSS FUNCTIONS --------------
+        # Mean Squared Error Loss Function
+        # average of the squared differences between actual values and predicted values
+        loss_fn = nn.MSELoss(reduction="mean")
 
-            # Mean Absolute Error (L1 Loss Function)
-            # average of the sum of absolute differences between actual values and predicted values
-            # loss_fn = nn.L1Loss()
+        # Mean Absolute Error (L1 Loss Function)
+        # average of the sum of absolute differences between actual values and predicted values
+        # loss_fn = nn.L1Loss()
 
-            # ------------ OPTIMIZERS ------------------
-            optimizer = optim.Adam(self.model.parameters(), lr=self.learning_rate, weight_decay=self.weight_decay)
-            # optimizer = optim.SGD(self.model.parameters(), lr=0.01, momentum=0.9)
+        # ------------ OPTIMIZERS ------------------
+        optimizer = optim.Adam(self.model.parameters(), lr=self.learning_rate, weight_decay=self.weight_decay)
+        # optimizer = optim.SGD(self.model.parameters(), lr=0.01, momentum=0.9)
 
-            opt = RNNOptimization(model=self.model, loss_fn=loss_fn,
-                                  optimizer=optimizer, results=self.results_path, params=self.params)
+        opt = RNNOptimization(model=self.model, loss_fn=loss_fn,
+                              optimizer=optimizer, results=self.results_path, params=self.params)
 
-            # ------------ TRAIN MODEL ------------------
+        # ------------ TRAIN MODEL ------------------
 
-            opt.train(train_loader, val_loader, batch_size=self.batch_size,
-                      n_epochs=self.n_epochs, n_features=self.input_dim)
+        opt.train(train_loader, val_loader, batch_size=self.batch_size,
+                  n_epochs=self.n_epochs, n_features=self.input_dim)
 
-            # ------------ PLOT LOSSES ------------------
-            opt.plot_losses()
+        # ------------ PLOT LOSSES ------------------
+        opt.plot_losses()
 
-            # ------------ PREDICTION ON TEST DATA ------------------
-            logging.info('Training finshed. Starting prediction on test data!')
-            # predictions: list[float] The values predicted by the model
-            # values: list[float] The actual values in the test set.
-            # predictions, values = opt.evaluate(test_loader_one, batch_size=1, n_features=self.input_dim)
-            predictions, values = opt.predict(test_loader_one)
-            predictions = np.array(predictions)
-            values = np.array(values)
+        # ------------ PREDICTION ON TEST DATA ------------------
+        logging.info('Training finshed. Starting prediction on test data!')
+        # predictions: list[float] The values predicted by the model
+        # values: list[float] The actual values in the test set.
+        # predictions, values = opt.evaluate(test_loader_one, batch_size=1, n_features=self.input_dim)
+        predictions, values = opt.predict(test_loader_one)
+        predictions = np.array(predictions)
+        values = np.array(values)
 
-            # ------------ DEBUG INFO ------------------
-            # logging.info('Y_TEST VS VALUES:')
-            # print_result(y_test, values, start_row=10000, stop_row=10005)
+        # ------------ DEBUG INFO ------------------
+        # logging.info('Y_TEST VS VALUES:')
+        # print_result(y_test, values, start_row=10000, stop_row=10005)
 
-            # Remove axes of length one from predictions.
-            predictions = predictions.squeeze()
-            values = values.squeeze()
+        # Remove axes of length one from predictions.
+        predictions = predictions.squeeze()
+        values = values.squeeze()
 
-            # ------------ DEBUG INFO ------------------
-            # logging.info('PREDICTION VS VALUES:')
-            # print_result(predictions[self.num_past:, :], values, start_row=10000, stop_row=10005)
+        # ------------ DEBUG INFO ------------------
+        # logging.info('PREDICTION VS VALUES:')
+        # print_result(predictions[self.num_past:, :], values, start_row=10000, stop_row=10005)
 
-            # Compute evaluation metrics LSTM
-            deep_eval = DeepLearnEvaluator(predictions, values)
-            deep_eval.eval_model()
-            print(predictions.shape[0])
+        # Compute evaluation metrics LSTM
+        deep_eval = DeepLearnEvaluator(predictions, values)
+        deep_eval.eval_model()
+        print(predictions.shape[0])
 
-            # prediction_scaled = np.empty([self.num_past:(predictions.shape[0]), predictions.shape[1]])
+        # prediction_scaled = np.empty([self.num_past:(predictions.shape[0]), predictions.shape[1]])
 
-            metrics = np.array(list(deep_eval.metrics.values()))
-            euc_dists = deep_eval.euc_dists
-            ang_dists = np.rad2deg(deep_eval.ang_dists)
+        metrics = np.array(list(deep_eval.metrics.values()))
+        euc_dists = deep_eval.euc_dists
+        ang_dists = np.rad2deg(deep_eval.ang_dists)
 
-            np.save(os.path.join(self.dists_path,
-                                 'euc_dists_{}_{}_{}ms.npy'.format(self.model.name, basename, int(self.pred_window * 1e3))), euc_dists)
-            np.save(os.path.join(self.dists_path,
-                                 'ang_dists_{}_{}_{}ms.npy'.format(self.model.name, basename, int(self.pred_window * 1e3))), ang_dists)
+        np.save(os.path.join(self.dists_path,
+                             'euc_dists_{}_{}_{}ms.npy'.format(self.model.name, basename, int(self.pred_window * 1e3))), euc_dists)
+        np.save(os.path.join(self.dists_path,
+                             'ang_dists_{}_{}_{}ms.npy'.format(self.model.name, basename, int(self.pred_window * 1e3))), ang_dists)
 
-            result_single = list(np.hstack((basename, self.pred_window, metrics)))
-            results.append(result_single)
+        result_single = list(np.hstack((basename, self.pred_window, metrics)))
+        results.append(result_single)
 
-            logging.info("--------------------------------------------------------------")
+        logging.info("--------------------------------------------------------------")
 
         df_results = pd.DataFrame(results, columns=['Trace', 'LAT', 'mae_euc', 'mae_ang',
                                                     'rmse_euc', 'rmse_ang'])
