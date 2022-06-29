@@ -347,11 +347,15 @@ class RNNRunner():
     def print_model_info(self):
         logging.info(f"RNN model is {self.model.name}.")
         logging.info("Using VCA GPU Cluster ") if self.cuda else print("Using CPU")
+        for key, val in self.params.items():
+            print(key, val)
+        '''
         logging.info(f"hidden_dim: {self.params.get('hidden_dim')}, batch_size: {self.params.get('batch_size')}, "
                      f"n_epochs: {self.params.get('epochs')}, dropout: {self.params.get('dropout')}, "
                      f"layers: {self.params.get('layers')}, window: {self.pred_window[0] * 1e3} \n" 
                      f"LR starts {self.params.get('lr')} and reduces every {self.params.get('lr_epochs')} epochs.")
 
+        '''
     # --------------- RUN RNN PREDICTOR --------------------- #
 
     def run(self):
