@@ -256,6 +256,7 @@ class RNNRunner():
         self.model = None  # set by select_model()
         self.params = None  # set by select_model()
         self.prepare_dataset = False
+        self.prepare_test = False
         self.add_sliding_window = False
         self.load_before_split = False
         self.load_split = True
@@ -271,10 +272,10 @@ class RNNRunner():
 
         # ---------  MODEL HYPERPARAMETERS ----------#
         self.reducing_learning_rate = True  # decreases LR every ls_epochs for 70%
-        # Adam Optimizer
         self.learning_rate = 1e-3  # 1e-3 base Adam optimizer
         self.lr_epochs = 30
         self.weight_decay = 1e-6  # 1e-6 base Adam optimizer
+
         self.num_past = 20  # number of past time series to predict future
         self.input_dim = len(self.features)
         self.output_dim = len(self.outputs)  # 3 position parameter + 4 rotation parameter
@@ -360,11 +361,12 @@ class RNNRunner():
         logging.info(result)
         result = ', '.join(str(key) + ': ' + str(value) for key, value in second_line)
         logging.info(result)
-    # --------------- RUN RNN PREDICTOR --------------------- #
 
+    # --------------- RUN RNN PREDICTOR --------------------- #
     def run(self):
         self.print_model_info()
         # preparing arrays for future initialization
+        X, y = [], []
         X_w, y_w = [], []
         X_train , X_val , X_test = [], [], []
         y_train, y_val, y_test = [], [], []
@@ -375,6 +377,17 @@ class RNNRunner():
             df = load_dataset(self.dataset_path)
             # create 2D arrays of features and outputs
             X, y = prepare_X_y(df, self.features, self.num_past, self.pred_step, self.outputs)
+
+        if self.prepare_test:
+            df = load_dataset(self.dataset_path)
+            df_test_slice = pd.DataFrame(data=df.iloc[95984:, :], columns=df.columns)
+            print(df_test_slice.shape)
+
+            test_path = os.path.join(self.dataset_path, 'test')
+            if not os.path.exists(test_path):
+                os.makedirs(test_path, exist_ok=True)
+            df_test_slice.to_csv(os.path.join(test_path, '1.csv'), index=False)
+            logging.info('TEST 1.csv for Kalman and Baseline is created!')
 
         if self.add_sliding_window:
             # Features and outputs with sequence_len = sliding window
