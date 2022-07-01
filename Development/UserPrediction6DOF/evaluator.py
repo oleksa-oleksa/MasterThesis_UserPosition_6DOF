@@ -99,44 +99,6 @@ class Evaluator():
     
         self.compute_metrics(zs_pos, zs_rot, zs_shifted_pos, zs_shifted_rot)
 
-    def eval_lstm_base(self):
-        """
-        New HoloLens data of length 11:
-        [x, y, z] => [:, :3] three first columns
-        [qw, qx, qy, qz] => [:, 3:7] next 4 columns
-        the rest of vector is velocity + speed data that will not (!) be predicted and evaluated
-        """
-        zs_pos = self.zs[:-self.pred_step, :pos_size]
-        zs_rot = self.zs[:-self.pred_step:, pos_size:eval_stop]
-        zs_rot = np.array([Quaternion(q) for q in zs_rot])
-
-        zs_shifted_pos = self.preds[:, :pos_size]
-        zs_shifted_rot = self.preds[:, pos_size:eval_stop]
-        zs_shifted_rot = np.array([Quaternion(q) for q in zs_shifted_rot])
-
-        self.compute_metrics(zs_pos, zs_rot, zs_shifted_pos, zs_shifted_rot)
-
-    def eval_lstm(self):
-        """
-        New HoloLens data of length 11:
-        [x, y, z] => [:, :3] three first columns
-        [qw, qx, qy, qz] => [:, 3:7] next 4 columns
-        the rest of vector is velocity + speed data that will not (!) be predicted and evaluated
-        """
-        zs_pos = self.zs[:, :3]
-        zs_rot = self.zs[:, pos_size:eval_stop]
-        zs_rot = np.array([Quaternion(q) for q in zs_rot])
-
-        preds_pos = self.preds[:, :3]
-        preds_rot = self.preds[:, pos_size:eval_stop]
-        preds_rot = np.array([Quaternion(q) for q in preds_rot])
-
-        # zs_shifted_pos = self.preds[:, :pos_size]
-        # zs_shifted_rot = self.preds[:, pos_size:eval_stop]
-        # zs_shifted_rot = np.array([Quaternion(q) for q in zs_shifted_rot])
-
-        self.compute_metrics(zs_pos, zs_rot, preds_pos, preds_rot)
-
 
 class DeepLearnEvaluator():
     """Compute evaluation metrics MAE and RMSE for different predictors"""
@@ -156,12 +118,12 @@ class DeepLearnEvaluator():
         """
 
         # split predictions array into position and rotations
-        preds_pos = self.predictions[:, :3]
-        preds_rot = self.predictions[:, pos_size:eval_stop]
+        preds_pos = self.predictions[:, :3] # x, y, z
+        preds_rot = self.predictions[:, 3:7] # qx, qy, qz, qw
         preds_rot = np.array([Quaternion(q) for q in preds_rot])
 
         actual_pos = self.actual_values[:, :3]
-        actual_rot = self.actual_values[:, pos_size:eval_stop]
+        actual_rot = self.actual_values[:, 3:7]
         actual_rot = np.array([Quaternion(q) for q in actual_rot])
 
         self.compute_metrics(preds_pos, preds_rot, actual_pos, actual_rot)

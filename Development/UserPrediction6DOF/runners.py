@@ -279,9 +279,9 @@ class RNNRunner():
         self.num_past = 20  # number of past time series to predict future
         self.input_dim = len(self.features)
         self.output_dim = len(self.outputs)  # 3 position parameter + 4 rotation parameter
-        self.hidden_dim = 50
+        self.hidden_dim = 100
         self.batch_size = 256
-        self.n_epochs = 100
+        self.n_epochs = 2
         self.dropout = 0
         self.layer_dim = 1  # the number of LSTM layers stacked on top of each other
 
@@ -451,7 +451,7 @@ class RNNRunner():
         opt.plot_losses()
 
         # ------------ PREDICTION ON TEST DATA ------------------
-        logging.info('Training finshed. Starting prediction on test data!')
+        logging.info('Training finished. Starting prediction on test data!')
         # predictions: list[float] The values predicted by the model
         # values: list[float] The actual values in the test set.
         # predictions, values = opt.evaluate(test_loader_one, batch_size=1, n_features=self.input_dim)
