@@ -44,7 +44,6 @@ import pandas as pd
 import sys
 from scipy.spatial.transform import Rotation as R
 from scipy.spatial.transform import Slerp
-from sklearn.model_selection import train_test_split
 from torch.utils.data import TensorDataset, DataLoader
 import torch
 import csv
@@ -183,47 +182,6 @@ def normalize_dataset(trace_path, out_dir, norm_type, dataset_path):
     return df
 
 
-def load_dataset(dataset_path):
-    logging.info(f"---------------- Reading 2D dataset from {dataset_path} ----------------")
-    df = pd.read_csv(os.path.join(dataset_path, "dataset.csv"))
-    logging.info(f"Dataset shape: {df.shape}")
-    logging.info(f'Columns: {list(df.columns)}')
-    logging.info("--------")
-    return df
-
-
-def prepare_X_y(df, features, num_past, pred_step, outputs):
-    X = df[features].to_numpy()
-    logging.info("------------------ Creating 2D X and y datasets  -----------------------")
-    logging.info(f'X.shape: {X.shape}')
-    logging.info(f'Using past {num_past} values for predict in {pred_step} in future')
-
-    y = df[outputs].to_numpy()
-    logging.info(f'y.shape: {y.shape}')
-    logging.info('2D datasets X and y created')
-    logging.info("--------")
-    return X, y
-
-
-def add_sliding_window(X, y, num_past, pred_step):
-    X_w = []
-    y_w = []
-
-    # SLIDING WINDOW LOOKING INTO PAST TO PREDICT 20 ROWS INTO FUTURE
-    for i in range(num_past, len(X) - pred_step + 1):
-        X_w.append(X[i - num_past:i, 0:X.shape[1]])
-        y_w.append(y[i:i + pred_step, 0:y.shape[1]])
-
-    X_w, y_w = np.array(X_w), np.array(y_w)
-
-    logging.info("------------- Creating 3D datasets and adding sliding window ------------")
-    logging.info(f'X_w.shape: {X_w.shape}')
-    logging.info(f'y_w.shape: {y_w.shape}')
-    logging.info(f"Sliding window of {num_past} added and 3D datasets are created!")
-    logging.info("--------")
-    return X_w, y_w
-
-
 def save_numpy_array(dataset_path, filename, np_array):
     np.save(os.path.join(dataset_path, f'{filename}.npy'), np_array)
     logging.info(f'WRITE: {filename} saved to {dataset_path}')
@@ -287,13 +245,6 @@ def cut_dataset_lenght(X, y):
         X = X[:y.shape[0], :]
         # print("Length of X is equal of y: ", X.shape[0] == y.shape[0])
     return X
-
-
-def train_val_test_split(X, y, test_ratio):
-    val_ratio = test_ratio / (1 - test_ratio)
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_ratio, shuffle=False)
-    X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=val_ratio, shuffle=False)
-    return X_train, X_val, X_test, y_train, y_val, y_test
 
 
 def load_data(X_train, X_val, X_test, y_train, y_val, y_test, batch_size=64):

@@ -377,17 +377,17 @@ class RNNRunner():
                         load_test_val_train_split_with_sliding, split_train_test_with_sliding, load_train_test_with_sliding):
         if prepare_raw_dataset:
             # Read full dataset from CSV file
-            df = load_dataset(self.dataset_path)
+            df = dataset.load_dataset(self.dataset_path)
             # create 2D arrays of features and outputs
-            self.X, self.y = prepare_X_y(df, self.features, self.num_past, self.pred_step, self.outputs)
+            self.X, self.y = dataset.prepare_X_y(df, self.features, self.num_past, self.pred_step, self.outputs)
 
         # prepare and save separate file for testing with Kalman and Baseline
         if prepare_test:
-            df = load_dataset(self.dataset_path)
+            df = dataset.load_dataset(self.dataset_path)
             # short test if train-val-test was used
-            df_test_slice = pd.DataFrame(data=df.iloc[95984:, :], columns=df.columns)
-            # test without validation dataset
             # df_test_slice = pd.DataFrame(data=df.iloc[95984:, :], columns=df.columns)
+            # test without validation dataset
+            df_test_slice = pd.DataFrame(data=df.iloc[84006:, :], columns=df.columns)
             print(df_test_slice.shape)
 
             test_path = os.path.join(self.dataset_path, 'test')
@@ -398,7 +398,7 @@ class RNNRunner():
 
         if add_sliding_window:
             # Features and outputs with sequence_len = sliding window
-            self.X_w, self.y_w = add_sliding_window(self.X, self.y, self.num_past, self.pred_step)
+            self.X_w, self.y_w = dataset.add_sliding_window(self.X, self.y, self.num_past, self.pred_step)
             save_numpy_array(self.dataset_path, 'X_w', self.X_w)
             save_numpy_array(self.dataset_path, 'y_w', self.y_w)
 
@@ -407,50 +407,74 @@ class RNNRunner():
             self.y_w = load_numpy_array(self.dataset_path, 'y_w')
 
             # Splitting the data into train, validation, and test sets
-            self.X_train, self.X_val, self.X_test, self.y_train, self.y_val, self.y_test = train_val_test_split(self.X_w, self.y_w, 0.2)
+            self.X_train, self.X_val, self.X_test, \
+                self.y_train, self.y_val, self.y_test = dataset.train_val_test_split(self.X_w, self.y_w, 0.2)
+
             logging.info(f"X_train {self.X_train.shape}, X_val {self.X_val.shape}, "
                          f"X_test{self.X_test.shape}, y_train {self.y_train.shape}, "
                          f"y_val {self.y_val.shape}, y_test {self.y_test.shape}")
 
-            save_numpy_array(self.dataset_path, 'X_train', self.X_train)
-            save_numpy_array(self.dataset_path, 'X_val', self.X_val)
-            save_numpy_array(self.dataset_path, 'X_test', self.X_test)
-            save_numpy_array(self.dataset_path, 'y_train', self.y_train)
-            save_numpy_array(self.dataset_path, 'y_val', self.y_val)
-            save_numpy_array(self.dataset_path, 'y_test', self.y_test)
+            path = os.path.join(self.dataset_path, 'train_val_test')
+            if not os.path.exists(path):
+                os.makedirs(path, exist_ok=True)
+
+            save_numpy_array(path, 'X_train', self.X_train)
+            save_numpy_array(path, 'X_val', self.X_val)
+            save_numpy_array(path, 'X_test', self.X_test)
+            save_numpy_array(path, 'y_train', self.y_train)
+            save_numpy_array(path, 'y_val', self.y_val)
+            save_numpy_array(path, 'y_test', self.y_test)
 
         if load_test_val_train_split_with_sliding:
-            X_train = load_numpy_array(self.dataset_path, 'X_train')
-            X_val = load_numpy_array(self.dataset_path, 'X_val')
-            X_test = load_numpy_array(self.dataset_path, 'X_test')
-            y_train = load_numpy_array(self.dataset_path, 'y_train')
-            y_val = load_numpy_array(self.dataset_path, 'y_val')
-            y_test = load_numpy_array(self.dataset_path, 'y_test')
+            path = os.path.join(self.dataset_path, 'train_val_test')
+            self.X_train = load_numpy_array(path, 'X_train')
+            self.X_val = load_numpy_array(path, 'X_val')
+            self.X_test = load_numpy_array(path, 'X_test')
+            self.y_train = load_numpy_array(path, 'y_train')
+            self.y_val = load_numpy_array(path, 'y_val')
+            self.y_test = load_numpy_array(path, 'y_test')
 
         if split_train_test_with_sliding:
-            X_w = load_numpy_array(self.dataset_path, 'X_w')
-            y_w = load_numpy_array(self.dataset_path, 'y_w')
+            self.X_w = load_numpy_array(self.dataset_path, 'X_w')
+            self.y_w = load_numpy_array(self.dataset_path, 'y_w')
 
             # Splitting the data into train and test sets
-            X_train, X_test, y_train, y_test = dataset.train_test_split(X_w, y_w, 0.3)
-            logging.info(f"X_train {X_train.shape}, X_test{X_test.shape}, "
-                         f"y_train {y_train.shape}, y_val {y_val.shape}, y_test {y_test.shape}")
+            self.X_train, self.X_test, self.y_train, self.y_test = \
+                dataset.test_train_split(self.X_w, self.y_w, 0.3)
+
+            logging.info(f"X_train {self.X_train.shape}, X_test{self.X_test.shape}, "
+                         f"y_train {self.y_train.shape}, y_test {self.y_test.shape}")
+
+            save_numpy_array(self.dataset_path, 'X_train', self.X_train)
+            save_numpy_array(self.dataset_path, 'X_test', self.X_test)
+            save_numpy_array(self.dataset_path, 'y_train', self.y_train)
+            save_numpy_array(self.dataset_path, 'y_test', self.y_test)
 
         if load_train_test_with_sliding:
-            pass
+            self.X_train = load_numpy_array(self.dataset_path, 'X_train')
+            self.X_test = load_numpy_array(self.dataset_path, 'X_test')
+            self.y_train = load_numpy_array(self.dataset_path, 'y_train')
+            self.y_test = load_numpy_array(self.dataset_path, 'y_test')
 
     # --------------- RUN RNN PREDICTOR --------------------- #
     def run(self):
         self.print_model_info()
-        # preparing arrays for future initialization
 
         results = []
 
-
-
-        train_loader, val_loader, \
-        test_loader, test_loader_one = load_data(X_train, X_val, X_test,
-                                                 y_train, y_val, y_test, batch_size=self.batch_size)
+        # preparing arrays for future initialization
+        self.prepare_dataset(prepare_raw_dataset=False,
+                             prepare_test=False,
+                             add_sliding_window=False,
+                             load_before_split_with_sliding=False,
+                             load_test_val_train_split_with_sliding=False,
+                             split_train_test_with_sliding=False,
+                             load_train_test_with_sliding=True)
+        # TODO
+        # TODO TRAIN LOOP
+        #train_loader, val_loader, \
+        #test_loader, test_loader_one = load_data(X_train, X_val, X_test,
+        #                                        y_train, y_val, y_test, batch_size=self.batch_size)
 
         # Long Short-Term Memory TRAIN + EVAL
 
@@ -635,8 +659,8 @@ class RNNRunnerSWPVer2_20to1():
         # batch_first=True --> input is [batch_size, seq_len, input_size]
         # SELECTS MODEL
         if model_name == "lstm":
-            self.model = LSTMModelSlidingWindow(self.input_dim, self.hidden_dim,
-                                                self.output_dim, self.dropout, self.layer_dim)
+            self.model = LSTMModel(self.input_dim, self.hidden_dim,
+                                   self.output_dim, self.dropout, self.layer_dim)
         elif model_name == "lstm-custom":
             self.model = LSTMModelCustom(self.input_dim, self.hidden_dim,
                                          self.output_dim, self.dropout, self.layer_dim)
@@ -730,7 +754,7 @@ class RNNRunnerSWPVer2_20to1():
             print(f'y_w.shape: {y_w.shape}')
 
             # Splitting the data into train, validation, and test sets
-            X_train, X_val, X_test, y_train, y_val, y_test = train_val_test_split(X_w, y_w, 0.2)
+            X_train, X_val, X_test, y_train, y_val, y_test = dataset.train_val_test_split(X_w, y_w, 0.2)
 
             logging.info(f"X_train {X_train.shape}, X_val {X_val.shape}, X_test{X_test.shape}, "
                          f"y_train {y_train.shape}, y_val {y_val.shape}, y_test {y_test.shape}")
@@ -957,7 +981,7 @@ class RNNRunnerSWPVer1_1to1():
             y_cut = cut_extra_labels(y)
 
             # Splitting the data into train, validation, and test sets
-            X_train, X_val, X_test, y_train, y_val, y_test = train_val_test_split(X_cut, y_cut, 0.2)
+            X_train, X_val, X_test, y_train, y_val, y_test = dataset.train_val_test_split(X_cut, y_cut, 0.2)
 
             # logging.info(f"X_train {X_train.shape}, X_val {X_val.shape}, X_test{X_test.shape}, "
             #             f"y_train {y_train.shape}, y_val {y_val.shape}, y_test {y_test.shape}")
