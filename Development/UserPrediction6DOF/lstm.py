@@ -1,6 +1,7 @@
 import math
 import torch
 import torch.nn as nn
+from torch.autograd import Variable
 from datetime import datetime
 import numpy as np
 from matplotlib import pyplot as plt
@@ -300,6 +301,40 @@ class LSTMModel(nn.Module):
         # print(f"out AFTER FC {out.shape}")
         out = out.view([batch_size, -1, self.output_dim])
         # print(f"out AFTER -1 {out.shape}")
+        return out
+
+
+class LSTMModelStacked(nn.Module):
+    """
+    Next you are going to use 2 LSTM layers with the same hyperparameters stacked over each other
+    (via hidden_size), you have defined the 2 Fully Connected layers, the ReLU layer, and some helper variables. Next, you are going to define the forward pass of the LSTM
+    """
+    def __init__(self, num_classes, input_size, hidden_size, num_layers, seq_length):
+        super(LSTMModelStacked, self).__init__()
+        self.num_classes = num_classes  # number of classes
+        self.num_layers = num_layers  # number of layers
+        self.input_size = input_size  # input size
+        self.hidden_size = hidden_size  # hidden state
+        self.seq_length = seq_length  # sequence length
+
+        self.lstm = nn.LSTM(input_size=input_size, hidden_size=hidden_size,
+                            num_layers=num_layers, batch_first=True)  # lstm
+        self.fc_1 = nn.Linear(hidden_size, 128)  # fully connected 1
+        self.fc = nn.Linear(128, num_classes)  # fully connected last layer
+
+        self.relu = nn.ReLU()
+
+    def forward(self, x):
+        # define the hidden state, and internal state first, initialized with zeros
+        h_0 = Variable(torch.zeros(self.num_layers, x.size(0), self.hidden_size))  # hidden state
+        c_0 = Variable(torch.zeros(self.num_layers, x.size(0), self.hidden_size))  # internal state
+        # Propagate input through LSTM
+        output, (hn, cn) = self.lstm(x, (h_0, c_0))  # lstm with input, hidden, and internal state
+        hn = hn.view(-1, self.hidden_size)  # reshaping the data for Dense layer next
+        out = self.relu(hn)
+        out = self.fc_1(out)  # first Dense
+        out = self.relu(out)  # relu
+        out = self.fc(out)  # Final Output
         return out
 
 

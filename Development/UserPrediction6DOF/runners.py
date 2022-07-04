@@ -49,7 +49,7 @@ import torch.nn as nn
 import torch.optim as optim
 from filterpy.common import Q_discrete_white_noise
 from filterpy.kalman import KalmanFilter
-from .lstm import LSTMModel, LSTMModelCustom
+from .lstm import LSTMModel, LSTMModelCustom, LSTMModelStacked
 from .gru import GRUModel
 from .lstm_fcn import LSTMFCNModel
 from .optimization import RNNOptimization
@@ -58,6 +58,7 @@ from .evaluator import Evaluator, DeepLearnEvaluator
 from sklearn.preprocessing import minmax_scale
 from sklearn.preprocessing import MinMaxScaler
 from .utils import *
+from .dataset import dataset
 
 cuda_path = "/mnt/output"
 job_id = os.path.basename(os.path.normpath(cuda_path))
@@ -259,7 +260,8 @@ class RNNRunner():
         self.prepare_test = False
         self.add_sliding_window = False
         self.load_before_split = False
-        self.load_split = True
+        self.load_split = False
+        self.split_train_test = True
 
         # -------------  FEATURES ---------------#
         self.features = self.cfg['pos_coords'] + self.cfg['quat_coords'] + self.cfg['velocity']
@@ -279,11 +281,12 @@ class RNNRunner():
         self.num_past = 20  # number of past time series to predict future
         self.input_dim = len(self.features)
         self.output_dim = len(self.outputs)  # 3 position parameter + 4 rotation parameter
-        self.hidden_dim = 100
+        self.hidden_dim = 50  # number of features in hidden state
         self.batch_size = 256
-        self.n_epochs = 2
+        self.n_epochs = 50
         self.dropout = 0
         self.layer_dim = 1  # the number of LSTM layers stacked on top of each other
+        self.num_classes = self.num_past  # number of output classes
 
         # -----  CREATE PYTORCH MODEL ----------#
         # prepare paths for environment
@@ -334,6 +337,10 @@ class RNNRunner():
         elif model_name == "lstm-custom":
             self.model = LSTMModelCustom(self.input_dim, self.hidden_dim,
                                          self.output_dim, self.dropout, self.layer_dim)
+        elif model_name == "lstm-stacked":
+            self.model = LSTMModelStacked(self.num_classes, self.input_dim,
+                                          self.hidden_dim, self.layer_dim,
+                                          seq_length=self.num_classes)
 
         elif model_name == "gru":
             self.model = GRUModel(self.input_dim, self.hidden_dim,
@@ -411,13 +418,24 @@ class RNNRunner():
             save_numpy_array(self.dataset_path, 'y_val', y_val)
             save_numpy_array(self.dataset_path, 'y_test', y_test)
 
-        elif self.load_split:
+        if self.load_split:
             X_train = load_numpy_array(self.dataset_path, 'X_train')
             X_val = load_numpy_array(self.dataset_path, 'X_val')
             X_test = load_numpy_array(self.dataset_path, 'X_test')
             y_train = load_numpy_array(self.dataset_path, 'y_train')
             y_val = load_numpy_array(self.dataset_path, 'y_val')
             y_test = load_numpy_array(self.dataset_path, 'y_test')
+
+        if self.split_train_test:
+            X_w = load_numpy_array(self.dataset_path, 'X_w')
+            y_w = load_numpy_array(self.dataset_path, 'y_w')
+
+            # Splitting the data into train and test sets
+            X_train, X_test, y_train, y_test = train_val_test_split(X_w, y_w, 0.2)
+            logging.info(f"X_train {X_train.shape}, X_test{X_test.shape}, "
+                         f"y_train {y_train.shape}, y_val {y_val.shape}, y_test {y_test.shape}")
+
+
 
 
         train_loader, val_loader, \
