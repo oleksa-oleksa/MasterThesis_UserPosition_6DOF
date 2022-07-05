@@ -18,13 +18,13 @@ def test_train_split(X, y, test_ratio):
     return X_train, X_test, y_train, y_test
 
 
-def add_sliding_window(X, y, num_past, pred_step):
+def add_sliding_window(X, y, seq_length, pred_step):
     X_w = []
     y_w = []
 
     # SLIDING WINDOW LOOKING INTO PAST TO PREDICT 20 ROWS INTO FUTURE
-    for i in range(num_past, len(X) - pred_step + 1):
-        X_w.append(X[i - num_past:i, 0:X.shape[1]])
+    for i in range(seq_length, len(X) - pred_step + 1):
+        X_w.append(X[i - seq_length:i, 0:X.shape[1]])
         y_w.append(y[i:i + pred_step, 0:y.shape[1]])
 
     X_w, y_w = np.array(X_w), np.array(y_w)
@@ -32,7 +32,7 @@ def add_sliding_window(X, y, num_past, pred_step):
     logging.info("------------- Creating 3D datasets and adding sliding window ------------")
     logging.info(f'X_w.shape: {X_w.shape}')
     logging.info(f'y_w.shape: {y_w.shape}')
-    logging.info(f"Sliding window of {num_past} added and 3D datasets are created!")
+    logging.info(f"Sliding window of {seq_length} added and 3D datasets are created!")
     logging.info("--------")
     return X_w, y_w
 
@@ -46,11 +46,11 @@ def load_dataset(dataset_path):
     return df
 
 
-def prepare_X_y(df, features, num_past, pred_step, outputs):
+def prepare_X_y(df, features, seq_length, pred_step, outputs):
     X = df[features].to_numpy()
     logging.info("------------------ Creating 2D X and y datasets  -----------------------")
     logging.info(f'X.shape: {X.shape}')
-    logging.info(f'Using past {num_past} values for predict in {pred_step} in future')
+    logging.info(f'Using past {seq_length} values for predict in {pred_step} in future')
 
     y = df[outputs].to_numpy()
     logging.info(f'y.shape: {y.shape}')

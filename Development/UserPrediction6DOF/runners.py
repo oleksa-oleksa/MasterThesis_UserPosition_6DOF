@@ -282,7 +282,7 @@ class RNNRunner():
         self.lr_epochs = 30
         self.weight_decay = 1e-6  # 1e-6 base Adam optimizer
 
-        self.num_past = 20  # number of past time series to predict future
+        # self.num_past = 20  # number of past time series to predict future
         self.input_dim = len(self.features)
         self.output_dim = len(self.outputs)  # 3 position parameter + 4 rotation parameter
         self.hidden_dim = 50  # number of features in hidden state
@@ -290,7 +290,8 @@ class RNNRunner():
         self.n_epochs = 50
         self.dropout = 0
         self.layer_dim = 1  # the number of LSTM layers stacked on top of each other
-        self.num_classes = self.num_past  # number of output classes
+        self.num_classes = self.pred_step  # number of output classes
+        self.seq_length = 20  # input length of timeseries
 
         # -----  CREATE PYTORCH MODEL ----------#
         # prepare paths for environment
@@ -343,8 +344,7 @@ class RNNRunner():
                                          self.output_dim, self.dropout, self.layer_dim)
         elif model_name == "lstm-stacked":
             self.model = LSTMModelStacked(self.num_classes, self.input_dim,
-                                          self.hidden_dim, self.layer_dim,
-                                          seq_length=self.num_classes)
+                                          self.hidden_dim, self.layer_dim, self.seq_length)
 
         elif model_name == "gru":
             self.model = GRUModel(self.input_dim, self.hidden_dim,
@@ -356,7 +356,7 @@ class RNNRunner():
 
         self.params = {'LAT': self.pred_window[0], 'hidden_dim': self.hidden_dim, 'epochs': self.n_epochs,
                        'batch_size': self.batch_size, 'dropout': self.dropout, 'layers': self.layer_dim,
-                       'model': model_name, 'num_past': self.num_past, 'lr': self.learning_rate,
+                       'model': model_name, 'past_seq_length': self.seq_length, 'lr': self.learning_rate,
                        'lr_reducing': self.reducing_learning_rate, 'lr_epochs': self.lr_epochs,
                        'weight_decay': self.weight_decay}
 
@@ -379,7 +379,7 @@ class RNNRunner():
             # Read full dataset from CSV file
             df = dataset.load_dataset(self.dataset_path)
             # create 2D arrays of features and outputs
-            self.X, self.y = dataset.prepare_X_y(df, self.features, self.num_past, self.pred_step, self.outputs)
+            self.X, self.y = dataset.prepare_X_y(df, self.features, self.seq_length, self.pred_step, self.outputs)
 
         # prepare and save separate file for testing with Kalman and Baseline
         if prepare_test:
@@ -398,7 +398,7 @@ class RNNRunner():
 
         if add_sliding_window:
             # Features and outputs with sequence_len = sliding window
-            self.X_w, self.y_w = dataset.add_sliding_window(self.X, self.y, self.num_past, self.pred_step)
+            self.X_w, self.y_w = dataset.add_sliding_window(self.X, self.y, self.seq_length, self.pred_step)
             save_numpy_array(self.dataset_path, 'X_w', self.X_w)
             save_numpy_array(self.dataset_path, 'y_w', self.y_w)
 
@@ -472,6 +472,14 @@ class RNNRunner():
                              load_train_test_with_sliding=True)
         # TODO
         # TODO TRAIN LOOP
+
+        criterion = torch.nn.MSELoss()  # mean-squared error for regression
+        optimizer = torch.optim.Adam(self.model.parameters(), lr=self.learning_rate)
+
+        
+
+        ## TODO THIS IS OLD
+
         #train_loader, val_loader, \
         #test_loader, test_loader_one = load_data(X_train, X_val, X_test,
         #                                        y_train, y_val, y_test, batch_size=self.batch_size)
@@ -521,14 +529,14 @@ class RNNRunner():
 
         # ------------ DEBUG INFO ------------------
         # logging.info('PREDICTION VS VALUES:')
-        # print_result(predictions[self.num_past:, :], values, start_row=10000, stop_row=10005)
+        # print_result(predictions[self.seq_length:, :], values, start_row=10000, stop_row=10005)
 
         # Compute evaluation metrics LSTM
         deep_eval = DeepLearnEvaluator(predictions, values)
         deep_eval.eval_model()
         print(predictions.shape[0])
 
-        # prediction_scaled = np.empty([self.num_past:(predictions.shape[0]), predictions.shape[1]])
+        # prediction_scaled = np.empty([self.seq_length:(predictions.shape[0]), predictions.shape[1]])
 
         metrics = np.array(list(deep_eval.metrics.values()))
         euc_dists = deep_eval.euc_dists
