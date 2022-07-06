@@ -53,12 +53,15 @@ from .lstm import LSTMModel, LSTMModelCustom, LSTMModelStacked
 from .gru import GRUModel
 from .lstm_fcn import LSTMFCNModel
 from .optimization import RNNOptimization
+from .nn_trainer import NNTrainer
 from scipy.linalg import block_diag
 from .evaluator import Evaluator, DeepLearnEvaluator
 from sklearn.preprocessing import minmax_scale
 from sklearn.preprocessing import MinMaxScaler
 from .utils import *
 from .dataset import dataset
+from .plotter import DataPlotter
+
 
 cuda_path = "/mnt/output"
 job_id = os.path.basename(os.path.normpath(cuda_path))
@@ -266,6 +269,7 @@ class RNNRunner():
         self.X_w, self.y_w = [], []
         self.X_train, self.X_val, self.X_test = [], [], []
         self.y_train, self.y_val, self.y_test = [], [], []
+        self.plotter = DataPlotter()
 
         # -------------  FEATURES ---------------#
         self.features = self.cfg['pos_coords'] + self.cfg['quat_coords'] + self.cfg['velocity']
@@ -470,21 +474,6 @@ class RNNRunner():
                              load_test_val_train_split_with_sliding=False,
                              split_train_test_with_sliding=False,
                              load_train_test_with_sliding=True)
-        # TODO
-        # TODO TRAIN LOOP
-
-        criterion = torch.nn.MSELoss()  # mean-squared error for regression
-        optimizer = torch.optim.Adam(self.model.parameters(), lr=self.learning_rate)
-
-        
-
-        ## TODO THIS IS OLD
-
-        #train_loader, val_loader, \
-        #test_loader, test_loader_one = load_data(X_train, X_val, X_test,
-        #                                        y_train, y_val, y_test, batch_size=self.batch_size)
-
-        # Long Short-Term Memory TRAIN + EVAL
 
         # ------------ LOSS FUNCTIONS --------------
         # Mean Squared Error Loss Function
@@ -496,11 +485,19 @@ class RNNRunner():
         # loss_fn = nn.L1Loss()
 
         # ------------ OPTIMIZERS ------------------
-        optimizer = optim.Adam(self.model.parameters(), lr=self.learning_rate, weight_decay=self.weight_decay)
+        optimizer = optim.Adam(self.model.parameters(), lr=self.learning_rate,
+                               eps=1e-8, weight_decay=self.weight_decay)
         # optimizer = optim.SGD(self.model.parameters(), lr=0.01, momentum=0.9)
 
-        opt = RNNOptimization(model=self.model, loss_fn=loss_fn,
-                              optimizer=optimizer, results=self.results_path, params=self.params)
+
+        nn_train = NNTrainer(self.model, loss_fn, optimizer, results, self.params)
+
+        nn_train.train()
+
+        # self.plotter.plot_losses(nn_train.train_losses, nn_train.val_losses)
+
+
+
 
         # ------------ TRAIN MODEL ------------------
 

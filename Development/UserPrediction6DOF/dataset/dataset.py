@@ -3,6 +3,8 @@ import logging
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
+import torch
+from torch.utils.data import TensorDataset, DataLoader
 
 
 def train_val_test_split(X, y, test_ratio):
@@ -57,3 +59,18 @@ def prepare_X_y(df, features, seq_length, pred_step, outputs):
     logging.info('2D datasets X and y created')
     logging.info("--------")
     return X, y
+
+
+def prepare_loaders(X_train, y_train, X_test, y_test, batch_size=64):
+    train_features = torch.Tensor(X_train)
+    train_targets = torch.Tensor(y_train)
+    test_features = torch.Tensor(X_test)
+    test_targets = torch.Tensor(y_test)
+
+    train = TensorDataset(train_features, train_targets)
+    test = TensorDataset(test_features, test_targets)
+
+    train_loader = DataLoader(train, batch_size=batch_size, shuffle=False, drop_last=True)
+    test_loader = DataLoader(test, batch_size=batch_size, shuffle=False, drop_last=True)
+
+    return train_loader, test_loader
