@@ -290,7 +290,7 @@ class RNNRunner():
         self.input_dim = len(self.features)
         self.output_dim = len(self.outputs)  # 3 position parameter + 4 rotation parameter
         self.hidden_dim = 50  # number of features in hidden state
-        self.batch_size = 256
+        self.batch_size = 64
         self.n_epochs = 50
         self.dropout = 0
         self.layer_dim = 1  # the number of LSTM layers stacked on top of each other
@@ -464,8 +464,6 @@ class RNNRunner():
     def run(self):
         self.print_model_info()
 
-        results = []
-
         # preparing arrays for future initialization
         self.prepare_dataset(prepare_raw_dataset=False,
                              prepare_test=False,
@@ -490,22 +488,14 @@ class RNNRunner():
         # optimizer = optim.SGD(self.model.parameters(), lr=0.01, momentum=0.9)
 
 
-        nn_train = NNTrainer(self.model, loss_fn, optimizer, results, self.params)
+        train_loader, test_loader = dataset.prepare_loaders(self.X_train, self.y_train, self.X_test, self.y_test, self.batch_size)
 
-        nn_train.train()
+        nn_train = NNTrainer(self.model, loss_fn, optimizer, self.params)
+
+        nn_train.train(train_loader, test_loader, self.n_epochs)
 
         # self.plotter.plot_losses(nn_train.train_losses, nn_train.val_losses)
 
-
-
-
-        # ------------ TRAIN MODEL ------------------
-
-        opt.train(train_loader, val_loader, batch_size=self.batch_size,
-                  n_epochs=self.n_epochs, n_features=self.input_dim)
-
-        # ------------ PLOT LOSSES ------------------
-        opt.plot_losses()
 
         # ------------ PREDICTION ON TEST DATA ------------------
         logging.info('Training finished. Starting prediction on test data!')
@@ -540,12 +530,11 @@ class RNNRunner():
         ang_dists = np.rad2deg(deep_eval.ang_dists)
 
         np.save(os.path.join(self.dists_path,
-                             'euc_dists_{}_{}_{}ms.npy'.format(self.model.name, basename, int(self.pred_window * 1e3))), euc_dists)
+                             'euc_dists_{}_{}ms.npy'.format(self.model.name, int(self.pred_window * 1e3))), euc_dists)
         np.save(os.path.join(self.dists_path,
-                             'ang_dists_{}_{}_{}ms.npy'.format(self.model.name, basename, int(self.pred_window * 1e3))), ang_dists)
+                             'ang_dists_{}_{}ms.npy'.format(self.model.name, int(self.pred_window * 1e3))), ang_dists)
 
-        result_single = list(np.hstack((basename, self.pred_window, metrics)))
-        results.append(result_single)
+        results = list(np.hstack((self.pred_window, metrics)))
 
         logging.info("--------------------------------------------------------------")
 

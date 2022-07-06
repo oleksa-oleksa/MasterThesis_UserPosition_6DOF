@@ -311,6 +311,7 @@ class LSTMModelStacked(nn.Module):
     """
     def __init__(self, num_classes, input_size, hidden_size, num_layers, seq_length):
         super(LSTMModelStacked, self).__init__()
+        self.name = "LSTM Stacked witj 2 Linear and ReLU"
         self.num_classes = num_classes  # number of classes
         self.num_layers = num_layers  # number of layers
         self.input_size = input_size  # input size
@@ -325,16 +326,26 @@ class LSTMModelStacked(nn.Module):
         self.relu = nn.ReLU()
 
     def forward(self, x):
+        # [200, 1, 5] - [batch, 20, 7]
         # define the hidden state, and internal state first, initialized with zeros
         h_0 = Variable(torch.zeros(self.num_layers, x.size(0), self.hidden_size))  # hidden state
+        print(f"h_0: {h_0.shape}")
         c_0 = Variable(torch.zeros(self.num_layers, x.size(0), self.hidden_size))  # internal state
+        print(f"c_0: {c_0.shape}")
         # Propagate input through LSTM
         output, (hn, cn) = self.lstm(x, (h_0, c_0))  # lstm with input, hidden, and internal state
+        print(f"lstm output: {output.shape}")
+        print(f"hn before -1: {hn.shape}")
         hn = hn.view(-1, self.hidden_size)  # reshaping the data for Dense layer next
+        print(f"hn -1: {hn.shape}")
         out = self.relu(hn)
-        out = self.fc_1(out)  # first Dense
+        print(f"relu 1: {out.shape}")
+        out = self.fc_1(out)  # First Dense
+        print(f"First Dense: {out.shape}")
         out = self.relu(out)  # relu
+        print(f"relu 2: {out.shape}")
         out = self.fc(out)  # Final Output
+        print(f"Final Output: {out.shape}")
         return out
 
 

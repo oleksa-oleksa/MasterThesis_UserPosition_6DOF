@@ -18,7 +18,7 @@ class NNTrainer:
         self.cuda = torch.cuda.is_available()
         self.params = params
 
-    def train(self, train_loader, test_loader, batch_size=64, n_epochs=150):
+    def train(self, train_loader, test_loader, n_epochs=150):
         start = time.time()
         for epoch in range(1, n_epochs + 1):
             batch_losses = []
@@ -26,10 +26,11 @@ class NNTrainer:
                 if self.cuda:
                     x_train_batch, y_train_batch = x_train_batch.cuda(), y_train_batch.cuda()
 
-                outputs_train_batch = self.model.lstm1.forward(x_train_batch)  # forward pass
+                outputs_train_batch = self.model.forward(x_train_batch)  # forward pass
                 self.optimizer.zero_grad()  # caluclate the gradient, manually setting to 0
 
                 # obtain the loss function
+                print(f'outputs_train_batch: {outputs_train_batch.shape}, y_train_batch: {y_train_batch.shape}')
                 loss = self.criterion(outputs_train_batch, y_train_batch)
 
                 loss.backward()  # calculates the loss of the loss function
