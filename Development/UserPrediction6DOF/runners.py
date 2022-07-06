@@ -293,7 +293,7 @@ class RNNRunner():
         self.batch_size = 64
         self.n_epochs = 50
         self.dropout = 0
-        self.layer_dim = 1  # the number of LSTM layers stacked on top of each other
+        self.layer_dim = 20  # the number of LSTM layers stacked on top of each other
         self.num_classes = self.pred_step  # number of output classes
         self.seq_length = 20  # input length of timeseries
 
@@ -487,8 +487,8 @@ class RNNRunner():
                                eps=1e-8, weight_decay=self.weight_decay)
         # optimizer = optim.SGD(self.model.parameters(), lr=0.01, momentum=0.9)
 
-
-        train_loader, test_loader = dataset.prepare_loaders(self.X_train, self.y_train, self.X_test, self.y_test, self.batch_size)
+        train_loader, test_loader = dataset.prepare_loaders(self.X_train, self.y_train,
+                                                            self.X_test, self.y_test, self.batch_size)
 
         nn_train = NNTrainer(self.model, loss_fn, optimizer, self.params)
 
