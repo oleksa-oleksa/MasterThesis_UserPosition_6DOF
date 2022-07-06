@@ -327,6 +327,8 @@ class LSTMModelStacked(nn.Module):
 
     def forward(self, x):
         # [200, 1, 5] - [batch, 20, 7]
+        print(f"x: {x.shape}")
+
         # define the hidden state, and internal state first, initialized with zeros
         h_0 = Variable(torch.zeros(self.num_layers, x.size(0), self.hidden_size))  # hidden state
         print(f"h_0: {h_0.shape}")
