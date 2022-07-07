@@ -294,8 +294,9 @@ class RNNRunner():
         self.n_epochs = 50
         self.dropout = 0
         self.layer_dim = 1  # the number of LSTM layers stacked on top of each other
-        self.num_classes = self.pred_step  # number of output classes
-        self.seq_length = 20  # input length of timeseries
+        self.seq_length_input = 20  # input length of timeseries from the past
+        self.seq_length_output = self.pred_step  # otput length of timeseries in the future
+
 
         # -----  CREATE PYTORCH MODEL ----------#
         # prepare paths for environment
@@ -347,8 +348,7 @@ class RNNRunner():
             self.model = LSTMModelCustom(self.input_dim, self.hidden_dim,
                                          self.output_dim, self.dropout, self.layer_dim)
         elif model_name == "lstm-stacked":
-            self.model = LSTMModelStacked(self.num_classes, self.input_dim,
-                                          self.hidden_dim, self.layer_dim, self.seq_length)
+            self.model = LSTMModelStacked(self.input_dim, self.hidden_dim, self.layer_dim, self.seq_length_input)
 
         elif model_name == "gru":
             self.model = GRUModel(self.input_dim, self.hidden_dim,
@@ -383,7 +383,7 @@ class RNNRunner():
             # Read full dataset from CSV file
             df = dataset.load_dataset(self.dataset_path)
             # create 2D arrays of features and outputs
-            self.X, self.y = dataset.prepare_X_y(df, self.features, self.seq_length, self.pred_step, self.outputs)
+            self.X, self.y = dataset.prepare_X_y(df, self.features, self.seq_length_input, self.pred_step, self.outputs)
 
         # prepare and save separate file for testing with Kalman and Baseline
         if prepare_test:
@@ -402,7 +402,7 @@ class RNNRunner():
 
         if add_sliding_window:
             # Features and outputs with sequence_len = sliding window
-            self.X_w, self.y_w = dataset.add_sliding_window(self.X, self.y, self.seq_length, self.pred_step)
+            self.X_w, self.y_w = dataset.add_sliding_window(self.X, self.y, self.seq_length_input, self.pred_step)
             save_numpy_array(self.dataset_path, 'X_w', self.X_w)
             save_numpy_array(self.dataset_path, 'y_w', self.y_w)
 

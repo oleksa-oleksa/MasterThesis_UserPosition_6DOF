@@ -319,12 +319,15 @@ class LSTMModelStacked(nn.Module):
         self.hidden_size = hidden_size  # hidden state
         self.seq_length = seq_length  # sequence length
 
+        # with batch_first = True, only the input and output tensors are reported with batch first.
+        # The initial memory states (h_init and c_init) are still reported with batch second.
         self.lstm = nn.LSTM(input_size=input_size, hidden_size=hidden_size,
                             num_layers=num_layers, batch_first=True)  # lstm
         self.relu_1 = nn.ReLU()
         self.fc_1 = nn.Linear(hidden_size, 128)  # fully connected 1
         self.relu_2 = nn.ReLU()
         self.fc_2 = nn.Linear(128, num_classes)  # fully connected last layer
+        self.fc_lstm = nn.Linear(hidden_size, num_classes)
 
     def forward(self, x):
         # [rows, layers, features] - > [batch, rows, layers, features]
@@ -332,12 +335,13 @@ class LSTMModelStacked(nn.Module):
         print(f"x: {x.shape}")
         batch = x.shape[0]
         # define the hidden state, and internal state first, initialized with zeros
-        h_0 = Variable(torch.zeros(self.num_layers, batch, self.hidden_size))  # hidden state
+        h_0 = Variable(torch.zeros(self.num_layers, x.shape[0], self.hidden_size))  # hidden state
         print(f"h_0: {h_0.shape}")
-        c_0 = Variable(torch.zeros(self.num_layers, batch, self.hidden_size))  # internal state
+        c_0 = Variable(torch.zeros(self.num_layers, x.shape[0], self.hidden_size))  # internal state
         print(f"c_0: {c_0.shape}")
         # Propagate input through LSTM
         output, (hn, cn) = self.lstm(x, (h_0, c_0))  # lstm with input, hidden, and internal state
+        return self.fc_lstm(output)
         print(f"lstm output: {output.shape}")
         print(f"hn before -1: {hn.shape}")
         # hn = hn.view(-1, self.hidden_size)  # reshaping the data for Dense layer next
