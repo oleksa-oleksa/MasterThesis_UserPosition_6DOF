@@ -61,7 +61,7 @@ from sklearn.preprocessing import MinMaxScaler
 from .utils import *
 from .dataset import dataset
 from .plotter import DataPlotter
-
+from torchinfo import summary
 
 cuda_path = "/mnt/output"
 job_id = os.path.basename(os.path.normpath(cuda_path))
@@ -284,14 +284,14 @@ class RNNRunner():
         self.reducing_learning_rate = True  # decreases LR every ls_epochs for 70%
         self.learning_rate = 5e-4  # 1e-3 base Adam optimizer
         self.lr_epochs = 30
-        self.weight_decay = 0  # 1e-6 base Adam optimizer
+        self.weight_decay = 1e-8  # 1e-6 base Adam optimizer
 
         # self.num_past = 20  # number of past time series to predict future
         self.input_dim = len(self.features)
         self.output_dim = len(self.outputs)  # 3 position parameter + 4 rotation parameter
         self.hidden_dim = 50  # number of features in hidden state
         self.batch_size = 16
-        self.n_epochs = 1000
+        self.n_epochs = 5
         self.dropout = 0.2
         self.layer_dim = 1  # the number of LSTM layers stacked on top of each other
         self.seq_length_input = 20  # input length of timeseries from the past
@@ -378,6 +378,9 @@ class RNNRunner():
         logging.info(result)
         result = ', '.join(str(key) + ': ' + str(value) for key, value in second_line)
         logging.info(result)
+
+        logging.info(self.model)
+        summary(self.model, input_size=(self.batch_size, self.seq_length_input, self.input_dim))
 
     def prepare_dataset(self, prepare_raw_dataset, prepare_test, add_sliding_window, load_before_split_with_sliding,
                         load_test_val_train_split_with_sliding, split_train_test_with_sliding, load_train_test_with_sliding):
@@ -478,21 +481,16 @@ class RNNRunner():
         # ------------ LOSS FUNCTIONS --------------
         # Mean Squared Error Loss Function
         # average of the squared differences between actual values and predicted values
-        loss_fn = nn.MSELoss(reduction="mean")
-
-        # Mean Absolute Error (L1 Loss Function)
-        # average of the sum of absolute differences between actual values and predicted values
-        # loss_fn = nn.L1Loss()
+        criterion = nn.MSELoss(reduction="mean")
 
         # ------------ OPTIMIZERS ------------------
         optimizer = optim.Adam(self.model.parameters(), lr=self.learning_rate, weight_decay=self.weight_decay)
-        # optimizer = optim.SGD(self.model.parameters(), lr=0.01, momentum=0.9)
 
         train_loader, val_loader, test_loader, test_loader_one = dataset.load_data(self.X_train, self.X_val, self.X_test,
                                                                                    self.y_train, self.y_val, self.y_test,
                                                                                    self.batch_size)
 
-        nn_train = NNTrainer(self.model, loss_fn, optimizer, self.params)
+        nn_train = NNTrainer(self.model, criterion, optimizer, self.params)
 
         nn_train.train(train_loader, val_loader, self.n_epochs)
 
@@ -502,9 +500,9 @@ class RNNRunner():
         logging.info('Training finished. Starting prediction on test data!')
         # predictions: list[float] The values predicted by the model
         # values: list[float] The actual values in the test set.
-        predictions, values = nn_train.predict(test_loader, self.batch_size)
+        predictions, targets = nn_train.predict(test_loader, self.batch_size)
         predictions = np.array(predictions)
-        values = np.array(values)
+        targets = np.array(targets)
 
         # ------------ DEBUG INFO ------------------
         # logging.info('Y_TEST VS VALUES:')
@@ -512,14 +510,14 @@ class RNNRunner():
 
         # Remove axes of length one from predictions.
         predictions = predictions.squeeze()
-        values = values.squeeze()
+        targets = targets.squeeze()
 
         # ------------ DEBUG INFO ------------------
         # logging.info('PREDICTION VS VALUES:')
         # print_result(predictions[self.seq_length:, :], values, start_row=10000, stop_row=10005)
 
         # Compute evaluation metrics LSTM
-        deep_eval = DeepLearnEvaluator(predictions, values)
+        deep_eval = DeepLearnEvaluator(predictions, targets)
         deep_eval.eval_model()
         print(predictions.shape[0])
 

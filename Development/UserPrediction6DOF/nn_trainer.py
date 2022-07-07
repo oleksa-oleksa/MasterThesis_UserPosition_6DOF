@@ -13,6 +13,7 @@ class NNTrainer:
         self.optimizer = optimizer
         self.train_losses = []
         self.val_losses = []
+        self.test_losses = []
         self.cuda = torch.cuda.is_available()
         self.params = params
 
@@ -102,28 +103,25 @@ class NNTrainer:
         # torch.save(self.model.state_dict(), model_path)
 
     def predict(self, test_loader, batch_size):
-        test_loss = 0.0
+
         self.model.eval()  # prep model for evaluation
 
-        for data, target in test_loader:
-            if len(target.data) != batch_size:
-                break
-            # forward pass: compute predicted outputs by passing inputs to the model
-            output = self.model(data)
-            # calculate the loss
-            loss = self.criterion(output, target)
-            # update test loss
-            test_loss += loss.item() * data.size(0)
-            # convert output probabilities to predicted class
-            _, pred = torch.max(output, 1)
-            # compare predictions to true label
-            correct = np.squeeze(pred.eq(target.data.view_as(pred)))
-            # calculate test accuracy for each object class
-            for i in range(batch_size):
-                label = target.data[i]
-                class_correct[label] += correct[i].item()
-                class_total[label] += 1
+        with torch.no_grad():
+            batch_test_losses = []
+            for x_test_batch, y_test_batch in test_loader:
+                if len(y_test_batch.data) != batch_size:
+                    break
+                if self.cuda:
+                    x_test_batch, y_test_batch = x_test_batch.cuda(), y_test_batch.cuda()
 
-        # calculate and print avg test loss
-        test_loss = test_loss / len(test_loader.dataset)
-        print('Test Loss: {:.6f}\n'.format(test_loss))
+                y_test_hat = self.model(x_test_batch)
+                val_loss = self.criterion(y_test_hat, y_test_batch)
+                batch_test_losses.append(val_loss)
+
+            tl = [loss.detach().numpy() for loss in batch_test_losses]
+            test_loss = np.mean(tl)
+            self.test_losses.append(test_loss)
+
+        print(f'Test loss: {test_loss:.4f}')
+
+        return y_test_hat, y_test_batch

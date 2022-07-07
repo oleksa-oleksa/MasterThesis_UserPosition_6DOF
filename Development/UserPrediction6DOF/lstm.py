@@ -2,9 +2,7 @@ import math
 import torch
 import torch.nn as nn
 from torch.autograd import Variable
-from datetime import datetime
 import numpy as np
-from matplotlib import pyplot as plt
 import logging
 
 
@@ -330,7 +328,7 @@ class LSTMModel2(nn.Module):
                             num_layers=layer_dim, batch_first=True, dropout=self.dropout)  # lstm
         self.relu_1 = nn.ReLU()
         self.fc_1 = nn.Linear(hidden_dim, 128)  # fully connected 1
-        self.relu_2 = nn.Mish()
+        self.relu_2 = nn.ReLU()
         self.fc_2 = nn.Linear(128, output_dim)  # fully connected last layer
         self.fc_lstm = nn.Linear(hidden_dim, output_dim)
 
