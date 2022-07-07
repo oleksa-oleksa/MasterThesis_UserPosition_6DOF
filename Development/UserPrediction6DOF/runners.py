@@ -290,7 +290,7 @@ class RNNRunner():
         self.input_dim = len(self.features)
         self.output_dim = len(self.outputs)  # 3 position parameter + 4 rotation parameter
         self.hidden_dim = 50  # number of features in hidden state
-        self.batch_size = 64
+        self.batch_size = 16
         self.n_epochs = 50
         self.dropout = 0
         self.layer_dim = 1  # the number of LSTM layers stacked on top of each other
