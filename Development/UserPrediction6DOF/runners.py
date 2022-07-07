@@ -293,7 +293,7 @@ class RNNRunner():
         self.batch_size = 64
         self.n_epochs = 50
         self.dropout = 0
-        self.layer_dim = 20  # the number of LSTM layers stacked on top of each other
+        self.layer_dim = 1  # the number of LSTM layers stacked on top of each other
         self.num_classes = self.pred_step  # number of output classes
         self.seq_length = 20  # input length of timeseries
 

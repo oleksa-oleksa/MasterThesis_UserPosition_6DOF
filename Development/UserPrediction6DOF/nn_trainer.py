@@ -26,6 +26,10 @@ class NNTrainer:
                 if self.cuda:
                     x_train_batch, y_train_batch = x_train_batch.cuda(), y_train_batch.cuda()
 
+                print(f'x_train_batch: {x_train_batch.shape}')
+                # reshaping to [batch, timestamps, layers, features]
+                # x_train_batch = torch.unsqueeze(x_train_batch, 2)
+                # print(f'x_train_batch: {x_train_batch.shape}')
                 outputs_train_batch = self.model.forward(x_train_batch)  # forward pass
                 self.optimizer.zero_grad()  # caluclate the gradient, manually setting to 0
 

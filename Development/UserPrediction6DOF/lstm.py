@@ -307,7 +307,8 @@ class LSTMModel(nn.Module):
 class LSTMModelStacked(nn.Module):
     """
     Next you are going to use 2 LSTM layers with the same hyperparameters stacked over each other
-    (via hidden_size), you have defined the 2 Fully Connected layers, the ReLU layer, and some helper variables. Next, you are going to define the forward pass of the LSTM
+    (via hidden_size), you have defined the 2 Fully Connected layers, the ReLU layer, and some helper variables. Next,
+    you are going to define the forward pass of the LSTM
     """
     def __init__(self, num_classes, input_size, hidden_size, num_layers, seq_length):
         super(LSTMModelStacked, self).__init__()
@@ -326,14 +327,14 @@ class LSTMModelStacked(nn.Module):
         self.relu = nn.ReLU()
 
     def forward(self, x):
-        # [200, 1, 5] - [batch, 20, 7]
+        # [rows, layers, features] - > [batch, rows, layers, features]
+        #       [200, 1, 5]             - [batch, 20, 1, 7]
         print(f"x: {x.shape}")
         batch = x.shape[0]
-
         # define the hidden state, and internal state first, initialized with zeros
-        h_0 = Variable(torch.zeros(self.num_layers, x.size(0), self.hidden_size))  # hidden state
+        h_0 = Variable(torch.zeros(self.num_layers, batch, self.hidden_size))  # hidden state
         print(f"h_0: {h_0.shape}")
-        c_0 = Variable(torch.zeros(self.num_layers, x.size(0), self.hidden_size))  # internal state
+        c_0 = Variable(torch.zeros(self.num_layers, batch, self.hidden_size))  # internal state
         print(f"c_0: {c_0.shape}")
         # Propagate input through LSTM
         output, (hn, cn) = self.lstm(x, (h_0, c_0))  # lstm with input, hidden, and internal state
