@@ -20,13 +20,15 @@ class NNTrainer:
 
     def train(self, train_loader, test_loader, n_epochs=150):
         start = time.time()
+        logging.info(f'{self.model.name} training started!')
+
         for epoch in range(1, n_epochs + 1):
             batch_losses = []
             for x_train_batch, y_train_batch in train_loader:
                 if self.cuda:
                     x_train_batch, y_train_batch = x_train_batch.cuda(), y_train_batch.cuda()
 
-                print(f'x_train_batch: {x_train_batch.shape}')
+                # print(f'x_train_batch: {x_train_batch.shape}')
                 # reshaping to [batch, timestamps, layers, features]
                 # x_train_batch = torch.unsqueeze(x_train_batch, 2)
                 # print(f'x_train_batch: {x_train_batch.shape}')
@@ -34,7 +36,7 @@ class NNTrainer:
                 self.optimizer.zero_grad()  # caluclate the gradient, manually setting to 0
 
                 # obtain the loss function
-                print(f'outputs_train_batch: {outputs_train_batch.shape}, y_train_batch: {y_train_batch.shape}')
+                # print(f'outputs_train_batch: {outputs_train_batch.shape}, y_train_batch: {y_train_batch.shape}')
                 loss = self.criterion(outputs_train_batch, y_train_batch)
 
                 loss.backward()  # calculates the loss of the loss function
@@ -42,7 +44,8 @@ class NNTrainer:
 
                 self.optimizer.step()  # improve from loss, i.e backprop
 
-            training_loss = np.mean(batch_losses)
+            bl = [loss.detach().numpy() for loss in batch_losses]
+            training_loss = np.mean(bl)
             self.train_losses.append(training_loss)
 
             if self.params['lr_reducing']:

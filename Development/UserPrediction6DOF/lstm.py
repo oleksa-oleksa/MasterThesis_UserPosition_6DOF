@@ -312,7 +312,7 @@ class LSTMModelStacked(nn.Module):
     """
     def __init__(self, seq_length_input, input_dim, hidden_dim, seq_length_output, output_dim, layer_dim):
         super(LSTMModelStacked, self).__init__()
-        self.name = "LSTM Stacked witj 2 Linear and ReLU"
+        self.name = "LSTM Stacked with 2 Linear and ReLU"
         self.num_layers = layer_dim  # number of layers
         self.input_size = input_dim  # input size
         self.hidden_size = hidden_dim  # hidden state
@@ -331,30 +331,27 @@ class LSTMModelStacked(nn.Module):
         self.fc_lstm = nn.Linear(hidden_dim, output_dim)
 
     def forward(self, x):
-        # [rows, layers, features] - > [batch, rows, layers, features]
-        #       [200, 1, 5]             - [batch, 20, 1, 7]
-        print(f"x: {x.shape}")
-        batch = x.shape[0]
+        # print(f"x: {x.shape}")
         # define the hidden state, and internal state first, initialized with zeros
         h_0 = Variable(torch.zeros(self.num_layers, x.shape[0], self.hidden_size))  # hidden state
-        print(f"h_0: {h_0.shape}")
+        # print(f"h_0: {h_0.shape}")
         c_0 = Variable(torch.zeros(self.num_layers, x.shape[0], self.hidden_size))  # internal state
-        print(f"c_0: {c_0.shape}")
+        # print(f"c_0: {c_0.shape}")
         # Propagate input through LSTM
         output, (hn, cn) = self.lstm(x, (h_0, c_0))  # lstm with input, hidden, and internal state
         # return self.fc_lstm(output)
-        print(f"lstm output: {output.shape}")
-        print(f"hn before -1: {hn.shape}")
+        # print(f"lstm output: {output.shape}")
+        # print(f"hn before -1: {hn.shape}")
         # hn = hn.view(-1, self.hidden_size)  # reshaping the data for Dense layer next
         # print(f"hn -1: {hn.shape}")
-        out = self.relu_1(hn)
-        print(f"relu 1: {out.shape}")
+        out = self.relu_1(output)
+        # print(f"relu 1: {out.shape}")
         out = self.fc_1(out)  # First Dense
-        print(f"First Dense fc_1: {out.shape}")
+        # print(f"First Dense fc_1: {out.shape}")
         out = self.relu_2(out)  # relu
-        print(f"relu 2: {out.shape}")
+        # print(f"relu 2: {out.shape}")
         out = self.fc_2(out)  # Final Output
-        print(f"Final Output fc_2: {out.shape}")
+        # print(f"Final Output fc_2: {out.shape}")
         return out
 
 

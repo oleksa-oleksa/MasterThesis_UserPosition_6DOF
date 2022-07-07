@@ -484,8 +484,7 @@ class RNNRunner():
         # loss_fn = nn.L1Loss()
 
         # ------------ OPTIMIZERS ------------------
-        optimizer = optim.Adam(self.model.parameters(), lr=self.learning_rate,
-                               eps=1e-8, weight_decay=self.weight_decay)
+        optimizer = optim.Adam(self.model.parameters(), lr=self.learning_rate)
         # optimizer = optim.SGD(self.model.parameters(), lr=0.01, momentum=0.9)
 
         train_loader, test_loader = dataset.prepare_loaders(self.X_train, self.y_train,
