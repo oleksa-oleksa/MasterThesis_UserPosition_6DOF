@@ -310,24 +310,25 @@ class LSTMModelStacked(nn.Module):
     (via hidden_size), you have defined the 2 Fully Connected layers, the ReLU layer, and some helper variables. Next,
     you are going to define the forward pass of the LSTM
     """
-    def __init__(self, num_classes, input_size, hidden_size, num_layers, seq_length):
+    def __init__(self, seq_length_input, input_dim, hidden_dim, seq_length_output, output_dim, layer_dim):
         super(LSTMModelStacked, self).__init__()
         self.name = "LSTM Stacked witj 2 Linear and ReLU"
-        self.num_classes = num_classes  # number of classes
-        self.num_layers = num_layers  # number of layers
-        self.input_size = input_size  # input size
-        self.hidden_size = hidden_size  # hidden state
-        self.seq_length = seq_length  # sequence length
+        self.num_layers = layer_dim  # number of layers
+        self.input_size = input_dim  # input size
+        self.hidden_size = hidden_dim  # hidden state
+        self.output_dim = output_dim  # outputs
+        self.seq_length_input = seq_length_input  # sequence length
+        self.seq_length_output = seq_length_output  # otput length of timeseries in the future
 
         # with batch_first = True, only the input and output tensors are reported with batch first.
         # The initial memory states (h_init and c_init) are still reported with batch second.
-        self.lstm = nn.LSTM(input_size=input_size, hidden_size=hidden_size,
-                            num_layers=num_layers, batch_first=True)  # lstm
+        self.lstm = nn.LSTM(input_size=input_dim, hidden_size=hidden_dim,
+                            num_layers=layer_dim, batch_first=True)  # lstm
         self.relu_1 = nn.ReLU()
-        self.fc_1 = nn.Linear(hidden_size, 128)  # fully connected 1
+        self.fc_1 = nn.Linear(hidden_dim, 128)  # fully connected 1
         self.relu_2 = nn.ReLU()
-        self.fc_2 = nn.Linear(128, num_classes)  # fully connected last layer
-        self.fc_lstm = nn.Linear(hidden_size, num_classes)
+        self.fc_2 = nn.Linear(128, output_dim)  # fully connected last layer
+        self.fc_lstm = nn.Linear(hidden_dim, output_dim)
 
     def forward(self, x):
         # [rows, layers, features] - > [batch, rows, layers, features]
@@ -341,7 +342,7 @@ class LSTMModelStacked(nn.Module):
         print(f"c_0: {c_0.shape}")
         # Propagate input through LSTM
         output, (hn, cn) = self.lstm(x, (h_0, c_0))  # lstm with input, hidden, and internal state
-        return self.fc_lstm(output)
+        # return self.fc_lstm(output)
         print(f"lstm output: {output.shape}")
         print(f"hn before -1: {hn.shape}")
         # hn = hn.view(-1, self.hidden_size)  # reshaping the data for Dense layer next

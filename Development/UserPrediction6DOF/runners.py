@@ -348,7 +348,8 @@ class RNNRunner():
             self.model = LSTMModelCustom(self.input_dim, self.hidden_dim,
                                          self.output_dim, self.dropout, self.layer_dim)
         elif model_name == "lstm-stacked":
-            self.model = LSTMModelStacked(self.input_dim, self.hidden_dim, self.layer_dim, self.seq_length_input)
+            self.model = LSTMModelStacked(self.seq_length_input, self.input_dim, self.hidden_dim,
+                                          self.seq_length_output, self.output_dim, self.layer_dim)
 
         elif model_name == "gru":
             self.model = GRUModel(self.input_dim, self.hidden_dim,
@@ -360,7 +361,7 @@ class RNNRunner():
 
         self.params = {'LAT': self.pred_window[0], 'hidden_dim': self.hidden_dim, 'epochs': self.n_epochs,
                        'batch_size': self.batch_size, 'dropout': self.dropout, 'layers': self.layer_dim,
-                       'model': model_name, 'past_seq_length': self.seq_length, 'lr': self.learning_rate,
+                       'model': model_name, 'seq_length_input': self.seq_length_input, 'lr': self.learning_rate,
                        'lr_reducing': self.reducing_learning_rate, 'lr_epochs': self.lr_epochs,
                        'weight_decay': self.weight_decay}
 
