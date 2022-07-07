@@ -74,3 +74,40 @@ def prepare_loaders(X_train, y_train, X_test, y_test, batch_size=64):
     test_loader = DataLoader(test, batch_size=batch_size, shuffle=False, drop_last=True)
 
     return train_loader, test_loader
+
+
+def load_data(X_train, X_val, X_test, y_train, y_val, y_test, batch_size=64):
+    """
+
+    :param X_train:
+    :param X_val:
+    :param X_test:
+    :param y_train:
+    :param y_val:
+    :param y_test:
+    :param batch_size:
+    :return:
+
+    The drop_last=True parameter ignores the last batch
+    (when the number of examples in a dataset is not divisible
+    by a batch_size) while drop_last=False will make the last batch
+    smaller than a batch_size
+    """
+
+    train_features = torch.Tensor(X_train)
+    train_targets = torch.Tensor(y_train)
+    val_features = torch.Tensor(X_val)
+    val_targets = torch.Tensor(y_val)
+    test_features = torch.Tensor(X_test)
+    test_targets = torch.Tensor(y_test)
+
+    train = TensorDataset(train_features, train_targets)
+    val = TensorDataset(val_features, val_targets)
+    test = TensorDataset(test_features, test_targets)
+
+    train_loader = DataLoader(train, batch_size=batch_size, shuffle=False, drop_last=True)
+    val_loader = DataLoader(val, batch_size=batch_size, shuffle=False, drop_last=True)
+    test_loader = DataLoader(test, batch_size=batch_size, shuffle=False, drop_last=True)
+    test_loader_one = DataLoader(test, batch_size=1, shuffle=False, drop_last=True)
+
+    return train_loader, val_loader, test_loader, test_loader_one

@@ -304,16 +304,20 @@ class LSTMModel(nn.Module):
         return out
 
 
-class LSTMModelStacked(nn.Module):
+class LSTMModel2(nn.Module):
     """
     Next you are going to use 2 LSTM layers with the same hyperparameters stacked over each other
     (via hidden_size), you have defined the 2 Fully Connected layers, the ReLU layer, and some helper variables. Next,
     you are going to define the forward pass of the LSTM
     """
-    def __init__(self, seq_length_input, input_dim, hidden_dim, seq_length_output, output_dim, layer_dim):
-        super(LSTMModelStacked, self).__init__()
-        self.name = "LSTM Stacked with 2 Linear and ReLU"
+    def __init__(self, seq_length_input, input_dim, hidden_dim, seq_length_output, output_dim, dropout, layer_dim):
+        super(LSTMModel2, self).__init__()
+        self.name = "LSTM2 with 2 FC and 2 ReLU"
         self.num_layers = layer_dim  # number of layers
+        if layer_dim > 1:
+            self.dropout = dropout
+        else:
+            self.dropout = 0
         self.input_size = input_dim  # input size
         self.hidden_size = hidden_dim  # hidden state
         self.output_dim = output_dim  # outputs
@@ -323,10 +327,10 @@ class LSTMModelStacked(nn.Module):
         # with batch_first = True, only the input and output tensors are reported with batch first.
         # The initial memory states (h_init and c_init) are still reported with batch second.
         self.lstm = nn.LSTM(input_size=input_dim, hidden_size=hidden_dim,
-                            num_layers=layer_dim, batch_first=True)  # lstm
+                            num_layers=layer_dim, batch_first=True, dropout=self.dropout)  # lstm
         self.relu_1 = nn.ReLU()
         self.fc_1 = nn.Linear(hidden_dim, 128)  # fully connected 1
-        self.relu_2 = nn.ReLU()
+        self.relu_2 = nn.Mish()
         self.fc_2 = nn.Linear(128, output_dim)  # fully connected last layer
         self.fc_lstm = nn.Linear(hidden_dim, output_dim)
 

@@ -49,7 +49,7 @@ import torch.nn as nn
 import torch.optim as optim
 from filterpy.common import Q_discrete_white_noise
 from filterpy.kalman import KalmanFilter
-from .lstm import LSTMModel, LSTMModelCustom, LSTMModelStacked
+from .lstm import LSTMModel, LSTMModelCustom, LSTMModel2
 from .gru import GRUModel
 from .lstm_fcn import LSTMFCNModel
 from .optimization import RNNOptimization
@@ -282,21 +282,21 @@ class RNNRunner():
 
         # ---------  MODEL HYPERPARAMETERS ----------#
         self.reducing_learning_rate = True  # decreases LR every ls_epochs for 70%
-        self.learning_rate = 1e-3  # 1e-3 base Adam optimizer
+        self.learning_rate = 5e-4  # 1e-3 base Adam optimizer
         self.lr_epochs = 30
-        self.weight_decay = 1e-6  # 1e-6 base Adam optimizer
+        self.weight_decay = 0  # 1e-6 base Adam optimizer
 
         # self.num_past = 20  # number of past time series to predict future
         self.input_dim = len(self.features)
         self.output_dim = len(self.outputs)  # 3 position parameter + 4 rotation parameter
         self.hidden_dim = 50  # number of features in hidden state
         self.batch_size = 16
-        self.n_epochs = 50
-        self.dropout = 0
+        self.n_epochs = 1000
+        self.dropout = 0.2
         self.layer_dim = 1  # the number of LSTM layers stacked on top of each other
         self.seq_length_input = 20  # input length of timeseries from the past
-        self.seq_length_output = self.pred_step  # otput length of timeseries in the future
-
+        self.seq_length_output = self.pred_step  # output length of timeseries in the future
+        self.patience = 10
 
         # -----  CREATE PYTORCH MODEL ----------#
         # prepare paths for environment
@@ -347,9 +347,10 @@ class RNNRunner():
         elif model_name == "lstm-custom":
             self.model = LSTMModelCustom(self.input_dim, self.hidden_dim,
                                          self.output_dim, self.dropout, self.layer_dim)
-        elif model_name == "lstm-stacked":
-            self.model = LSTMModelStacked(self.seq_length_input, self.input_dim, self.hidden_dim,
-                                          self.seq_length_output, self.output_dim, self.layer_dim)
+        elif model_name == "lstm2":
+            self.model = LSTMModel2(self.seq_length_input, self.input_dim, self.hidden_dim,
+                                    self.seq_length_output, self.output_dim,
+                                    self.dropout, self.layer_dim)
 
         elif model_name == "gru":
             self.model = GRUModel(self.input_dim, self.hidden_dim,
@@ -363,7 +364,7 @@ class RNNRunner():
                        'batch_size': self.batch_size, 'dropout': self.dropout, 'layers': self.layer_dim,
                        'model': model_name, 'seq_length_input': self.seq_length_input, 'lr': self.learning_rate,
                        'lr_reducing': self.reducing_learning_rate, 'lr_epochs': self.lr_epochs,
-                       'weight_decay': self.weight_decay}
+                       'weight_decay': self.weight_decay, 'patience': self.patience}
 
     def print_model_info(self):
         logging.info("----------------- Runing RNN Predictor ---------------------")
@@ -470,7 +471,7 @@ class RNNRunner():
                              prepare_test=False,
                              add_sliding_window=False,
                              load_before_split_with_sliding=False,
-                             load_test_val_train_split_with_sliding=False,
+                             load_test_val_train_split_with_sliding=True,
                              split_train_test_with_sliding=False,
                              load_train_test_with_sliding=True)
 
@@ -484,25 +485,24 @@ class RNNRunner():
         # loss_fn = nn.L1Loss()
 
         # ------------ OPTIMIZERS ------------------
-        optimizer = optim.Adam(self.model.parameters(), lr=self.learning_rate)
+        optimizer = optim.Adam(self.model.parameters(), lr=self.learning_rate, weight_decay=self.weight_decay)
         # optimizer = optim.SGD(self.model.parameters(), lr=0.01, momentum=0.9)
 
-        train_loader, test_loader = dataset.prepare_loaders(self.X_train, self.y_train,
-                                                            self.X_test, self.y_test, self.batch_size)
+        train_loader, val_loader, test_loader, test_loader_one = dataset.load_data(self.X_train, self.X_val, self.X_test,
+                                                                                   self.y_train, self.y_val, self.y_test,
+                                                                                   self.batch_size)
 
         nn_train = NNTrainer(self.model, loss_fn, optimizer, self.params)
 
-        nn_train.train(train_loader, test_loader, self.n_epochs)
+        nn_train.train(train_loader, val_loader, self.n_epochs)
 
         # self.plotter.plot_losses(nn_train.train_losses, nn_train.val_losses)
-
 
         # ------------ PREDICTION ON TEST DATA ------------------
         logging.info('Training finished. Starting prediction on test data!')
         # predictions: list[float] The values predicted by the model
         # values: list[float] The actual values in the test set.
-        # predictions, values = opt.evaluate(test_loader_one, batch_size=1, n_features=self.input_dim)
-        predictions, values = opt.predict(test_loader_one)
+        predictions, values = nn_train.predict(test_loader, self.batch_size)
         predictions = np.array(predictions)
         values = np.array(values)
 
