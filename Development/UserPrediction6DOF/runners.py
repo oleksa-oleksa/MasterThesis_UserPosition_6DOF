@@ -291,8 +291,8 @@ class RNNRunner():
         self.output_dim = len(self.outputs)  # 3 position parameter + 4 rotation parameter
         self.hidden_dim = 50  # number of features in hidden state
         self.batch_size = 16
-        self.n_epochs = 5
-        self.dropout = 0.2
+        self.n_epochs = 1
+        self.dropout = 0
         self.layer_dim = 1  # the number of LSTM layers stacked on top of each other
         self.seq_length_input = 20  # input length of timeseries from the past
         self.seq_length_output = self.pred_step  # output length of timeseries in the future
@@ -498,11 +498,9 @@ class RNNRunner():
 
         # ------------ PREDICTION ON TEST DATA ------------------
         logging.info('Training finished. Starting prediction on test data!')
-        # predictions: list[float] The values predicted by the model
-        # values: list[float] The actual values in the test set.
         predictions, targets = nn_train.predict(test_loader, self.batch_size)
-        predictions = np.array(predictions)
-        targets = np.array(targets)
+        print(predictions.shape, targets.shape)
+
 
         # ------------ DEBUG INFO ------------------
         # logging.info('Y_TEST VS VALUES:')

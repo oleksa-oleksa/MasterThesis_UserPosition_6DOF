@@ -69,9 +69,9 @@ class NNTrainer:
                     y_val_hat = self.model(x_val_batch)
                     val_loss = self.criterion(y_val_batch, y_val_hat)
                     batch_val_losses.append(val_loss)
-                vl = [loss.detach().numpy() for loss in batch_val_losses]
-                validation_loss = np.mean(vl)
-                self.val_losses.append(validation_loss)
+            vl = [loss.detach().numpy() for loss in batch_val_losses]
+            validation_loss = np.mean(vl)
+            self.val_losses.append(validation_loss)
 
             if self.params['lr_reducing']:
                 if (epoch >= self.params['lr_epochs']) & (epoch % self.params['lr_epochs'] == 0):
@@ -105,6 +105,8 @@ class NNTrainer:
     def predict(self, test_loader, batch_size):
 
         self.model.eval()  # prep model for evaluation
+        predictions = []
+        targets = []
 
         with torch.no_grad():
             batch_test_losses = []
@@ -115,13 +117,23 @@ class NNTrainer:
                     x_test_batch, y_test_batch = x_test_batch.cuda(), y_test_batch.cuda()
 
                 y_test_hat = self.model(x_test_batch)
-                val_loss = self.criterion(y_test_hat, y_test_batch)
-                batch_test_losses.append(val_loss)
+                test_loss = self.criterion(y_test_hat, y_test_batch)
+                batch_test_losses.append(test_loss)
 
-            tl = [loss.detach().numpy() for loss in batch_test_losses]
-            test_loss = np.mean(tl)
-            self.test_losses.append(test_loss)
+                last_pred = y_test_hat[:, -1, :]
+                last_targ = y_test_batch[:, -1, :]
+
+                print(last_pred.shape)
+                predictions.append(last_pred)
+                targets.append(last_targ)
+                print(len(predictions))
+
+        tl = [loss.detach().numpy() for loss in batch_test_losses]
+        test_loss = np.mean(tl)
+        self.test_losses.append(test_loss)
 
         print(f'Test loss: {test_loss:.4f}')
 
-        return y_test_hat, y_test_batch
+        print(f'predictions: {predictions}')
+
+        return np.array(predictions), np.array(targets)

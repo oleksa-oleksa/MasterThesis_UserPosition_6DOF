@@ -312,10 +312,7 @@ class LSTMModel2(nn.Module):
         super(LSTMModel2, self).__init__()
         self.name = "LSTM2 with 2 FC and 2 ReLU"
         self.num_layers = layer_dim  # number of layers
-        if layer_dim > 1:
-            self.dropout = dropout
-        else:
-            self.dropout = 0
+        self.dropout = dropout
         self.input_size = input_dim  # input size
         self.hidden_size = hidden_dim  # hidden state
         self.output_dim = output_dim  # outputs
@@ -325,7 +322,7 @@ class LSTMModel2(nn.Module):
         # with batch_first = True, only the input and output tensors are reported with batch first.
         # The initial memory states (h_init and c_init) are still reported with batch second.
         self.lstm = nn.LSTM(input_size=input_dim, hidden_size=hidden_dim,
-                            num_layers=layer_dim, batch_first=True, dropout=self.dropout)  # lstm
+                            num_layers=layer_dim, batch_first=True, dropout=dropout)  # lstm
         self.relu_1 = nn.ReLU()
         self.fc_1 = nn.Linear(hidden_dim, 128)  # fully connected 1
         self.relu_2 = nn.ReLU()
@@ -341,7 +338,6 @@ class LSTMModel2(nn.Module):
         # print(f"c_0: {c_0.shape}")
         # Propagate input through LSTM
         output, (hn, cn) = self.lstm(x, (h_0, c_0))  # lstm with input, hidden, and internal state
-        # return self.fc_lstm(output)
         # print(f"lstm output: {output.shape}")
         # print(f"hn before -1: {hn.shape}")
         # hn = hn.view(-1, self.hidden_size)  # reshaping the data for Dense layer next
