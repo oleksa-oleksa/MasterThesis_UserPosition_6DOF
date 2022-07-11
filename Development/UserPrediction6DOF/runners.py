@@ -291,7 +291,7 @@ class RNNRunner():
         self.output_dim = len(self.outputs)  # 3 position parameter + 4 rotation parameter
         self.hidden_dim = 50  # number of features in hidden state
         self.batch_size = 16
-        self.n_epochs = 1
+        self.n_epochs = 5
         self.dropout = 0
         self.layer_dim = 1  # the number of LSTM layers stacked on top of each other
         self.seq_length_input = 20  # input length of timeseries from the past
@@ -501,7 +501,6 @@ class RNNRunner():
         predictions, targets = nn_train.predict(test_loader, self.batch_size)
         print(predictions.shape, targets.shape)
 
-
         # ------------ DEBUG INFO ------------------
         # logging.info('Y_TEST VS VALUES:')
         # print_result(y_test, values, start_row=10000, stop_row=10005)
@@ -517,11 +516,6 @@ class RNNRunner():
         # Compute evaluation metrics LSTM
         deep_eval = DeepLearnEvaluator(predictions, targets)
         deep_eval.eval_model()
-        print(predictions.shape[0])
-
-        # prediction_scaled = np.empty([self.seq_length:(predictions.shape[0]), predictions.shape[1]])
-
-        metrics = np.array(list(deep_eval.metrics.values()))
         euc_dists = deep_eval.euc_dists
         ang_dists = np.rad2deg(deep_eval.ang_dists)
 
@@ -530,12 +524,10 @@ class RNNRunner():
         np.save(os.path.join(self.dists_path,
                              'ang_dists_{}_{}ms.npy'.format(self.model.name, int(self.pred_window * 1e3))), ang_dists)
 
-        results = list(np.hstack((self.pred_window, metrics)))
-
         logging.info("--------------------------------------------------------------")
-
-        df_results = pd.DataFrame(results, columns=['Trace', 'LAT', 'mae_euc', 'mae_ang',
-                                                    'rmse_euc', 'rmse_ang'])
+        df_results = pd.DataFrame({'Trace': "dataset", 'LAT' : self.pred_window,
+                                   'mae_euc': deep_eval.metrics['mae_euc'], 'mae_ang': deep_eval.metrics['mae_ang'],
+                                   'rmse_euc': deep_eval.metrics['rmse_euc'], 'rmse_ang': deep_eval.metrics['rmse_ang']})
         df_results.to_csv(os.path.join(self.results_path, 'res_lstm.csv'), index=False)
 
         # log model parameters

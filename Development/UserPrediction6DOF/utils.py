@@ -309,8 +309,8 @@ def log_parameters(df_results, params):
     csv_file = "model_parameters_adjust_log.csv"
     log_path = os.path.join(result_path, csv_file)
     csv_columns = ['MAE_pos', 'MAE_rot', 'RMSE_pos', 'RMSE_rot', 'LAT', 'hidden_dim',
-                   'epochs', 'batch_size', 'dropout', 'layers', 'model', 'num_past',
-                   'lr', 'lr_reducing', 'weight_decay', 'lr_epochs']
+                   'epochs', 'batch_size', 'dropout', 'layers', 'model', 'seq_length_input',
+                   'lr', 'lr_reducing', 'weight_decay', 'lr_epochs', 'patience']
     file_exists = os.path.isfile(log_path)
 
     # model evaluation results

@@ -105,8 +105,8 @@ class NNTrainer:
     def predict(self, test_loader, batch_size):
 
         self.model.eval()  # prep model for evaluation
-        predictions = []
-        targets = []
+        predictions = np.empty((0, 7), float)
+        targets = np.empty((0, 7), float)
 
         with torch.no_grad():
             batch_test_losses = []
@@ -120,13 +120,13 @@ class NNTrainer:
                 test_loss = self.criterion(y_test_hat, y_test_batch)
                 batch_test_losses.append(test_loss)
 
-                last_pred = y_test_hat[:, -1, :]
-                last_targ = y_test_batch[:, -1, :]
+                last_pred = y_test_hat[:, -1, :].detach().numpy()
+                last_targ = y_test_batch[:, -1, :].detach().numpy()
 
-                print(last_pred.shape)
-                predictions.append(last_pred)
-                targets.append(last_targ)
-                print(len(predictions))
+                # print(last_pred.shape)
+                predictions = np.concatenate((predictions, last_pred), axis=0)
+                targets = np.concatenate((targets, last_targ))
+                # print(len(predictions))
 
         tl = [loss.detach().numpy() for loss in batch_test_losses]
         test_loss = np.mean(tl)
@@ -134,6 +134,6 @@ class NNTrainer:
 
         print(f'Test loss: {test_loss:.4f}')
 
-        print(f'predictions: {predictions}')
+        print(f'predictions: {predictions.shape}')
 
         return np.array(predictions), np.array(targets)
