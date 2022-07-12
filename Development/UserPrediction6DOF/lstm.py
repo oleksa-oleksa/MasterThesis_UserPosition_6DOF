@@ -324,9 +324,9 @@ class LSTMModel2(nn.Module):
         self.lstm = nn.LSTM(input_size=input_dim, hidden_size=hidden_dim,
                             num_layers=layer_dim, batch_first=True, dropout=dropout)  # lstm
         self.relu_1 = nn.ReLU()
-        self.fc_1 = nn.Linear(hidden_dim, 128)  # fully connected 1
+        self.fc_1 = nn.Linear(hidden_dim, 150)  # fully connected 1
         self.relu_2 = nn.ReLU()
-        self.fc_2 = nn.Linear(128, output_dim)  # fully connected last layer
+        self.fc_2 = nn.Linear(150, output_dim)  # fully connected last layer
         self.fc_lstm = nn.Linear(hidden_dim, output_dim)
 
     def forward(self, x):

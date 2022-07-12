@@ -289,14 +289,15 @@ class RNNRunner():
         # self.num_past = 20  # number of past time series to predict future
         self.input_dim = len(self.features)
         self.output_dim = len(self.outputs)  # 3 position parameter + 4 rotation parameter
-        self.hidden_dim = 50  # number of features in hidden state
-        self.batch_size = 16
-        self.n_epochs = 5
+        self.hidden_dim = 75  # number of features in hidden state
+        self.batch_size = 256
+        self.n_epochs = 150
         self.dropout = 0
         self.layer_dim = 1  # the number of LSTM layers stacked on top of each other
         self.seq_length_input = 20  # input length of timeseries from the past
         self.seq_length_output = self.pred_step  # output length of timeseries in the future
         self.patience = 10
+        self.delta = -0.5
 
         # -----  CREATE PYTORCH MODEL ----------#
         # prepare paths for environment
@@ -364,7 +365,7 @@ class RNNRunner():
                        'batch_size': self.batch_size, 'dropout': self.dropout, 'layers': self.layer_dim,
                        'model': model_name, 'seq_length_input': self.seq_length_input, 'lr': self.learning_rate,
                        'lr_reducing': self.reducing_learning_rate, 'lr_epochs': self.lr_epochs,
-                       'weight_decay': self.weight_decay, 'patience': self.patience}
+                       'weight_decay': self.weight_decay, 'patience': self.patience, 'delta': self.delta}
 
     def print_model_info(self):
         logging.info("----------------- Runing RNN Predictor ---------------------")
