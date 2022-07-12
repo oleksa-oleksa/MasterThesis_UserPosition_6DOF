@@ -333,3 +333,7 @@ def log_parameters(df_results, params):
 
     logging.info(f"log_path file {log_path} exists: {os.path.exists(log_path)}")
     logging.info(f"Saved model parameters to file: {csv_file}")
+
+
+def log_predictions(predictions):
+    pass
