@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import logging
 import os
-from .lstm import LSTMModel
+from .lstm import LSTMModel1
 
 
 class LSTMFCNModel(nn.Module):
@@ -44,7 +44,7 @@ class LSTMFCNModel(nn.Module):
 
         # LSTM layers (default 1)
         # setting batch_first=True requires the input to have the shape [batch_size, seq_len, input_size]
-        self.lstm = LSTMModel(self.input_dim, hidden_dim, self.N_LSTM_Out, dropout, layer_dim)
+        self.lstm = LSTMModel1(self.input_dim, hidden_dim, self.N_LSTM_Out, dropout, layer_dim)
 
         self.C1 = nn.Conv1d(self.input_dim, 128, 1)
         self.C2 = nn.Conv1d(self.Conv1_NF, self.Conv2_NF, 1)

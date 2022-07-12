@@ -49,7 +49,7 @@ import torch.nn as nn
 import torch.optim as optim
 from filterpy.common import Q_discrete_white_noise
 from filterpy.kalman import KalmanFilter
-from .lstm import LSTMModel, LSTMModelCustom, LSTMModel2
+from .lstm import LSTMModel1, LSTMModelCustom, LSTMModel2
 from .gru import GRUModel
 from .lstm_fcn import LSTMFCNModel
 from .optimization import RNNOptimization
@@ -283,7 +283,7 @@ class RNNRunner():
         # ---------  MODEL HYPERPARAMETERS ----------#
         self.reducing_learning_rate = True  # decreases LR every ls_epochs for 70%
         self.learning_rate = 5e-4  # 1e-3 base Adam optimizer
-        self.lr_epochs = 30
+        self.lr_epochs = 20
         self.weight_decay = 1e-8  # 1e-6 base Adam optimizer
 
         # self.num_past = 20  # number of past time series to predict future
@@ -341,8 +341,8 @@ class RNNRunner():
     def create_model(self, model_name):
         # batch_first=True --> input is [batch_size, seq_len, input_size]
         # SELECTS MODEL
-        if model_name == "lstm":
-            self.model = LSTMModel(self.input_dim, self.hidden_dim,
+        if model_name == "lstm1":
+            self.model = LSTMModel1(self.input_dim, self.hidden_dim,
                                    self.output_dim, self.dropout, self.layer_dim)
 
         elif model_name == "lstm-custom":

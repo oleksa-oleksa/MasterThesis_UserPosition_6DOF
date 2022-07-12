@@ -178,7 +178,7 @@ class LSTMModelCustom(nn.Module):
         return out
 
 
-class LSTMModel(nn.Module):
+class LSTMModel1(nn.Module):
     """
         Implements a sequential network named Long Short Term Memory Network.
         It is capable of learning order dependence in sequence prediction problems and
@@ -246,8 +246,8 @@ class LSTMModel(nn.Module):
 
     def __init__(self, input_dim, hidden_dim, output_dim, dropout, layer_dim=1):
         """Works both on CPU and GPU without additional modifications"""
-        super(LSTMModel, self).__init__()
-        self.name = "LSTM with Sliding Window"
+        super(LSTMModel1, self).__init__()
+        self.name = "Basic simple LSTM with Sliding Window"
 
         # Defining the number of layers and the nodes in each layer
         self.hidden_dim = hidden_dim
@@ -263,42 +263,31 @@ class LSTMModel(nn.Module):
 
         self.cuda = torch.cuda.is_available()
         if self.cuda:
-            self.lstm.cuda()
-            self.fc.cuda()
+            self.convert_to_cuda()
         logging.info(F"Init model {self.name}")
 
+    def convert_to_cuda(self):
+        self.lstm.cuda()
+        self.fc.cuda()
+
     def forward(self, x):
-        batch_size, sequence_length = x.shape[0], x.shape[1]
         # Initializing hidden state for first input with zeros
+        h0 = torch.zeros(self.layer_dim, x.size(0), self.hidden_dim)
+        # Initializing cell state for first input with zeros
+        c0 = torch.zeros(self.layer_dim, x.size(0), self.hidden_dim)
+
         if self.cuda:
             x = x.cuda()
-        h0 = torch.zeros(self.layer_dim, x.size(0), self.hidden_dim).requires_grad_()
-
-        # print(f"x input in forward is {x.shape}")
-        # Initializing cell state for first input with zeros
-        c0 = torch.zeros(self.layer_dim, x.size(0), self.hidden_dim).requires_grad_()
-
-        if self.cuda:
             h0, c0 = h0.cuda(), c0.cuda()
 
         # We need to detach as we are doing truncated backpropagation through time (BPTT)
-        # If we don't, we'll backprop all the way to the start even after going through another batch
+        # If we don't, we'll backpropogate all the way to the start even after going through another batch
         # Forward propagation by passing in the input, hidden state, and cell state into the model
         out, (hn, cn) = self.lstm(x, (h0.detach(), c0.detach()))
 
-        # print(f"out after lstm before -1 {out.shape}")
-
-        # Reshaping the outputs in the shape of (batch_size, seq_length, hidden_size)
-        # so that it can fit into the fully connected layer
-        out = out[:, -1, :]
-        # print(f"out after -1 BEFORE FC {out.shape}")
-
-        # Convert the final state to our desired output shape (batch_size, output_dim)
-        # print(f"out BEFORE {out.shape}")
+        # This is a basic simple LSTM
+        # uses only output from LSTM and passes it through the linear layer
         out = self.fc(out)
-        # print(f"out AFTER FC {out.shape}")
-        out = out.view([batch_size, -1, self.output_dim])
-        # print(f"out AFTER -1 {out.shape}")
         return out
 
 
@@ -324,10 +313,22 @@ class LSTMModel2(nn.Module):
         self.lstm = nn.LSTM(input_size=input_dim, hidden_size=hidden_dim,
                             num_layers=layer_dim, batch_first=True, dropout=dropout)  # lstm
         self.relu_1 = nn.ReLU()
-        self.fc_1 = nn.Linear(hidden_dim, 150)  # fully connected 1
+        self.fc_1 = nn.Linear(hidden_dim, 128)  # fully connected 1
         self.relu_2 = nn.ReLU()
-        self.fc_2 = nn.Linear(150, output_dim)  # fully connected last layer
-        self.fc_lstm = nn.Linear(hidden_dim, output_dim)
+        self.fc_2 = nn.Linear(128, output_dim)  # fully connected last layer
+
+        self.cuda = torch.cuda.is_available()
+        if self.cuda:
+            self.convert_to_cuda()
+        logging.info(F"Init model {self.name}")
+
+    def convert_to_cuda(self):
+        self.lstm.cuda()
+        self.relu_1.cuda()
+        self.fc_1.cuda()
+        self.relu_2.cuda()
+        self.fc_2.cuda()
+        self.fc_lstm.cuda()
 
     def forward(self, x):
         # print(f"x: {x.shape}")
@@ -336,6 +337,11 @@ class LSTMModel2(nn.Module):
         # print(f"h_0: {h_0.shape}")
         c_0 = Variable(torch.zeros(self.num_layers, x.shape[0], self.hidden_size))  # internal state
         # print(f"c_0: {c_0.shape}")
+
+        if self.cuda:
+            x = x.cuda()
+            h_0, c_0 = h_0.cuda(), c_0.cuda()
+
         # Propagate input through LSTM
         output, (hn, cn) = self.lstm(x, (h_0, c_0))  # lstm with input, hidden, and internal state
         # print(f"lstm output: {output.shape}")
@@ -352,7 +358,8 @@ class LSTMModel2(nn.Module):
         # print(f"Final Output fc_2: {out.shape}")
         return out
 
-
+# Old first version
+# TODO delete this class at the end
 class LSTMModelSVP_1to1(nn.Module):
     """
         Implements a sequential network named Long Short Term Memory Network.
@@ -421,7 +428,7 @@ class LSTMModelSVP_1to1(nn.Module):
 
     def __init__(self, input_dim, hidden_dim, output_dim, dropout, layer_dim=1, batch_size=2048):
         """Works both on CPU and GPU without additional modifications"""
-        super(LSTMModel, self).__init__()
+        super(LSTMModelSVP_1to1, self).__init__()
         self.name = "LSTM"
 
         # Defining the number of layers and the nodes in each layer
