@@ -2,7 +2,7 @@ import torch
 import numpy as np
 import logging
 import time
-from .pytorchtools import EarlyStopping
+from .tools import EarlyStopping
 
 
 class NNTrainer:
@@ -37,6 +37,8 @@ class NNTrainer:
                     x_train_batch, y_train_batch = x_train_batch.cuda(), y_train_batch.cuda()
 
                 # print(f'x_train_batch: {x_train_batch.shape}')
+                y_train_batch = torch.tensor(np.round(y_train_batch.numpy(), 8))
+
                 outputs_train_batch = self.model.forward(x_train_batch)  # forward pass
                 # print(f'outputs_train_batch: {outputs_train_batch.shape}, y_train_batch: {y_train_batch.shape}')
                 self.optimizer.zero_grad()  # caluclate the gradient, manually setting to 0
@@ -66,6 +68,7 @@ class NNTrainer:
 
                     self.model.eval()
 
+                    y_val_batch = torch.tensor(np.round(y_val_batch.numpy(), 8))
                     y_val_hat = self.model(x_val_batch)
                     val_loss = self.criterion(y_val_batch, y_val_hat)
                     batch_val_losses.append(val_loss)
@@ -116,6 +119,7 @@ class NNTrainer:
                 if self.cuda:
                     x_test_batch, y_test_batch = x_test_batch.cuda(), y_test_batch.cuda()
 
+                y_test_batch = torch.tensor(np.round(y_test_batch.numpy(), 8))
                 y_test_hat = self.model(x_test_batch)
                 test_loss = self.criterion(y_test_hat, y_test_batch)
                 batch_test_losses.append(test_loss)
@@ -123,10 +127,8 @@ class NNTrainer:
                 last_pred = y_test_hat[:, -1, :].detach().numpy()
                 last_targ = y_test_batch[:, -1, :].detach().numpy()
 
-                # print(last_pred.shape)
                 predictions = np.concatenate((predictions, last_pred), axis=0)
                 targets = np.concatenate((targets, last_targ))
-                # print(len(predictions))
 
         tl = [loss.detach().numpy() for loss in batch_test_losses]
         test_loss = np.mean(tl)
@@ -136,4 +138,4 @@ class NNTrainer:
 
         print(f'predictions: {predictions.shape}')
 
-        return np.array(predictions), np.array(targets)
+        return predictions, targets

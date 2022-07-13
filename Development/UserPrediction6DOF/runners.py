@@ -39,8 +39,6 @@
 
 import logging
 import os
-import pickle
-from math import floor
 import numpy as np
 import pandas as pd
 import toml
@@ -58,8 +56,7 @@ from scipy.linalg import block_diag
 from .evaluator import Evaluator, DeepLearnEvaluator
 from sklearn.preprocessing import minmax_scale
 from sklearn.preprocessing import MinMaxScaler
-from .utils import *
-from .dataset import dataset
+from .tools import dataset_tools, utils
 from .plotter import DataPlotter
 from torchinfo import summary
 
@@ -85,7 +82,7 @@ class BaselineRunner():
         logging.info("Baseline (no-prediction)")
         results = []
         
-        for trace_path in get_csv_files(self.dataset_path):
+        for trace_path in utils.get_csv_files(self.dataset_path):
             basename = os.path.splitext(os.path.basename(trace_path))[0]
             logging.info("-------------------------------------------------------------------------")
             logging.info("Trace path: %s", trace_path)
@@ -176,8 +173,10 @@ class KalmanRunner():
         xs = np.array(xs).squeeze()
         covs = np.array(covs).squeeze()
         x_preds = np.array(x_preds).squeeze()
+        # print(x_preds[:, ::2])
+        # print(x_preds.shape)
         # create csv-file that can be to be used for plotting
-        # log_predictions(x_preds[:,:7], 'kalman')
+        # log_predictions(x_preds[:, ::2], 'kalman')
         pred_step = int(w / self.dt)
         eval = Evaluator(zs, x_preds[:, ::2], pred_step)
         eval.eval_kalman()
@@ -195,7 +194,7 @@ class KalmanRunner():
         if not os.path.exists(dists_path):
             os.makedirs(dists_path, exist_ok=True)
         
-        for trace_path in get_csv_files(self.dataset_path):
+        for trace_path in utils.get_csv_files(self.dataset_path):
             basename = os.path.splitext(os.path.basename(trace_path))[0]
             print("-------------------------------------------------------------------------")
             logging.info("Trace path: %s", trace_path)
@@ -290,20 +289,20 @@ class RNNRunner():
         self.reducing_learning_rate = True  # decreases LR every ls_epochs for 70%
         self.learning_rate = 5e-4  # 1e-3 base Adam optimizer
         self.lr_epochs = 30
-        self.weight_decay = 1e-8  # 1e-6 base Adam optimizer
+        self.weight_decay = 0  # 1e-6 base Adam optimizer
 
         # self.num_past = 20  # number of past time series to predict future
         self.input_dim = len(self.features)
         self.output_dim = len(self.outputs)  # 3 position parameter + 4 rotation parameter
         self.hidden_dim = 75  # number of features in hidden state
         self.batch_size = 256
-        self.n_epochs = 3
+        self.n_epochs = 500
         self.dropout = 0
         self.layer_dim = 1  # the number of LSTM layers stacked on top of each other
         self.seq_length_input = 20  # input length of timeseries from the past
         self.seq_length_output = self.pred_step  # output length of timeseries in the future
         self.patience = 10
-        self.delta = -0.5
+        self.delta = 0.001
 
         # -----  CREATE PYTORCH MODEL ----------#
         # prepare paths for environment
@@ -394,13 +393,13 @@ class RNNRunner():
                         load_test_val_train_split_with_sliding, split_train_test_with_sliding, load_train_test_with_sliding):
         if prepare_raw_dataset:
             # Read full dataset from CSV file
-            df = dataset.load_dataset(self.dataset_path)
+            df = dataset_tools.load_dataset(self.dataset_path)
             # create 2D arrays of features and outputs
-            self.X, self.y = dataset.prepare_X_y(df, self.features, self.seq_length_input, self.pred_step, self.outputs)
+            self.X, self.y = dataset_tools.prepare_X_y(df, self.features, self.seq_length_input, self.pred_step, self.outputs)
 
         # prepare and save separate file for testing with Kalman and Baseline
         if prepare_test:
-            df = dataset.load_dataset(self.dataset_path)
+            df = dataset_tools.load_dataset(self.dataset_path)
             # short test if train-val-test was used
             df_test_slice = pd.DataFrame(data=df.iloc[96023:, :], columns=df.columns)
             # test without validation dataset
@@ -416,12 +415,12 @@ class RNNRunner():
         if add_sliding_window:
             # Features and outputs with sequence_len = sliding window
             self.X_w, self.y_w = dataset.add_sliding_window(self.X, self.y, self.seq_length_input, self.pred_step)
-            save_numpy_array(self.dataset_path, 'X_w', self.X_w)
-            save_numpy_array(self.dataset_path, 'y_w', self.y_w)
+            utils.save_numpy_array(self.dataset_path, 'X_w', self.X_w)
+            utils.save_numpy_array(self.dataset_path, 'y_w', self.y_w)
 
         if load_before_split_with_sliding:
-            self.X_w = load_numpy_array(self.dataset_path, 'X_w')
-            self.y_w = load_numpy_array(self.dataset_path, 'y_w')
+            self.X_w = utils.load_numpy_array(self.dataset_path, 'X_w')
+            self.y_w = utils.load_numpy_array(self.dataset_path, 'y_w')
 
             # Splitting the data into train, validation, and test sets
             self.X_train, self.X_val, self.X_test, \
@@ -435,43 +434,43 @@ class RNNRunner():
             if not os.path.exists(path):
                 os.makedirs(path, exist_ok=True)
 
-            save_numpy_array(path, 'X_train', self.X_train)
-            save_numpy_array(path, 'X_val', self.X_val)
-            save_numpy_array(path, 'X_test', self.X_test)
-            save_numpy_array(path, 'y_train', self.y_train)
-            save_numpy_array(path, 'y_val', self.y_val)
-            save_numpy_array(path, 'y_test', self.y_test)
+            utils.save_numpy_array(path, 'X_train', self.X_train)
+            utils.save_numpy_array(path, 'X_val', self.X_val)
+            utils.save_numpy_array(path, 'X_test', self.X_test)
+            utils.save_numpy_array(path, 'y_train', self.y_train)
+            utils.save_numpy_array(path, 'y_val', self.y_val)
+            utils.save_numpy_array(path, 'y_test', self.y_test)
 
         if load_test_val_train_split_with_sliding:
             path = os.path.join(self.dataset_path, 'train_val_test')
-            self.X_train = load_numpy_array(path, 'X_train')
-            self.X_val = load_numpy_array(path, 'X_val')
-            self.X_test = load_numpy_array(path, 'X_test')
-            self.y_train = load_numpy_array(path, 'y_train')
-            self.y_val = load_numpy_array(path, 'y_val')
-            self.y_test = load_numpy_array(path, 'y_test')
+            self.X_train = utils.load_numpy_array(path, 'X_train')
+            self.X_val = utils.load_numpy_array(path, 'X_val')
+            self.X_test = utils.load_numpy_array(path, 'X_test')
+            self.y_train = utils.load_numpy_array(path, 'y_train')
+            self.y_val = utils.load_numpy_array(path, 'y_val')
+            self.y_test = utils.load_numpy_array(path, 'y_test')
 
         if split_train_test_with_sliding:
-            self.X_w = load_numpy_array(self.dataset_path, 'X_w')
-            self.y_w = load_numpy_array(self.dataset_path, 'y_w')
+            self.X_w = utils.load_numpy_array(self.dataset_path, 'X_w')
+            self.y_w = utils.load_numpy_array(self.dataset_path, 'y_w')
 
             # Splitting the data into train and test sets
             self.X_train, self.X_test, self.y_train, self.y_test = \
-                dataset.test_train_split(self.X_w, self.y_w, 0.3)
+                dataset_tools.test_train_split(self.X_w, self.y_w, 0.3)
 
             logging.info(f"X_train {self.X_train.shape}, X_test{self.X_test.shape}, "
                          f"y_train {self.y_train.shape}, y_test {self.y_test.shape}")
 
-            save_numpy_array(self.dataset_path, 'X_train', self.X_train)
-            save_numpy_array(self.dataset_path, 'X_test', self.X_test)
-            save_numpy_array(self.dataset_path, 'y_train', self.y_train)
-            save_numpy_array(self.dataset_path, 'y_test', self.y_test)
+            utils.save_numpy_array(self.dataset_path, 'X_train', self.X_train)
+            utils.save_numpy_array(self.dataset_path, 'X_test', self.X_test)
+            utils.save_numpy_array(self.dataset_path, 'y_train', self.y_train)
+            utils.save_numpy_array(self.dataset_path, 'y_test', self.y_test)
 
         if load_train_test_with_sliding:
-            self.X_train = load_numpy_array(self.dataset_path, 'X_train')
-            self.X_test = load_numpy_array(self.dataset_path, 'X_test')
-            self.y_train = load_numpy_array(self.dataset_path, 'y_train')
-            self.y_test = load_numpy_array(self.dataset_path, 'y_test')
+            self.X_train = utils.load_numpy_array(self.dataset_path, 'X_train')
+            self.X_test = utils.load_numpy_array(self.dataset_path, 'X_test')
+            self.y_train = utils.load_numpy_array(self.dataset_path, 'y_train')
+            self.y_test = utils.load_numpy_array(self.dataset_path, 'y_test')
 
     # --------------- RUN RNN PREDICTOR --------------------- #
     def run(self):
@@ -493,7 +492,7 @@ class RNNRunner():
         optimizer = optim.Adam(self.model.parameters(), lr=self.learning_rate, weight_decay=self.weight_decay)
 
         # load data with dataloaders
-        train_loader, val_loader, test_loader, _ = dataset.load_data(self.X_train, self.X_val, self.X_test,
+        train_loader, val_loader, test_loader, _ = dataset_tools.load_data(self.X_train, self.X_val, self.X_test,
                                                                                    self.y_train, self.y_val, self.y_test,
                                                                                    self.batch_size)
         # TRAIN WITH VALIDATION
@@ -508,6 +507,7 @@ class RNNRunner():
         logging.info('Training finished. Starting prediction on test data!')
         predictions, targets = nn_train.predict(test_loader, self.batch_size)
         print(predictions.shape, targets.shape)
+        print(predictions)
 
         # Compute evaluation metrics
         deep_eval = DeepLearnEvaluator(predictions, targets)
@@ -527,10 +527,10 @@ class RNNRunner():
         df_results.to_csv(os.path.join(self.results_path, 'res_lstm.csv'), index=False)
 
         # log model parameters
-        log_parameters(df_results, self.params)
+        utils.log_parameters(df_results, self.params)
         # log predicted values and targets
-        log_predictions(predictions, self.model_name, self.params)
-        # log_targets(targets, self.model_name, self.params)
+        utils.log_predictions(predictions, self.model_name, self.params)
+        # log_targets(targets, self.model_name)
 
 
 class RNNRunnerSWPVer2_20to1():
@@ -641,7 +641,7 @@ class RNNRunnerSWPVer2_20to1():
         # SELECTS MODEL
         if model_name == "lstm":
             self.model = LSTMModel1(self.input_dim, self.hidden_dim,
-                                   self.output_dim, self.dropout, self.layer_dim)
+                                    self.output_dim, self.dropout, self.layer_dim)
         elif model_name == "lstm-custom":
             self.model = LSTMModelCustom(self.input_dim, self.hidden_dim,
                                          self.output_dim, self.dropout, self.layer_dim)
@@ -669,7 +669,7 @@ class RNNRunnerSWPVer2_20to1():
         if not os.path.exists(self.dists_path):
             os.makedirs(self.dists_path, exist_ok=True)
 
-        for trace_path in get_csv_files(self.dataset_path):
+        for trace_path in utils.get_csv_files(self.dataset_path):
             basename = os.path.splitext(os.path.basename(trace_path))[0]
             logging.info("-------------------------------------------------------------------------")
             logging.info("Trace path: %s", trace_path)
@@ -741,7 +741,7 @@ class RNNRunnerSWPVer2_20to1():
                          f"y_train {y_train.shape}, y_val {y_val.shape}, y_test {y_test.shape}")
 
             train_loader, val_loader, \
-            test_loader, test_loader_one = load_data(X_train, X_val, X_test,
+            test_loader, test_loader_one = dataset_tools.load_data(X_train, X_val, X_test,
                                                      y_train, y_val, y_test, batch_size=self.batch_size)
 
             # Long Short-Term Memory TRAIN + EVAL
@@ -814,7 +814,7 @@ class RNNRunnerSWPVer2_20to1():
                 deep_eval_transform = DeepLearnEvaluator(predictions, values)
                 deep_eval_transform.eval_model()
                 logging.info('UNSCALED PREDICTIONS VS VALUES:')
-                print_result(y_test, values, start_row=10000, stop_row=10005)
+                utils.print_result(y_test, values, start_row=10000, stop_row=10005)
 
             metrics = np.array(list(deep_eval.metrics.values()))
             euc_dists = deep_eval.euc_dists
@@ -835,4 +835,4 @@ class RNNRunnerSWPVer2_20to1():
         df_results.to_csv(os.path.join(self.results_path, 'res_lstm.csv'), index=False)
 
         # log model parameters
-        log_parameters(df_results, self.params)
+        utils.log_parameters(df_results, self.params)

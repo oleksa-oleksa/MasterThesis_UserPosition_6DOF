@@ -360,7 +360,7 @@ def log_predictions(predictions, name, params=None):
     logging.info(f"Saved prediction to file: {log_path}")
 
 
-def log_targets(targets, name, params):
+def log_targets(targets, name):
     result_path = ""
     if torch.cuda.is_available():
         result_path = "/mnt/output/job_results/targets"
@@ -374,9 +374,14 @@ def log_targets(targets, name, params):
     csv_file = f'{datetime.now().strftime("%d.%m_%H%M")}.csv'
     log_path = os.path.join(dest, csv_file)
 
+    # print(np.round(targets, 8))
+    # targets = np.round(targets, 8)
+
     with open(log_path, "w+") as my_csv:
         csv_writer = csv.writer(my_csv, delimiter=',')
         csv_writer.writerows(targets)
-    logging.info(f"Saved prediction to file: {log_path}")
+
+    # np.savetxt(log_path, targets)
+    logging.info(f"Saved targets to file: {log_path}")
 
 
