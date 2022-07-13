@@ -99,6 +99,9 @@ class BaselineRunner():
                 
                 pred_step = int(w / self.dt)
                 zs_shifted = zs[pred_step:, :]   # Assumption: LAT = E2E latency
+
+                # create csv-file that can be to be used for plotting
+                # log_predictions(zs_shifted[:, :7], 'baseline')
                 
                 # Compute evaluation metrics
                 eval = Evaluator(zs, zs_shifted, pred_step)
@@ -173,7 +176,8 @@ class KalmanRunner():
         xs = np.array(xs).squeeze()
         covs = np.array(covs).squeeze()
         x_preds = np.array(x_preds).squeeze()
-        print(x_preds)
+        # create csv-file that can be to be used for plotting
+        # log_predictions(x_preds[:,:7], 'kalman')
         pred_step = int(w / self.dt)
         eval = Evaluator(zs, x_preds[:, ::2], pred_step)
         eval.eval_kalman()
