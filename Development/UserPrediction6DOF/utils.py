@@ -47,7 +47,7 @@ from scipy.spatial.transform import Slerp
 from torch.utils.data import TensorDataset, DataLoader
 import torch
 import csv
-import math
+from datetime import datetime
 
 pd.options.mode.chained_assignment = None
 # HoloLens CSV-Log parameter
@@ -335,5 +335,44 @@ def log_parameters(df_results, params):
     logging.info(f"Saved model parameters to file: {csv_file}")
 
 
-def log_predictions(predictions):
-    pass
+def log_predictions(predictions, name, params):
+    result_path = ""
+    if torch.cuda.is_available():
+        result_path = "/mnt/output/job_results/predictions"
+    if not torch.cuda.is_available():
+        result_path = os.path.join(os.getcwd(), 'results/predictions')
+
+    dest = os.path.join(result_path, name)
+    if not os.path.exists(dest):
+        os.makedirs(dest)
+
+    csv_file = f"hid{params['hidden_dim']}_epochs{params['epochs']}_batch{params['batch_size']}_{datetime.now().strftime('%d.%m_%H%M')}.csv"
+
+    log_path = os.path.join(dest, csv_file)
+
+    with open(log_path, "w+") as my_csv:
+        csv_writer = csv.writer(my_csv, delimiter=',')
+        csv_writer.writerows(predictions)
+    logging.info(f"Saved prediction to file: {log_path}")
+
+
+def log_targets(targets, name, params):
+    result_path = ""
+    if torch.cuda.is_available():
+        result_path = "/mnt/output/job_results/targets"
+    if not torch.cuda.is_available():
+        result_path = os.path.join(os.getcwd(), 'results/targets')
+
+    dest = os.path.join(result_path, name)
+    if not os.path.exists(dest):
+        os.makedirs(dest)
+
+    csv_file = f'{datetime.now().strftime("%d.%m_%H%M")}.csv'
+    log_path = os.path.join(dest, csv_file)
+
+    with open(log_path, "w+") as my_csv:
+        csv_writer = csv.writer(my_csv, delimiter=',')
+        csv_writer.writerows(targets)
+    logging.info(f"Saved prediction to file: {log_path}")
+
+

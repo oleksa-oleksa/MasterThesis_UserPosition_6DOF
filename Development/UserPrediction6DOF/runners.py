@@ -49,7 +49,7 @@ import torch.nn as nn
 import torch.optim as optim
 from filterpy.common import Q_discrete_white_noise
 from filterpy.kalman import KalmanFilter
-from .lstm import LSTMModel1, LSTMModelCustom, LSTMModel2
+from .lstm import LSTMModel1, LSTMModelCustom, LSTMModel2, LSTMModel3
 from .gru import GRUModel
 from .lstm_fcn import LSTMFCNModel
 from .optimization import RNNOptimization
@@ -173,6 +173,7 @@ class KalmanRunner():
         xs = np.array(xs).squeeze()
         covs = np.array(covs).squeeze()
         x_preds = np.array(x_preds).squeeze()
+        print(x_preds)
         pred_step = int(w / self.dt)
         eval = Evaluator(zs, x_preds[:, ::2], pred_step)
         eval.eval_kalman()
@@ -252,6 +253,7 @@ class RNNRunner():
         self.cuda = torch.cuda.is_available()
         self.cfg = toml.load(config_path)
         self.dt = self.cfg['dt']
+        self.model_name = model_name
         self.pred_window = pred_window * 1e-3  # convert to seconds
         self.pred_step = int(self.pred_window / self.dt)
         self.dataset_path = dataset_path
@@ -283,7 +285,7 @@ class RNNRunner():
         # ---------  MODEL HYPERPARAMETERS ----------#
         self.reducing_learning_rate = True  # decreases LR every ls_epochs for 70%
         self.learning_rate = 5e-4  # 1e-3 base Adam optimizer
-        self.lr_epochs = 20
+        self.lr_epochs = 30
         self.weight_decay = 1e-8  # 1e-6 base Adam optimizer
 
         # self.num_past = 20  # number of past time series to predict future
@@ -291,7 +293,7 @@ class RNNRunner():
         self.output_dim = len(self.outputs)  # 3 position parameter + 4 rotation parameter
         self.hidden_dim = 75  # number of features in hidden state
         self.batch_size = 256
-        self.n_epochs = 150
+        self.n_epochs = 3
         self.dropout = 0
         self.layer_dim = 1  # the number of LSTM layers stacked on top of each other
         self.seq_length_input = 20  # input length of timeseries from the past
@@ -341,25 +343,26 @@ class RNNRunner():
     def create_model(self, model_name):
         # batch_first=True --> input is [batch_size, seq_len, input_size]
         # SELECTS MODEL
-        if model_name == "lstm1":
-            self.model = LSTMModel1(self.input_dim, self.hidden_dim,
-                                   self.output_dim, self.dropout, self.layer_dim)
-
-        elif model_name == "lstm-custom":
+        if model_name == "lstm-custom":
             self.model = LSTMModelCustom(self.input_dim, self.hidden_dim,
                                          self.output_dim, self.dropout, self.layer_dim)
+        elif model_name == "lstm1":
+            self.model = LSTMModel1(self.input_dim, self.hidden_dim,
+                                    self.output_dim, self.dropout, self.layer_dim)
         elif model_name == "lstm2":
             self.model = LSTMModel2(self.seq_length_input, self.input_dim, self.hidden_dim,
                                     self.seq_length_output, self.output_dim,
                                     self.dropout, self.layer_dim)
-
-        elif model_name == "gru":
-            self.model = GRUModel(self.input_dim, self.hidden_dim,
-                                  self.output_dim, self.dropout, self.layer_dim)
-
+        elif model_name == "lstm3":
+            self.model = LSTMModel3(self.seq_length_input, self.input_dim, self.hidden_dim,
+                                    self.seq_length_output, self.output_dim,
+                                    self.dropout, self.layer_dim)
         elif model_name == "lstm-fcn":
             self.model = LSTMFCNModel(self.input_dim, self.hidden_dim,
                                       self.output_dim, self.dropout, self.layer_dim, self.batch_size)
+        elif model_name == "gru":
+            self.model = GRUModel(self.input_dim, self.hidden_dim,
+                                  self.output_dim, self.dropout, self.layer_dim)
 
         self.params = {'LAT': self.pred_window[0], 'hidden_dim': self.hidden_dim, 'epochs': self.n_epochs,
                        'batch_size': self.batch_size, 'dropout': self.dropout, 'layers': self.layer_dim,
@@ -395,9 +398,9 @@ class RNNRunner():
         if prepare_test:
             df = dataset.load_dataset(self.dataset_path)
             # short test if train-val-test was used
-            # df_test_slice = pd.DataFrame(data=df.iloc[95984:, :], columns=df.columns)
+            df_test_slice = pd.DataFrame(data=df.iloc[96023:, :], columns=df.columns)
             # test without validation dataset
-            df_test_slice = pd.DataFrame(data=df.iloc[84006:, :], columns=df.columns)
+            # df_test_slice = pd.DataFrame(data=df.iloc[84006:, :], columns=df.columns)
             print(df_test_slice.shape)
 
             test_path = os.path.join(self.dataset_path, 'test')
@@ -477,44 +480,32 @@ class RNNRunner():
                              load_before_split_with_sliding=False,
                              load_test_val_train_split_with_sliding=True,
                              split_train_test_with_sliding=False,
-                             load_train_test_with_sliding=True)
+                             load_train_test_with_sliding=False)
 
-        # ------------ LOSS FUNCTIONS --------------
         # Mean Squared Error Loss Function
         # average of the squared differences between actual values and predicted values
         criterion = nn.MSELoss(reduction="mean")
 
-        # ------------ OPTIMIZERS ------------------
         optimizer = optim.Adam(self.model.parameters(), lr=self.learning_rate, weight_decay=self.weight_decay)
 
-        train_loader, val_loader, test_loader, test_loader_one = dataset.load_data(self.X_train, self.X_val, self.X_test,
+        # load data with dataloaders
+        train_loader, val_loader, test_loader, _ = dataset.load_data(self.X_train, self.X_val, self.X_test,
                                                                                    self.y_train, self.y_val, self.y_test,
                                                                                    self.batch_size)
-
+        # TRAIN WITH VALIDATION
         nn_train = NNTrainer(self.model, criterion, optimizer, self.params)
 
         nn_train.train(train_loader, val_loader, self.n_epochs)
 
+        # Plot train and validation losses
         # self.plotter.plot_losses(nn_train.train_losses, nn_train.val_losses)
 
-        # ------------ PREDICTION ON TEST DATA ------------------
+        # PREDICTION ON TEST DATA
         logging.info('Training finished. Starting prediction on test data!')
         predictions, targets = nn_train.predict(test_loader, self.batch_size)
         print(predictions.shape, targets.shape)
 
-        # ------------ DEBUG INFO ------------------
-        # logging.info('Y_TEST VS VALUES:')
-        # print_result(y_test, values, start_row=10000, stop_row=10005)
-
-        # Remove axes of length one from predictions.
-        predictions = predictions.squeeze()
-        targets = targets.squeeze()
-
-        # ------------ DEBUG INFO ------------------
-        # logging.info('PREDICTION VS VALUES:')
-        # print_result(predictions[self.seq_length:, :], values, start_row=10000, stop_row=10005)
-
-        # Compute evaluation metrics LSTM
+        # Compute evaluation metrics
         deep_eval = DeepLearnEvaluator(predictions, targets)
         deep_eval.eval_model()
         euc_dists = deep_eval.euc_dists
@@ -533,6 +524,9 @@ class RNNRunner():
 
         # log model parameters
         log_parameters(df_results, self.params)
+        # log predicted values and targets
+        log_predictions(predictions, self.model_name, self.params)
+        # log_targets(targets, self.model_name, self.params)
 
 
 class RNNRunnerSWPVer2_20to1():
@@ -642,7 +636,7 @@ class RNNRunnerSWPVer2_20to1():
         # batch_first=True --> input is [batch_size, seq_len, input_size]
         # SELECTS MODEL
         if model_name == "lstm":
-            self.model = LSTMModel(self.input_dim, self.hidden_dim,
+            self.model = LSTMModel1(self.input_dim, self.hidden_dim,
                                    self.output_dim, self.dropout, self.layer_dim)
         elif model_name == "lstm-custom":
             self.model = LSTMModelCustom(self.input_dim, self.hidden_dim,

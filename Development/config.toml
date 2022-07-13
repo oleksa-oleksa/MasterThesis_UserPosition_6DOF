@@ -1,7 +1,7 @@
 # General
 ts = ['timestamp']
 pos_coords  = ['x', 'y', 'z']
-quat_coords = ['qw', 'qx', 'qy', 'qz']
+quat_coords = ['qx', 'qy', 'qz', 'qw']
 velocity = ['velocity_x', 'velocity_y', 'velocity_z']
 speed = ['speed']
 dt = 0.005          # Sampling time [s]
