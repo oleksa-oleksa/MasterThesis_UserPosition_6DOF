@@ -289,7 +289,7 @@ class RNNRunner():
         self.reducing_learning_rate = True  # decreases LR every ls_epochs for 70%
         self.learning_rate = 5e-4  # 1e-3 base Adam optimizer
         self.lr_epochs = 30
-        self.weight_decay = 0  # 1e-6 base Adam optimizer
+        self.weight_decay = 1e-10 # 1e-6 base Adam optimizer
 
         # self.num_past = 20  # number of past time series to predict future
         self.input_dim = len(self.features)
@@ -358,6 +358,10 @@ class RNNRunner():
                                     self.dropout, self.layer_dim)
         elif model_name == "lstm3":
             self.model = LSTMModel3(self.seq_length_input, self.input_dim, self.hidden_dim,
+                                    self.seq_length_output, self.output_dim,
+                                    self.dropout, self.layer_dim)
+        elif model_name == "lstm4":
+            self.model = LSTMModel4(self.seq_length_input, self.input_dim, self.hidden_dim,
                                     self.seq_length_output, self.output_dim,
                                     self.dropout, self.layer_dim)
         elif model_name == "lstm-fcn":

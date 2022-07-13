@@ -433,7 +433,7 @@ class LSTMModel4(nn.Module):
     """
     def __init__(self, seq_length_input, input_dim, hidden_dim, seq_length_output, output_dim, dropout, layer_dim):
         super(LSTMModel4, self).__init__()
-        self.name = "LSTM3 with Dropout 2 FC and 2 MISH"
+        self.name = "LSTM4 with Dropout 2 FC and 2 MISH"
         self.num_layers = layer_dim  # number of layers
         self.dropout = dropout
         self.input_size = input_dim  # input size
@@ -448,6 +448,7 @@ class LSTMModel4(nn.Module):
         # The initial memory states (h_init and c_init) are still reported with batch second.
         self.lstm = nn.LSTM(input_size=self.input_size, hidden_size=hidden_dim,
                             num_layers=layer_dim, batch_first=True, dropout=dropout)  # lstm
+        self.drop = nn.Dropout3d(p=self.lstm_dropout)
         self.mish_1 = nn.Mish()
         self.fc_1 = nn.Linear(hidden_dim, self.inner_size)  # fully connected 1
         self.mish_2 = nn.Mish()
@@ -459,18 +460,16 @@ class LSTMModel4(nn.Module):
 
     def convert_to_cuda(self):
         self.lstm.cuda()
+        self.drop.cuda()
         self.mish_1.cuda()
         self.fc_1.cuda()
         self.mish_2.cuda()
         self.fc_2.cuda()
 
     def forward(self, x):
-        # print(f"x: {x.shape}")
         # define the hidden state, and internal state first, initialized with zeros
         h_0 = Variable(torch.zeros(self.num_layers, x.shape[0], self.hidden_size))  # hidden state
-        # print(f"h_0: {h_0.shape}")
         c_0 = Variable(torch.zeros(self.num_layers, x.shape[0], self.hidden_size))  # internal state
-        # print(f"c_0: {c_0.shape}")
 
         if self.cuda:
             x = x.cuda()
@@ -478,16 +477,9 @@ class LSTMModel4(nn.Module):
 
         # Propagate input through LSTM
         output, (hn, cn) = self.lstm(x, (h_0, c_0))  # lstm with input, hidden, and internal state
-        # print(f"lstm output: {output.shape}")
-        # print(f"hn before -1: {hn.shape}")
-        # hn = hn.view(-1, self.hidden_size)  # reshaping the data for Dense layer next
-        # print(f"hn -1: {hn.shape}")
+        out = self.drop(output)
         out = self.mish_1(output)
-        # print(f"mish_1: {out.shape}")
         out = self.fc_1(out)  # First Dense
-        # print(f"Second Dense fc_1: {out.shape}")
         out = self.mish_2(out)  # relu
-        # print(f"mish_1: {out.shape}")
         out = self.fc_2(out)  # Final Output
-        # print(f"Final Output fc_2: {out.shape}")
         return out

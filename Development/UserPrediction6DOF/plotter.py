@@ -46,8 +46,7 @@ import logging
 import os
 from matplotlib import pyplot as plt
 from matplotlib.ticker import MultipleLocator, FormatStrFormatter
-from scipy.signal import savgol_filter
-from .utils import get_csv_files
+from UserPrediction6DOF.tools import utils
 import statsmodels.api as sm
 import seaborn as sns
 
@@ -63,7 +62,7 @@ class DataPlotter():
     @staticmethod
     def plot_datasets(dataset_path, output_path):
         logging.info(f"Plotting from {dataset_path} and saving to {output_path}")
-        for trace_path in get_csv_files(dataset_path):
+        for trace_path in utils.get_csv_files(dataset_path):
             df = pd.read_csv(trace_path)
             ts = np.arange(0, dataset_lengh_sec + cfg['dt'], cfg['dt'])
 
@@ -119,7 +118,7 @@ class DataPlotter():
     @staticmethod
     def plot_datasets_quaternions_flipped(dataset_path, output_path, dataset_type):
         logging.info(f"Plotting from {dataset_path} and saving to {output_path}")
-        for trace_path in get_csv_files(dataset_path):
+        for trace_path in utils.get_csv_files(dataset_path):
             df = pd.read_csv(trace_path)
             ts = np.arange(0, dataset_lengh_sec + cfg['dt'], cfg['dt'])
 
@@ -161,8 +160,8 @@ class DataPlotter():
         ts_start = int(start/0.005)
         ts_end = int(end/0.005)
         logging.info(f"Plotting from {dataset_path1} and from {dataset_path2} and saving to {output_path}")
-        for trace_path1 in get_csv_files(dataset_path1):
-            for trace_path2 in get_csv_files(dataset_path2):
+        for trace_path1 in utils.get_csv_files(dataset_path1):
+            for trace_path2 in utils.get_csv_files(dataset_path2):
                 # plotting only interpolated and flipped quaternions of the same datasets
                 if (os.path.splitext(os.path.basename(trace_path1))[0]) == \
                         (os.path.splitext(os.path.basename(trace_path2))[0]):
@@ -217,7 +216,7 @@ class DataPlotter():
         logging.info(f"Plotting from {dataset_path} and saving to {output_path}")
         print(len([name for name in os.listdir(dataset_path) if os.path.isfile(os.path.join(dataset_path, name))]))
 
-        for trace_path in get_csv_files(dataset_path):
+        for trace_path in utils.get_csv_files(dataset_path):
             df = pd.read_csv(trace_path)
             ts = np.arange(0, dataset_lengh_sec + cfg['dt'], cfg['dt'])
 
@@ -242,7 +241,7 @@ class DataPlotter():
 
     @staticmethod
     def plot_autocorrelation(dataset_path, output_path, dataset_type):
-        for trace_path in get_csv_files(dataset_path):
+        for trace_path in utils.get_csv_files(dataset_path):
             df = pd.read_csv(trace_path, skipfooter=1, engine='python')
             plt.rc("figure", figsize=(10, 6))
             sm.graphics.tsa.plot_acf(df['qx'], lags=50)
@@ -256,7 +255,7 @@ class DataPlotter():
     def plot_average(dataset_path, output_path, dataset_type):
         out_dir_df = "./data/average/"
         av_time = 1000
-        for trace_path in get_csv_files(dataset_path):
+        for trace_path in utils.get_csv_files(dataset_path):
             df = pd.read_csv(trace_path, skipfooter=1, engine='python')
             df = df.rolling(av_time).mean()
 
@@ -307,7 +306,7 @@ class DataPlotter():
 
     @staticmethod
     def plot_corr_matrix(dataset_path, output_path, column, dataset_type):
-        for trace_path in get_csv_files(dataset_path):
+        for trace_path in utils.get_csv_files(dataset_path):
             df = pd.read_csv(trace_path, skipfooter=1, engine='python')
             correlation_matrix = df.drop([column], axis=1).corr()
             print(correlation_matrix)
@@ -329,7 +328,7 @@ class DataPlotter():
 
     @staticmethod
     def plot_hist(dataset_path, output_path, column, dataset_type):
-        for trace_path in get_csv_files(dataset_path):
+        for trace_path in utils.get_csv_files(dataset_path):
             df = pd.read_csv(trace_path, skipfooter=1, engine='python')
 
             df[column].hist(bins=100)

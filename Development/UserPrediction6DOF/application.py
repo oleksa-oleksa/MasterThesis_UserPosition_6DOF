@@ -47,7 +47,7 @@ import numpy as np
 import toml
 from .runners import KalmanRunner, BaselineRunner, RNNRunner
 from .reporter import Reporter
-from .utils import get_csv_files, preprocess_trace, flip_negative_quaternions, normalize_dataset
+from UserPrediction6DOF.tools import utils
 from .plotter import DataPlotter
 
 
@@ -194,23 +194,23 @@ class Application:
     def prepare(self):
         """Resample all user traces in the given path to a common sampling time and make
         temporal spacing between samples equal"""
-        for trace_path in get_csv_files(self.raw_dataset_path):
-            preprocess_trace(trace_path, self.sampling_time, self.output_path)
+        for trace_path in utils.get_csv_files(self.raw_dataset_path):
+            utils.preprocess_trace(trace_path, self.sampling_time, self.output_path)
         logging.info("Interpolated traces written to {}".format(self.output_path))
 
     def flip(self):
         """Resample all user traces in the given path to a common sampling time and make
         temporal spacing between samples equal"""
-        for trace_path in get_csv_files(self.dataset_path):
-            flip_negative_quaternions(trace_path, self.flipped_dataset_path)
+        for trace_path in utils.get_csv_files(self.dataset_path):
+            utils.flip_negative_quaternions(trace_path, self.flipped_dataset_path)
         logging.info(f"Flipped traces written to {self.flipped_dataset_path}")
 
     def normalize(self):
         """Feature standardization makes the values of each feature
         in the data have zero-mean and unit-variance"""
         print(f"Normaizing datasets from {self.dataset_path}")
-        for trace_path in get_csv_files(self.dataset_path):
-            normalize_dataset(trace_path, self.norm_dataset_path, self.norm_type, self.dataset_path)
+        for trace_path in utils.get_csv_files(self.dataset_path):
+            utils.normalize_dataset(trace_path, self.norm_dataset_path, self.norm_type, self.dataset_path)
 
     def report(self):
         trace_path = os.path.join(self.dataset_path, "1556.csv")
@@ -469,7 +469,7 @@ class Application:
             '--model',
             dest='model',
             type=str,
-            choices=['lstm', 'gru', 'lstm-fcn', 'lstm-custom', 'lstm2', 'lstm1', 'lstm3'],
+            choices=['lstm', 'gru', 'lstm-fcn', 'lstm-custom', 'lstm2', 'lstm1', 'lstm3', 'lstm4'],
             default='lstm',
             help='Selects RNN variant'
         )

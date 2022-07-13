@@ -46,12 +46,10 @@ import numpy as np
 import toml
 import logging
 import glob
-import shutil
-from distutils.dir_util import copy_tree
 from matplotlib import pyplot as plt
 from matplotlib.ticker import MultipleLocator, FormatStrFormatter
 from scipy.signal import savgol_filter
-from .utils import get_csv_files
+from UserPrediction6DOF.tools import utils
 
 style_path = os.path.join(os.getcwd(), 'UserPrediction6DOF/style.json')
 style = json.load(open(style_path))
@@ -116,7 +114,7 @@ class Reporter():
         avg_vs_ang, std_vs_ang, max_vs_ang = [], [], []
         pos_95s, ang_95s = [], []
         
-        for i, trace_path in enumerate(get_csv_files(dataset_path)):
+        for i, trace_path in enumerate(utils.get_csv_files(dataset_path)):
             trace = os.path.splitext(os.path.basename(trace_path))[0]
             trace_name = os.path.splitext(os.path.basename(trace_path))[0]
 
