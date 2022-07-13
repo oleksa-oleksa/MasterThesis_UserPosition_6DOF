@@ -2,7 +2,7 @@ import torch
 import numpy as np
 import logging
 import time
-from .tools import EarlyStopping
+from UserPrediction6DOF.tools import EarlyStopping
 
 
 class NNTrainer:

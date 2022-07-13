@@ -47,16 +47,16 @@ import torch.nn as nn
 import torch.optim as optim
 from filterpy.common import Q_discrete_white_noise
 from filterpy.kalman import KalmanFilter
-from .lstm import LSTMModel1, LSTMModelCustom, LSTMModel2, LSTMModel3
-from .gru import GRUModel
-from .lstm_fcn import LSTMFCNModel
+from UserPrediction6DOF.models.lstm import LSTMModel1, LSTMModelCustom, LSTMModel2, LSTMModel3, LSTMModel4
+from UserPrediction6DOF.models.gru import GRUModel1
+from UserPrediction6DOF.models.lstm_fcn import LSTMFCNModel
 from .optimization import RNNOptimization
 from .nn_trainer import NNTrainer
 from scipy.linalg import block_diag
 from .evaluator import Evaluator, DeepLearnEvaluator
 from sklearn.preprocessing import minmax_scale
 from sklearn.preprocessing import MinMaxScaler
-from .tools import dataset_tools, utils
+from UserPrediction6DOF.tools import dataset_tools, utils
 from .plotter import DataPlotter
 from torchinfo import summary
 
@@ -364,8 +364,8 @@ class RNNRunner():
             self.model = LSTMFCNModel(self.input_dim, self.hidden_dim,
                                       self.output_dim, self.dropout, self.layer_dim, self.batch_size)
         elif model_name == "gru":
-            self.model = GRUModel(self.input_dim, self.hidden_dim,
-                                  self.output_dim, self.dropout, self.layer_dim)
+            self.model = GRUModel1(self.input_dim, self.hidden_dim,
+                                   self.output_dim, self.dropout, self.layer_dim)
 
         self.params = {'LAT': self.pred_window[0], 'hidden_dim': self.hidden_dim, 'epochs': self.n_epochs,
                        'batch_size': self.batch_size, 'dropout': self.dropout, 'layers': self.layer_dim,
@@ -414,7 +414,7 @@ class RNNRunner():
 
         if add_sliding_window:
             # Features and outputs with sequence_len = sliding window
-            self.X_w, self.y_w = dataset.add_sliding_window(self.X, self.y, self.seq_length_input, self.pred_step)
+            self.X_w, self.y_w = dataset_tools.add_sliding_window(self.X, self.y, self.seq_length_input, self.pred_step)
             utils.save_numpy_array(self.dataset_path, 'X_w', self.X_w)
             utils.save_numpy_array(self.dataset_path, 'y_w', self.y_w)
 
@@ -424,7 +424,7 @@ class RNNRunner():
 
             # Splitting the data into train, validation, and test sets
             self.X_train, self.X_val, self.X_test, \
-                self.y_train, self.y_val, self.y_test = dataset.train_val_test_split(self.X_w, self.y_w, 0.2)
+                self.y_train, self.y_val, self.y_test = dataset_tools.train_val_test_split(self.X_w, self.y_w, 0.2)
 
             logging.info(f"X_train {self.X_train.shape}, X_val {self.X_val.shape}, "
                          f"X_test{self.X_test.shape}, y_train {self.y_train.shape}, "
@@ -647,7 +647,7 @@ class RNNRunnerSWPVer2_20to1():
                                          self.output_dim, self.dropout, self.layer_dim)
 
         elif model_name == "gru":
-            self.model = GRUModel(self.input_dim, self.hidden_dim,
+            self.model = GRUModel1(self.input_dim, self.hidden_dim,
                                   self.output_dim, self.dropout, self.layer_dim)
 
         elif model_name == "lstm-fcn":
@@ -735,7 +735,7 @@ class RNNRunnerSWPVer2_20to1():
             print(f'y_w.shape: {y_w.shape}')
 
             # Splitting the data into train, validation, and test sets
-            X_train, X_val, X_test, y_train, y_val, y_test = dataset.train_val_test_split(X_w, y_w, 0.2)
+            X_train, X_val, X_test, y_train, y_val, y_test = dataset_tools.train_val_test_split(X_w, y_w, 0.2)
 
             logging.info(f"X_train {X_train.shape}, X_val {X_val.shape}, X_test{X_test.shape}, "
                          f"y_train {y_train.shape}, y_val {y_val.shape}, y_test {y_test.shape}")
