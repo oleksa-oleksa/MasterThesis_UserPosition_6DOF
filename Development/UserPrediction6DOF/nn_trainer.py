@@ -19,7 +19,7 @@ class NNTrainer:
 
     def train(self, train_loader, val_loader, n_epochs=150):
         # trained model can be saved
-        # model_path = f'./models/{self.model.name}_{datetime.now().strftime("%d.%m_%H%M%S")}'
+        # model_path = f'./trained_models/{self.model.name}_{datetime.now().strftime("%d.%m_%H%M%S")}'
 
         start = time.time()
         logging.info(f'{self.model.name} training started!')
@@ -99,11 +99,14 @@ class NNTrainer:
         # load the last checkpoint with the best model
         self.model.load_state_dict(torch.load('checkpoint.pt'))
 
+        # saves model after training
+        '''
+        if not os.path.exists(model_path):
+            os.makedirs(model_path)
+        torch.save(self.model.state_dict(), model_path)
+        '''
         end = time.time()
         logging.info(f'\nTRAINING took {end - start}s')
-
-        # saves model after training
-        # torch.save(self.model.state_dict(), model_path)
 
     def predict(self, test_loader, batch_size):
 
