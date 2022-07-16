@@ -25,7 +25,8 @@ class NNTrainer:
         logging.info(f'{self.model.name} training started!')
 
         # initialize the early_stopping object
-        early_stopping = EarlyStopping(patience=self.params['patience'], verbose=False, delta=self.params['delta'])
+        early_stopping = EarlyStopping(patience=self.params['patience'], verbose=False,
+                                       delta=self.params['delta'], trace_func=logging.info)
 
         for epoch in range(1, n_epochs + 1):
             batch_losses = []
@@ -82,7 +83,7 @@ class NNTrainer:
                         g['lr'] = g['lr'] * 0.3
                         print(f"Learning rate is {g['lr']}")
 
-            if (epoch <= 5) | (epoch % 5 == 0):
+            if (epoch <= 5) | (epoch % 1 == 0):
                 # print first 5 epochs and then every 5 epochs
                 logging.info(
                     f"[{epoch}/{n_epochs}] Training loss: {training_loss:.4f}\t Validation loss: {validation_loss:.4f}"
@@ -96,11 +97,12 @@ class NNTrainer:
                 print("Early stopping")
                 break
 
+        '''
         # load the last checkpoint with the best model
-        self.model.load_state_dict(torch.load('checkpoint.pt'))
+        # self.model.load_state_dict(torch.load('checkpoint.pt'))
 
         # saves model after training
-        '''
+        
         if not os.path.exists(model_path):
             os.makedirs(model_path)
         torch.save(self.model.state_dict(), model_path)

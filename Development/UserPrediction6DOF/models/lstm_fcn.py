@@ -20,7 +20,7 @@ class LSTMFCNModel(nn.Module):
         will process only1time step with N variables.
 
     """
-    def __init__(self, input_dim, hidden_dim, output_dim, dropout, layer_dim=1, batch_size=2048):
+    def __init__(self, seq_length_input, input_dim, hidden_dim, seq_length_output, output_dim, dropout, layer_dim):
         """Works both on CPU and GPU without additional modifications"""
         super(LSTMFCNModel, self).__init__()
         self.name = "LSTM-FCN"
@@ -29,13 +29,15 @@ class LSTMFCNModel(nn.Module):
         self.input_dim = input_dim
         self.output_dim = output_dim
         self.hidden_dim = hidden_dim
-        self.N_time = batch_size
+        self.seq_length_input = seq_length_input  # sequence length
+        self.seq_length_output = seq_length_output  # otput length of timeseries in the future
+        self.N_time1 = batch_size
         self.layer_dim = layer_dim
         self.N_LSTM_Out = 128
         self.Conv1_NF = 128
         self.Conv2_NF = 256
         self.Conv3_NF = 128
-        self.lstm_dropout = 0.8  # 0.8
+        self.lstm_dropout = 0.2
         self.fcn_dropout = 0.3
 
         if 'FCN_PARAMETERS' in os.environ:

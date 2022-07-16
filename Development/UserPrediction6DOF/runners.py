@@ -287,22 +287,22 @@ class RNNRunner():
 
         # ---------  MODEL HYPERPARAMETERS ----------#
         self.reducing_learning_rate = True  # decreases LR every ls_epochs for 70%
-        self.learning_rate = 5e-4  # 1e-3 base Adam optimizer
+        self.learning_rate = 1e-3  # 1e-3 base Adam optimizer
         self.lr_epochs = 30
-        self.weight_decay = 1e-10 # 1e-6 base Adam optimizer
+        self.weight_decay = 1e-10  # 1e-6 base Adam optimizer
 
         # self.num_past = 20  # number of past time series to predict future
         self.input_dim = len(self.features)
         self.output_dim = len(self.outputs)  # 3 position parameter + 4 rotation parameter
-        self.hidden_dim = 75  # number of features in hidden state
+        self.hidden_dim = 64  # number of features in hidden state
         self.batch_size = 256
-        self.n_epochs = 500
+        self.n_epochs = 1000
         self.dropout = 0
         self.layer_dim = 1  # the number of LSTM layers stacked on top of each other
         self.seq_length_input = 20  # input length of timeseries from the past
         self.seq_length_output = self.pred_step  # output length of timeseries in the future
-        self.patience = 10
-        self.delta = 0.001
+        self.patience = 7
+        self.delta = 0.005
 
         # -----  CREATE PYTORCH MODEL ----------#
         # prepare paths for environment
@@ -505,13 +505,12 @@ class RNNRunner():
         nn_train.train(train_loader, val_loader, self.n_epochs)
 
         # Plot train and validation losses
-        # self.plotter.plot_losses(nn_train.train_losses, nn_train.val_losses)
+        self.plotter.plot_losses(nn_train.train_losses, nn_train.val_losses, self.params, self.results_path)
 
         # PREDICTION ON TEST DATA
         logging.info('Training finished. Starting prediction on test data!')
         predictions, targets = nn_train.predict(test_loader, self.batch_size)
-        print(predictions.shape, targets.shape)
-        print(predictions)
+        # print(predictions.shape, targets.shape)
 
         # Compute evaluation metrics
         deep_eval = DeepLearnEvaluator(predictions, targets)

@@ -433,7 +433,7 @@ class LSTMModel4(nn.Module):
     """
     def __init__(self, seq_length_input, input_dim, hidden_dim, seq_length_output, output_dim, dropout, layer_dim):
         super(LSTMModel4, self).__init__()
-        self.name = "LSTM4 with Dropout 2 FC and 2 MISH"
+        self.name = "LSTM4 with Dropout and 3 FC and 2 MISH"
         self.num_layers = layer_dim  # number of layers
         self.dropout = dropout
         self.input_size = input_dim  # input size
@@ -441,16 +441,18 @@ class LSTMModel4(nn.Module):
         self.output_dim = output_dim  # outputs
         self.seq_length_input = seq_length_input  # sequence length
         self.seq_length_output = seq_length_output  # otput length of timeseries in the future
-        self.inner_size = 128
+        self.inner_size = 100
         self.lstm_dropout = 0.1
 
         # with batch_first = True, only the input and output tensors are reported with batch first.
         # The initial memory states (h_init and c_init) are still reported with batch second.
-        self.lstm = nn.LSTM(input_size=self.input_size, hidden_size=hidden_dim,
+        self.lstm = nn.LSTM(input_size=self.input_size, hidden_size=self.hidden_size,
                             num_layers=layer_dim, batch_first=True, dropout=dropout)  # lstm
         self.drop = nn.Dropout3d(p=self.lstm_dropout)
         self.mish_1 = nn.Mish()
-        self.fc_1 = nn.Linear(hidden_dim, self.inner_size)  # fully connected 1
+        # self.fc_1 = nn.Linear(self.hidden_size, self.inner_size)  # fully connected 1
+        self.lstm_2 = nn.LSTM(input_size=self.hidden_size, hidden_size=self.inner_size,
+                              num_layers=layer_dim, batch_first=True, dropout=dropout)
         self.mish_2 = nn.Mish()
         self.fc_2 = nn.Linear(self.inner_size, output_dim)  # fully connected last layer
         self.cuda = torch.cuda.is_available()
@@ -471,6 +473,9 @@ class LSTMModel4(nn.Module):
         h_0 = Variable(torch.zeros(self.num_layers, x.shape[0], self.hidden_size))  # hidden state
         c_0 = Variable(torch.zeros(self.num_layers, x.shape[0], self.hidden_size))  # internal state
 
+        h_0_2 = Variable(torch.zeros(self.num_layers, x.shape[0], self.inner_size))  # hidden state
+        c_0_2 = Variable(torch.zeros(self.num_layers, x.shape[0], self.inner_size))  # internal state
+
         if self.cuda:
             x = x.cuda()
             h_0, c_0 = h_0.cuda(), c_0.cuda()
@@ -478,8 +483,9 @@ class LSTMModel4(nn.Module):
         # Propagate input through LSTM
         output, (hn, cn) = self.lstm(x, (h_0, c_0))  # lstm with input, hidden, and internal state
         out = self.drop(output)
-        out = self.mish_1(output)
-        out = self.fc_1(out)  # First Dense
-        out = self.mish_2(out)  # relu
+        out = self.mish_1(out)
+        # out = self.fc_1(out)  # First Dense
+        output, (hn_2, cn_2) = self.lstm_2(out, (h_0_2, c_0_2))  # lstm with input, hidden, and internal state
+        out = self.mish_2(output)  # relu
         out = self.fc_2(out)  # Final Output
         return out
