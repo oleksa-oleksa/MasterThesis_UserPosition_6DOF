@@ -56,7 +56,7 @@ class EarlyStopping:
             self.counter_repeated += 1
             self.best_loss = loss
             self.trace_func(
-                f'No change counter: {self.counter_repeated}/{self.patience}')
+                f'No change counter: {self.counter_repeated}/{self.patience_repeated}')
             if self.counter_repeated >= self.patience_repeated:
                 self.early_stop = True
         if loss < self.best_loss:
