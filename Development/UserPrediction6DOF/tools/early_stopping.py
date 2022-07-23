@@ -59,7 +59,7 @@ class EarlyStopping:
                 f'No change counter: {self.counter_repeated}/{self.patience_repeated}')
             if self.counter_repeated >= self.patience_repeated:
                 self.early_stop = True
-        if loss < self.best_loss:
+        elif loss < self.best_loss:
             self.best_loss = loss
             self.save_checkpoint(val_loss, model)
             if self.counter_increased > 0 or self.counter_repeated > 0:
