@@ -310,7 +310,7 @@ def log_parameters(df_results, params):
     log_path = os.path.join(result_path, csv_file)
     csv_columns = ['MAE_pos', 'MAE_rot', 'RMSE_pos', 'RMSE_rot', 'LAT', 'hidden_dim',
                    'epochs', 'batch_size', 'dropout', 'layers', 'model', 'seq_length_input',
-                   'lr', 'lr_reducing', 'weight_decay', 'lr_epochs', 'patience', 'delta']
+                   'lr', 'lr_reducing', 'weight_decay', 'lr_epochs', 'patience', 'delta', 'lr_multiplicator']
     file_exists = os.path.isfile(log_path)
 
     # model evaluation results
@@ -350,7 +350,7 @@ def log_predictions(predictions, name, params=None):
         csv_file = f"{name}_predictions.csv"
 
     else:
-        csv_file = f"hid{params['hidden_dim']}_epochs{params['epochs']}_batch{params['batch_size']}_{datetime.now().strftime('%d.%m_%H%M')}.csv"
+        csv_file = f"hid{params['hidden_dim']}_epochs{params['epochs']}_batch{params['batch_size']}_{datetime.now().strftime('%d.%m_%H%M%S')}.csv"
 
     log_path = os.path.join(dest, csv_file)
 

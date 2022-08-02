@@ -288,7 +288,8 @@ class RNNRunner():
         # ---------  MODEL HYPERPARAMETERS ----------#
         self.reducing_learning_rate = True  # decreases LR every ls_epochs for 70%
         self.learning_rate = 3e-4  # 1e-3 base Adam optimizer
-        self.lr_epochs = 50
+        self.lr_epochs = 75
+        self.lr_multiplicator = 0.05
         self.weight_decay = 1e-12  # 1e-6 base Adam optimizer
 
         # self.num_past = 20  # number of past time series to predict future
@@ -339,9 +340,14 @@ class RNNRunner():
             if 'LAYERS' in os.environ:
                 self.layer_dim = int(os.getenv('LAYERS'))
             if 'LR_ADAM' in os.environ:
-                self.learning_rate = int(os.getenv('LR'))
+                self.learning_rate = int(os.getenv('LR_ADAM'))
             if 'WEIGHT_DECAY_ADAM' in os.environ:
-                self.weight_decay = int(os.getenv('WEIGHT_DECAY'))
+                self.weight_decay = int(os.getenv('WEIGHT_DECAY_ADAM'))
+            if 'LR_EPOCHS' in os.environ:
+                self.lr_epochs = int(os.getenv('LR_EPOCHS'))
+            if 'LR_MULTIPLICATOR' in os.environ:
+                self.lr_multiplicator = float(os.getenv('LR_MULTIPLICATOR'))
+
 
     def create_model(self, model_name):
         # batch_first=True --> input is [batch_size, seq_len, input_size]
@@ -375,7 +381,8 @@ class RNNRunner():
                        'batch_size': self.batch_size, 'dropout': self.dropout, 'layers': self.layer_dim,
                        'model': model_name, 'seq_length_input': self.seq_length_input, 'lr': self.learning_rate,
                        'lr_reducing': self.reducing_learning_rate, 'lr_epochs': self.lr_epochs,
-                       'weight_decay': self.weight_decay, 'patience': self.patience, 'delta': self.delta}
+                       'weight_decay': self.weight_decay, 'patience': self.patience, 'delta': self.delta,
+                       'lr_multiplicator': self.lr_multiplicator}
 
     def print_model_info(self):
         logging.info("----------------- Runing RNN Predictor ---------------------")

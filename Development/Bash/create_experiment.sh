@@ -2,20 +2,11 @@
 echo "Bash version ${BASH_VERSION}..."
 out=experiment_parameters.csv
 
-echo "hidden_dim,batch_size,n_epochs,dropout,layers" > $out
+echo "hidden_dim,batch_size,dropout,layers,lr_epochs,lr_multiplicator" > $out
 
-for ((hidden_dim = 32; hidden_dim <= 64; hidden_dim+=8));
+for ((hidden_dim = 32; hidden_dim <= 256; hidden_dim+=16));
 do
-    echo "$hidden_dim,1024,1000,0,1" >> $out
-    echo "$hidden_dim,2048,1000,0,1" >> $out
-    echo "$hidden_dim,8192,1000,0,1" >> $out
-
-    #hidden_dim=$((hidden_dim+step))
-done
-
-for ((hidden_dim = 200; hidden_dim <= 1000; hidden_dim+=200));
-do
-    for batch_size in $(seq 10 1 13)
+    for batch_size in $(seq 5 1 8)
     do
         for n_epochs in $(seq 600 200 1000)
         do

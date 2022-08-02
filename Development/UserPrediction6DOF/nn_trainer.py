@@ -80,7 +80,7 @@ class NNTrainer:
             if self.params['lr_reducing']:
                 if (epoch >= self.params['lr_epochs']) & (epoch % self.params['lr_epochs'] == 0):
                     for g in self.optimizer.param_groups:
-                        g['lr'] = g['lr'] * 0.3
+                        g['lr'] = g['lr'] * self.params['lr_multiplicator']
                         print(f"Learning rate is {g['lr']}")
 
             if (epoch <= 5) | (epoch % 1 == 0):
