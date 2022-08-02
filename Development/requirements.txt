@@ -20,4 +20,5 @@ sklearn
 six
 statsmodels 
 toml 
-tornado 
+tornado
+torchinfo 
