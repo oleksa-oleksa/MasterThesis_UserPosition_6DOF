@@ -340,14 +340,13 @@ class RNNRunner():
             if 'LAYERS' in os.environ:
                 self.layer_dim = int(os.getenv('LAYERS'))
             if 'LR_ADAM' in os.environ:
-                self.learning_rate = int(os.getenv('LR_ADAM'))
+                self.learning_rate = float(os.getenv('LR_ADAM'))
             if 'WEIGHT_DECAY_ADAM' in os.environ:
-                self.weight_decay = int(os.getenv('WEIGHT_DECAY_ADAM'))
+                self.weight_decay = float(os.getenv('WEIGHT_DECAY_ADAM'))
             if 'LR_EPOCHS' in os.environ:
                 self.lr_epochs = int(os.getenv('LR_EPOCHS'))
             if 'LR_MULTIPLICATOR' in os.environ:
                 self.lr_multiplicator = float(os.getenv('LR_MULTIPLICATOR'))
-
 
     def create_model(self, model_name):
         # batch_first=True --> input is [batch_size, seq_len, input_size]
