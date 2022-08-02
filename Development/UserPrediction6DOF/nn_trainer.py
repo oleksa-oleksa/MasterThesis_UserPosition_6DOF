@@ -38,7 +38,7 @@ class NNTrainer:
                     x_train_batch, y_train_batch = x_train_batch.cuda(), y_train_batch.cuda()
 
                 # print(f'x_train_batch: {x_train_batch.shape}')
-                y_train_batch = torch.tensor(np.round(y_train_batch.cpu().detach().numpy(), 8))
+                y_train_batch = torch.tensor(np.round(y_train_batch.cpu().detach().numpy().cuda(), 8))
 
                 outputs_train_batch = self.model.forward(x_train_batch)  # forward pass
                 # print(f'outputs_train_batch: {outputs_train_batch.shape}, y_train_batch: {y_train_batch.shape}')
