@@ -287,16 +287,16 @@ class RNNRunner():
 
         # ---------  MODEL HYPERPARAMETERS ----------#
         self.reducing_learning_rate = True  # decreases LR every ls_epochs for 70%
-        self.learning_rate = 7e-4  # 1e-3 base Adam optimizer
-        self.lr_epochs = 25
-        self.weight_decay = 1e-11  # 1e-6 base Adam optimizer
+        self.learning_rate = 3e-4  # 1e-3 base Adam optimizer
+        self.lr_epochs = 50
+        self.weight_decay = 1e-12  # 1e-6 base Adam optimizer
 
         # self.num_past = 20  # number of past time series to predict future
         self.input_dim = len(self.features)
         self.output_dim = len(self.outputs)  # 3 position parameter + 4 rotation parameter
-        self.hidden_dim = 256  # number of features in hidden state
-        self.batch_size = 256	
-        self.n_epochs = 150
+        self.hidden_dim = 128  # number of features in hidden state
+        self.batch_size = 128	
+        self.n_epochs = 200
         self.dropout = 0
         self.layer_dim = 1  # the number of LSTM layers stacked on top of each other
         self.seq_length_input = 20  # input length of timeseries from the past
