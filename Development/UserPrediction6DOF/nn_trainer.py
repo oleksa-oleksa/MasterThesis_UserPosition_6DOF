@@ -38,7 +38,7 @@ class NNTrainer:
                     x_train_batch, y_train_batch = x_train_batch.cuda(), y_train_batch.cuda()
 
                 # print(f'x_train_batch: {x_train_batch.shape}')
-                y_train_batch = torch.tensor(np.round(y_train_batch.numpy(), 8))
+                y_train_batch = torch.tensor(np.round(y_train_batch.cpu().detach().numpy(), 8))
 
                 outputs_train_batch = self.model.forward(x_train_batch)  # forward pass
                 # print(f'outputs_train_batch: {outputs_train_batch.shape}, y_train_batch: {y_train_batch.shape}')
@@ -50,7 +50,7 @@ class NNTrainer:
 
                 self.optimizer.step()  # improve from loss, i.e backprop
 
-            bl = [loss.detach().numpy() for loss in batch_losses]
+            bl = [loss.cpu().detach().numpy() for loss in batch_losses]
             training_loss = np.mean(bl)
             self.train_losses.append(training_loss)
 
@@ -73,7 +73,7 @@ class NNTrainer:
                     y_val_hat = self.model(x_val_batch)
                     val_loss = self.criterion(y_val_batch, y_val_hat)
                     batch_val_losses.append(val_loss)
-            vl = [loss.detach().numpy() for loss in batch_val_losses]
+            vl = [loss.cpu().detach().numpy() for loss in batch_val_losses]
             validation_loss = np.mean(vl)
             self.val_losses.append(validation_loss)
 
@@ -124,18 +124,18 @@ class NNTrainer:
                 if self.cuda:
                     x_test_batch, y_test_batch = x_test_batch.cuda(), y_test_batch.cuda()
 
-                y_test_batch = torch.tensor(np.round(y_test_batch.numpy(), 8))
+                y_test_batch = torch.tensor(np.round(y_test_batch.cpu().detach().numpy(), 8))
                 y_test_hat = self.model(x_test_batch)
                 test_loss = self.criterion(y_test_hat, y_test_batch)
                 batch_test_losses.append(test_loss)
 
-                last_pred = y_test_hat[:, -1, :].detach().numpy()
-                last_targ = y_test_batch[:, -1, :].detach().numpy()
+                last_pred = y_test_hat[:, -1, :].cpu().detach().numpy()
+                last_targ = y_test_batch[:, -1, :].cpu().detach().numpy()
 
                 predictions = np.concatenate((predictions, last_pred), axis=0)
                 targets = np.concatenate((targets, last_targ))
 
-        tl = [loss.detach().numpy() for loss in batch_test_losses]
+        tl = [loss.cpu().detach().numpy() for loss in batch_test_losses]
         test_loss = np.mean(tl)
         self.test_losses.append(test_loss)
 
