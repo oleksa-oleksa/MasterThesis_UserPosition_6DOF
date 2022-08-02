@@ -21,4 +21,4 @@ six
 statsmodels 
 toml 
 tornado
-torchinfo 
+torchinfo

@@ -315,7 +315,7 @@ class RNNRunner():
 
     def prepare_paths(self):
         self.dists_path = os.path.join(self.results_path, 'distances')
-        if not os.path.exists(self.dists_path):
+        if not os.path.exists(self.dists_path) and not self.cuda:
             os.makedirs(self.dists_path, exist_ok=True)
 
         # -----  CUDA FOR CPU FOR RUNNING IN CONTAINER ----------#
