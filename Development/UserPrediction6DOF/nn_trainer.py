@@ -73,7 +73,7 @@ class NNTrainer:
 
                     self.model.eval()
 
-                    y_val_batch = (torch.tensor(np.round(y_val_batch.numpy(), 8))).cuda()
+                    y_val_batch = (torch.tensor(np.round(y_val_batch.numpy(), 8)))
                     if self.cuda:
                         y_val_batch = y_val_batch.cuda()
 
@@ -131,7 +131,7 @@ class NNTrainer:
                 if self.cuda:
                     x_test_batch, y_test_batch = x_test_batch.cuda(), y_test_batch.cuda()
 
-                y_test_batch = (torch.tensor(np.round(y_test_batch.cpu().detach().numpy(), 8))).cuda()
+                y_test_batch = (torch.tensor(np.round(y_test_batch.cpu().detach().numpy(), 8)))
                 if self.cuda:
                     y_test_batch = y_test_batch.cuda()
 
