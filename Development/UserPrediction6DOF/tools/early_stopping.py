@@ -2,7 +2,8 @@
 
 import numpy as np
 import torch
-import logging
+import os
+cuda_path = "/mnt/output"
 
 
 class EarlyStopping:
@@ -27,7 +28,13 @@ class EarlyStopping:
         self.early_stop = False
         self.val_loss_min = np.Inf
         self.delta = delta
-        self.path = path
+        self.output = './results/checkpoint'
+        self.file = path
+        self.path = None
+        if torch.cuda.is_available():
+            self.path = os.path.join(cuda_path, 'job_results/checkpoint', self.file)
+        else:
+            self.path = os.path.join(self.output, self.file)
         self.trace_func = trace_func
         self.best_loss = None
         self.last_loss = None
