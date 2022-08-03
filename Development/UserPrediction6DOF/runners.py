@@ -511,7 +511,7 @@ class RNNRunner():
         nn_train.train(train_loader, val_loader, self.n_epochs)
 
         # Plot train and validation losses
-        self.plotter.plot_losses(nn_train.train_losses, nn_train.val_losses, self.params, self.results_path)
+        # self.plotter.plot_losses(nn_train.train_losses, nn_train.val_losses, self.params, self.results_path)
 
         # PREDICTION ON TEST DATA
         logging.info('Training finished. Starting prediction on test data!')
@@ -538,7 +538,7 @@ class RNNRunner():
         # log model parameters
         utils.log_parameters(df_results, self.params)
         # log predicted values and targets
-        utils.log_predictions(predictions, self.model_name, self.params)
+        # utils.log_predictions(predictions, self.model_name, self.params)
         # log_targets(targets, self.model_name)
 
 
