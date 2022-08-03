@@ -38,9 +38,13 @@ class NNTrainer:
                     x_train_batch, y_train_batch = x_train_batch.cuda(), y_train_batch.cuda()
 
                 # print(f'x_train_batch: {x_train_batch.shape}')
-                y_train_batch = (torch.tensor(np.round(y_train_batch.cpu().detach().numpy(), 8))).cuda()
+                y_train_batch = (torch.tensor(np.round(y_train_batch.cpu().detach().numpy(), 8)))
+                if self.cuda:
+                    y_train_batch = y_train_batch.cuda()
 
                 outputs_train_batch = self.model.forward(x_train_batch)  # forward pass
+
+                logging.info(f'y_train_batch: {y_train_batch.type()}, output: {outputs_train_batch.type()}')
                 # print(f'outputs_train_batch: {outputs_train_batch.shape}, y_train_batch: {y_train_batch.shape}')
                 self.optimizer.zero_grad()  # caluclate the gradient, manually setting to 0
 
@@ -70,6 +74,8 @@ class NNTrainer:
                     self.model.eval()
 
                     y_val_batch = (torch.tensor(np.round(y_val_batch.numpy(), 8))).cuda()
+                    if self.cuda:
+                        y_val_batch = y_val_batch.cuda()
 
                     y_val_hat = self.model(x_val_batch)
                     val_loss = self.criterion(y_val_batch, y_val_hat)
@@ -126,6 +132,8 @@ class NNTrainer:
                     x_test_batch, y_test_batch = x_test_batch.cuda(), y_test_batch.cuda()
 
                 y_test_batch = (torch.tensor(np.round(y_test_batch.cpu().detach().numpy(), 8))).cuda()
+                if self.cuda:
+                    y_test_batch = y_test_batch.cuda()
 
                 y_test_hat = self.model(x_test_batch)
                 test_loss = self.criterion(y_test_hat, y_test_batch)
