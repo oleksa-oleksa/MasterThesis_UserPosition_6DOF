@@ -48,7 +48,7 @@ class EarlyStopping:
         # if loss is rising
         if val_loss > self.last_loss + self.delta:
             self.counter_increased += 1
-            self.trace_func(f'Loss increased: counter: {self.counter_increased}/{self.patience} \t     {loss:.4f} > {self.last_loss:.4f}')
+            self.trace_func(f'Loss increased: counter: {self.counter_increased}/{self.patience} \t     {val_loss:.4f} > {self.last_loss:.4f}')
             if self.counter_increased >= self.patience:
                 self.early_stop = True
         # if loss does'n not improve and remains the same
