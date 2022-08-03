@@ -60,7 +60,7 @@ class EarlyStopping:
         elif val_loss <= self.last_loss - self.step:
             # self.save_checkpoint(val_loss, model)
             if self.counter_increased > 0 or self.counter_repeated > 0:
-                self.trace_func(f'RESET counters with loss {self.best_loss:.4f}')
+                self.trace_func(f'RESET counters with loss {val_loss:.4f}')
                 self.counter_increased = 0
                 self.counter_repeated = 0
 
