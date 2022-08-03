@@ -28,7 +28,7 @@ mkdir -p "${LOCAL_JOB_DIR}/job_results/tabular"
 mkdir -p "${LOCAL_JOB_DIR}/job_results/tabular/distances"
 mkdir -p "${LOCAL_JOB_DIR}/job_results/predictions"
 mkdir -p "${LOCAL_JOB_DIR}/job_results/losses"
-mkdir -p $SLURM_SUBMIT_DIR/gpu_jobs_results_flipped_lstm1
+mkdir -p $SLURM_SUBMIT_DIR/jobs_results_flipped_lstm1
 
 # run job and bind the output dir
 # Launch the singularity image with --nv for nvidia support.
@@ -39,7 +39,7 @@ singularity run --nv  --bind ${LOCAL_JOB_DIR}:/mnt/output ./UserPrediction6DOF.s
 # Doing this after the singularity run call ensures, that the data is copied back even when your singularity run fails.
 cd $LOCAL_JOB_DIR
 tar -zcvf zz_${SLURM_JOB_ID}.tar job_results
-cp zz_${SLURM_JOB_ID}.tar $SLURM_SUBMIT_DIR/gpu_jobs_results_flipped_lstm1
+cp zz_${SLURM_JOB_ID}.tar $SLURM_SUBMIT_DIR/jobs_results_flipped_lstm1
 rm -rf ${LOCAL_JOB_DIR}/job_results
 
 

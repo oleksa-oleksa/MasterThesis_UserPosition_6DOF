@@ -34,43 +34,35 @@ class EarlyStopping:
         else:
             self.path = os.path.join(self.output, self.file)
         self.trace_func = trace_func
-        self.best_loss = None
         self.last_loss = None
         self.patience = patience
         self.patience_repeated = int(patience * 2.2)
+        self.step = 0.0001
 
     def __call__(self, val_loss, model):
-
-        loss = val_loss
-        # print(f'self.last_loss: {self.last_loss}, loss: {loss}')
-
-        if self.best_loss is None:
-            self.best_loss = val_loss
+        if self.last_loss is None:
             self.last_loss = val_loss
             # self.save_checkpoint(self.best_loss, model)
             return
 
         # if loss is rising
-        if loss > self.last_loss + self.delta:
+        if val_loss > self.last_loss + self.delta:
             self.counter_increased += 1
-            self.trace_func(f'Loss increased: counter: {self.counter_increased}/{self.patience} \t     {loss:.4f} > {self.best_loss:.4f}')
+            self.trace_func(f'Loss increased: counter: {self.counter_increased}/{self.patience} \t     {loss:.4f} > {self.last_loss:.4f}')
             if self.counter_increased >= self.patience:
                 self.early_stop = True
         # if loss does'n not improve and remains the same
-        elif loss == self.last_loss:
+        elif val_loss == self.last_loss:
             self.counter_repeated += 1
             self.trace_func(f'No change counter: {self.counter_repeated}/{self.patience_repeated}')
             if self.counter_repeated >= self.patience_repeated:
                 self.early_stop = True
-            if loss <= self.best_loss:
-                self.best_loss = loss
-        elif loss < self.last_loss:
-            self.best_loss = loss
+        elif val_loss <= self.last_loss - self.step:
             # self.save_checkpoint(val_loss, model)
             if self.counter_increased > 0 or self.counter_repeated > 0:
                 self.trace_func(f'RESET counters with loss {self.best_loss:.4f}')
-            self.counter_increased = 0
-            self.counter_repeated = 0
+                self.counter_increased = 0
+                self.counter_repeated = 0
 
         # saving current loss for the next epoch
         self.last_loss = val_loss
