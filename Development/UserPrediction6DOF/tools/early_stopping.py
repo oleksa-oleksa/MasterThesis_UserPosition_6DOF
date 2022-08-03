@@ -47,29 +47,28 @@ class EarlyStopping:
         # print(f'self.last_loss: {self.last_loss}, loss: {loss}')
 
         if self.best_loss is None:
-            self.best_loss = loss
-            self.save_checkpoint(val_loss, model)
+            self.best_loss = val_loss
+            self.last_loss = val_loss
+            # self.save_checkpoint(self.best_loss, model)
+            return
+
         # if loss is rising
-        if loss > self.best_loss + self.delta:
-            if loss > self.last_loss:
-                self.counter_increased += 1
-                self.trace_func(f'Loss increased: counter: {self.counter_increased}/{self.patience} \t     {loss:.4f} > {self.best_loss:.4f}')
-                if self.counter_increased >= self.patience:
-                    self.early_stop = True
-            elif loss < self.last_loss:
-                self.best_loss = self.last_loss
+        if loss > self.last_loss + self.delta:
+            self.counter_increased += 1
+            self.trace_func(f'Loss increased: counter: {self.counter_increased}/{self.patience} \t     {loss:.4f} > {self.best_loss:.4f}')
+            if self.counter_increased >= self.patience:
+                self.early_stop = True
         # if loss does'n not improve and remains the same
         elif loss == self.last_loss:
             self.counter_repeated += 1
-            if loss <= self.best_loss:
-                self.best_loss = loss
-            self.trace_func(
-                f'No change counter: {self.counter_repeated}/{self.patience_repeated}')
+            self.trace_func(f'No change counter: {self.counter_repeated}/{self.patience_repeated}')
             if self.counter_repeated >= self.patience_repeated:
                 self.early_stop = True
-        elif loss < self.best_loss:
+            if loss <= self.best_loss:
+                self.best_loss = loss
+        elif loss < self.last_loss:
             self.best_loss = loss
-            self.save_checkpoint(val_loss, model)
+            # self.save_checkpoint(val_loss, model)
             if self.counter_increased > 0 or self.counter_repeated > 0:
                 self.trace_func(f'RESET counters with loss {self.best_loss:.4f}')
             self.counter_increased = 0

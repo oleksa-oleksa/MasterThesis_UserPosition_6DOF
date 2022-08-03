@@ -75,7 +75,7 @@ class NNTrainer:
 
                     self.model.eval()
 
-                    y_val_batch = torch.tensor(np.round(y_val_batch.numpy(), precision))
+                    y_val_batch = torch.tensor(np.round(y_val_batch.cpu().detach().numpy(), precision))
                     if self.cuda:
                         y_val_batch = y_val_batch.cuda()
 
