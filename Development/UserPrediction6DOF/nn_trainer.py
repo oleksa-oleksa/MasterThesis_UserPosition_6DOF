@@ -38,7 +38,7 @@ class NNTrainer:
                     x_train_batch, y_train_batch = x_train_batch.cuda(), y_train_batch.cuda()
 
                 # print(f'x_train_batch: {x_train_batch.shape}')
-                y_train_batch = (torch.tensor(np.round(y_train_batch.cpu().detach().numpy(), 8)))
+                y_train_batch = torch.tensor(np.round(y_train_batch.cpu().detach().numpy(), 8))
                 if self.cuda:
                     y_train_batch = y_train_batch.cuda()
 
@@ -73,7 +73,7 @@ class NNTrainer:
 
                     self.model.eval()
 
-                    y_val_batch = torch.tensor(np.round(y_val_batch.numpy(), 8))
+                    y_val_batch = torch.tensor(np.round(y_val_batch.cpu().detach().numpy(), 8))
                     if self.cuda:
                         y_val_batch = y_val_batch.cuda()
 
