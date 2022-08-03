@@ -4,6 +4,8 @@ import logging
 import time
 from UserPrediction6DOF.tools import EarlyStopping
 
+precision = 8
+
 
 class NNTrainer:
     def __init__(self, model, criterion, optimizer, params):
@@ -38,7 +40,7 @@ class NNTrainer:
                     x_train_batch, y_train_batch = x_train_batch.cuda(), y_train_batch.cuda()
 
                 # print(f'x_train_batch: {x_train_batch.shape}')
-                y_train_batch = torch.tensor(np.round(y_train_batch.cpu().detach().numpy(), 8))
+                y_train_batch = (torch.tensor(np.round(y_train_batch.cpu().detach().numpy(), precision)))
                 if self.cuda:
                     y_train_batch = y_train_batch.cuda()
 
@@ -73,7 +75,7 @@ class NNTrainer:
 
                     self.model.eval()
 
-                    y_val_batch = torch.tensor(np.round(y_val_batch.cpu().detach().numpy(), 8))
+                    y_val_batch = torch.tensor(np.round(y_val_batch.numpy(), precision))
                     if self.cuda:
                         y_val_batch = y_val_batch.cuda()
 
@@ -132,7 +134,7 @@ class NNTrainer:
                 if self.cuda:
                     x_test_batch, y_test_batch = x_test_batch.cuda(), y_test_batch.cuda()
 
-                y_test_batch = torch.tensor(np.round(y_test_batch.cpu().detach().numpy(), 8))
+                y_test_batch = torch.tensor(np.round(y_test_batch.cpu().detach().numpy(), precision))
                 if self.cuda:
                     y_test_batch = y_test_batch.cuda()
 
