@@ -288,7 +288,7 @@ class RNNRunner():
         # ---------  MODEL HYPERPARAMETERS ----------#
         self.reducing_learning_rate = True  # decreases LR every ls_epochs for 70%
         self.learning_rate = 3e-4  # 1e-3 base Adam optimizer
-        self.lr_epochs = 40
+        self.lr_epochs = 50
         self.lr_multiplicator = 0.3
         self.weight_decay = 1e-12  # 1e-6 base Adam optimizer
 
