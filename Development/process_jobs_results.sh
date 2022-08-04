@@ -1,7 +1,7 @@
 #!/bin/bash
 process_dir=$1
 echo $process_dir
-echo "MAE_pos,MAE_rot,RMSE_pos,RMSE_rot,LAT,hidden_dim,epochs,batch_size,dropout,layers" > results/$process_dir.csv
+echo "MAE_pos,MAE_rot,RMSE_pos,RMSE_rot,LAT,hidden_dim,epochs,batch_size,dropout,layers,model,seq_length_input,lr,lr_reducing,weight_decay,lr_epochs,patience,delta,lr_multiplicator" > results/$process_dir.csv
 
 for file in "$process_dir"/*
 do
