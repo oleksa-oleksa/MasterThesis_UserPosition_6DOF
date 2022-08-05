@@ -338,11 +338,11 @@ def log_parameters(df_results, params):
 def log_predictions(predictions, name, params=None):
     result_path = ""
     if torch.cuda.is_available():
-        result_path = "/mnt/output/job_results/predictions"
+        result_path = "/mnt/output/job_results"
     if not torch.cuda.is_available():
         result_path = os.path.join(os.getcwd(), 'results/predictions')
 
-    dest = os.path.join(result_path, name)
+    dest = os.path.join(result_path, 'predictions', name)
     if not os.path.exists(dest):
         os.makedirs(dest)
 
