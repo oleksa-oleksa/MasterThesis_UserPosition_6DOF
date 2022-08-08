@@ -92,16 +92,17 @@ class BaselineRunner():
                 
                 # Read trace from CSV file
                 df_trace = pd.read_csv(trace_path)
-                zs = df_trace[self.coords].to_numpy()
+                data = df_trace[self.coords].to_numpy()
                 
                 pred_step = int(w / self.dt)
-                zs_shifted = zs[pred_step:, :]   # Assumption: LAT = E2E latency
+                targets = data[pred_step:, :]   # Assumption: LAT = E2E latency
+                preditions = data[:-pred_step, :]
 
                 # create csv-file that can be to be used for plotting
-                # log_predictions(zs_shifted[:, :7], 'baseline')
+                # utils.log_predictions(preditions[:, :7], 'baseline')
                 
                 # Compute evaluation metrics
-                eval = Evaluator(zs, zs_shifted, pred_step)
+                eval = Evaluator(targets, preditions, pred_step)
                 eval.eval_baseline()
                 metrics = np.array(list(eval.metrics.values()))
                 result_one_experiment = list(np.hstack((basename, w, metrics)))

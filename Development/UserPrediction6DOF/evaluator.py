@@ -89,6 +89,7 @@ class Evaluator():
         self.compute_metrics(zs_pos, zs_rot, preds_pos, preds_rot)
 
     def eval_baseline(self):
+        """
         zs_pos = self.zs[:-self.pred_step, :3]
         zs_rot = self.zs[:-self.pred_step:, 3:]
         zs_rot = np.array([Quaternion(q) for q in zs_rot])
@@ -98,6 +99,19 @@ class Evaluator():
         zs_shifted_rot = np.array([Quaternion(q) for q in zs_shifted_rot])
     
         self.compute_metrics(zs_pos, zs_rot, zs_shifted_pos, zs_shifted_rot)
+        """
+
+        # values, values_lagged
+
+        values_pos = self.zs[:, :3]
+        values_rot = self.zs[:, 3:]
+        values_rot = np.array([Quaternion(q) for q in values_rot])
+
+        values_lagged_pos = self.preds[:, :3]
+        values_lagged_rot = self.preds[:, 3:]
+        values_lagged_rot = np.array([Quaternion(q) for q in values_lagged_rot])
+
+        self.compute_metrics(values_pos, values_rot, values_lagged_pos, values_lagged_rot)
 
 
 class DeepLearnEvaluator():

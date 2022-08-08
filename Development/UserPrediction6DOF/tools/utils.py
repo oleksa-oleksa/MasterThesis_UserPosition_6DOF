@@ -340,7 +340,7 @@ def log_predictions(predictions, name, params=None):
     if torch.cuda.is_available():
         result_path = "/mnt/output/job_results"
     if not torch.cuda.is_available():
-        result_path = os.path.join(os.getcwd(), 'results/predictions')
+        result_path = os.path.join(os.getcwd(), 'results/')
 
     dest = os.path.join(result_path, 'predictions', name)
     if not os.path.exists(dest):
