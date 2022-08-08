@@ -4,7 +4,7 @@ import logging
 import time
 from UserPrediction6DOF.tools import EarlyStopping
 
-precision = 8
+precision = 4
 
 
 class NNTrainer:
