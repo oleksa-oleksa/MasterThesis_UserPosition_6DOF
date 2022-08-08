@@ -469,7 +469,7 @@ class Application:
             '--model',
             dest='model',
             type=str,
-            choices=['lstm', 'gru', 'lstm-fcn', 'lstm-custom', 'lstm2', 'lstm1', 'lstm3', 'lstm4'],
+            choices=['lstm-fcn', 'lstm1', 'lstm2', 'lstm3', 'lstm4', 'gru1',],
             default='lstm',
             help='Selects RNN variant'
         )

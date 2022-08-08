@@ -1,0 +1,2 @@
+MAE_pos,MAE_rot,RMSE_pos,RMSE_rot,LAT,hidden_dim,epochs,batch_size,dropout,layers,model,seq_length_input,lr,lr_reducing,weight_decay,lr_epochs,patience,delta,lr_multiplicator
+0.015072847343884978,2.231233938134922,0.01939247932642993,9.821103453679088,0.1,512,500,128,0.0,1,lstm1,20,0.0001,True,1e-12,30,7,0.005,0.5

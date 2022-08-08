@@ -47,7 +47,7 @@ import torch.nn as nn
 import torch.optim as optim
 from filterpy.common import Q_discrete_white_noise
 from filterpy.kalman import KalmanFilter
-from UserPrediction6DOF.models.lstm import LSTMModel1, LSTMModelCustom, LSTMModel2, LSTMModel3, LSTMModel4
+from UserPrediction6DOF.models.lstm import LSTMModel1, LSTMModel2, LSTMModel3, LSTMModel4
 from UserPrediction6DOF.models.gru import GRUModel1
 from UserPrediction6DOF.models.lstm_fcn import LSTMFCNModel
 from .optimization import RNNOptimization
@@ -351,10 +351,7 @@ class RNNRunner():
     def create_model(self, model_name):
         # batch_first=True --> input is [batch_size, seq_len, input_size]
         # SELECTS MODEL
-        if model_name == "lstm-custom":
-            self.model = LSTMModelCustom(self.input_dim, self.hidden_dim,
-                                         self.output_dim, self.dropout, self.layer_dim)
-        elif model_name == "lstm1":
+        if model_name == "lstm1":
             self.model = LSTMModel1(self.input_dim, self.hidden_dim,
                                     self.output_dim, self.dropout, self.layer_dim)
         elif model_name == "lstm2":
