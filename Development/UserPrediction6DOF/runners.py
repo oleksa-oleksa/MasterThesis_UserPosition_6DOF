@@ -65,156 +65,6 @@ job_id = os.path.basename(os.path.normpath(cuda_path))
 np.set_printoptions(precision=6, suppress=True, linewidth=np.inf)
 
 
-class BaselineRunner:
-    """Runs the baseline no-prediction case over all traces"""
-    def __init__(self, pred_window, dataset_path, results_path):
-        self.cfg = toml.load(config_path)
-        self.dt = self.cfg['dt']
-        self.pred_window = pred_window * 1e-3   # convert to seconds
-        self.dataset_path = dataset_path
-        self.results_path = results_path
-        self.coords = self.cfg['pos_coords'] + self.cfg['quat_coords']
-        
-    def run(self):
-        logging.info("Baseline (no-prediction)")
-        results = []
-        
-        for trace_path in utils.get_csv_files(self.dataset_path):
-            basename = os.path.splitext(os.path.basename(trace_path))[0]
-            logging.info("-------------------------------------------------------------------------")
-            logging.info("Trace path: %s", trace_path)
-            logging.info("-------------------------------------------------------------------------")
-            for w in self.pred_window:
-                logging.info("Prediction window = %s ms", w * 1e3)
-                
-                # Read trace from CSV file
-                df_trace = pd.read_csv(trace_path)
-                data = df_trace[self.coords].to_numpy()
-                
-                pred_step = int(w / self.dt)
-                targets = data[pred_step:, :]   # Assumption: LAT = E2E latency
-                preditions = data[:-pred_step, :]
-
-                # create csv-file that can be to be used for plotting
-                # utils.log_predictions(preditions[:, :7], 'baseline')
-                
-                # Compute evaluation metrics
-                eval = Evaluator(targets, preditions, pred_step)
-                eval.eval_baseline()
-                metrics = np.array(list(eval.metrics.values()))
-                result_one_experiment = list(np.hstack((basename, w, metrics)))
-                results.append(result_one_experiment)
-                logging.info("--------------------------------------------------------------")
-        
-        df_results = pd.DataFrame(results, columns=['Trace', 'LAT', 'mae_euc', 'mae_ang',
-                                                    'rmse_euc', 'rmse_ang'])
-        df_results.to_csv(os.path.join(self.results_path, 'res_baseline.csv'), index=False)
-        
-        
-class KalmanRunner:
-    """Runs the Kalman predictor over all traces"""
-    def __init__(self, pred_window, dataset_path, results_path):
-        self.cfg = toml.load(config_path)
-        self.dt = self.cfg['dt']
-        self.pred_window = pred_window * 1e-3   # convert to seconds
-        self.dataset_path = dataset_path
-        self.results_path = results_path
-        self.coords = self.cfg['pos_coords'] + self.cfg['quat_coords']
-        self.kf = KalmanFilter(dim_x = self.cfg['dim_x'], dim_z = self.cfg['dim_z'])
-        setattr(self.kf, 'x_pred', self.kf.x)
-
-        # First-order motion model: insert dt into the diagonal blocks of F
-        f = np.array([[1.0, self.dt], [0.0, 1.0]])
-        self.kf.F = block_diag(f, f, f, f, f, f, f)
-
-        # Inserts 1 into the blocks of H to select the measuremetns
-        np.put(self.kf.H, np.arange(0, self.kf.H.size, self.kf.dim_x + 2), 1.0)
-        self.kf.R *= self.cfg['var_R']
-        Q_pos = Q_discrete_white_noise(dim=2, dt=self.dt, var=self.cfg['var_Q_pos'], block_size=3)
-        Q_ang = Q_discrete_white_noise(dim=2, dt=self.dt, var=self.cfg['var_Q_ang'], block_size=4)
-        self.kf.Q = block_diag(Q_pos, Q_ang)
-
-    def reset(self):
-        logging.debug("Reset Kalman filter")
-        self.kf.x = np.zeros((self.cfg['dim_x'], 1))
-        self.kf.P = np.eye(self.cfg['dim_x'])
-
-    def lookahead(self):
-        self.kf.x_pred = np.dot(self.kf.F_lookahead, self.kf.x)
-
-    def run_single(self, trace_path, w):
-        # Adjust F depending on the lookahead time
-        f_l = np.array([[1.0, w], [0.0, 1.0]])
-        setattr(self.kf, 'F_lookahead', block_diag(f_l, f_l, f_l, f_l, f_l, f_l, f_l))
-
-        # Read trace from CSV file
-        df_trace = pd.read_csv(trace_path)
-        xs, covs, x_preds = [], [], []
-        zs = df_trace[self.coords].to_numpy()
-        z_prev = np.zeros(7)
-        for z in zs:
-            sign_array = -np.sign(z_prev[3:]) * np.sign(z[3:])
-            sign_flipped = all(e == 1 for e in sign_array)
-            if sign_flipped:
-                logging.debug("A sign flip occurred.")
-                self.reset()
-            self.kf.predict()
-            self.kf.update(z)
-            self.lookahead()
-            xs.append(self.kf.x)
-            covs.append(self.kf.P)
-            x_preds.append(self.kf.x_pred)
-            z_prev = z
-        
-        # Compute evaluation metrics
-        xs = np.array(xs).squeeze()
-        covs = np.array(covs).squeeze()
-        x_preds = np.array(x_preds).squeeze()
-        # print(x_preds[:, ::2])
-        # print(x_preds.shape)
-        # create csv-file that can be to be used for plotting
-        # utils.log_predictions(x_preds[:, ::2], 'kalman')
-        pred_step = int(w / self.dt)
-        eval = Evaluator(zs, x_preds[:, ::2], pred_step)
-        eval.eval_kalman()
-        metrics = np.array(list(eval.metrics.values()))
-        euc_dists = eval.euc_dists
-        ang_dists = np.rad2deg(eval.ang_dists)
-        
-        return metrics, euc_dists, ang_dists
-    
-    def run(self):
-        logging.info("Kalman filter")
-        results = []
-        
-        dists_path = os.path.join(self.results_path, 'distances')
-        if not os.path.exists(dists_path):
-            os.makedirs(dists_path, exist_ok=True)
-        
-        for trace_path in utils.get_csv_files(self.dataset_path):
-            basename = os.path.splitext(os.path.basename(trace_path))[0]
-            print("-------------------------------------------------------------------------")
-            logging.info("Trace path: %s", trace_path)
-            print("-------------------------------------------------------------------------")
-            for w in self.pred_window:
-                logging.info("Prediction window = %s ms", w * 1e3)
-                self.reset()
-
-                metrics, euc_dists, ang_dists = self.run_single(trace_path, w)
-                np.save(os.path.join(dists_path, 
-                                        'euc_dists_{}_{}ms.npy'.format(basename, int(w*1e3))), euc_dists)
-                np.save(os.path.join(dists_path, 
-                                        'ang_dists_{}_{}ms.npy'.format(basename, int(w*1e3))), ang_dists)
-                result_single = list(np.hstack((basename, w, metrics)))
-                results.append(result_single)
-                print("--------------------------------------------------------------")
-
-        # Save metrics
-        df_results = pd.DataFrame(results, columns=['Trace', 'LAT', 'mae_euc', 'mae_ang',
-                                                    'rmse_euc', 'rmse_ang'])
-        df_results.to_csv(os.path.join(self.results_path, 'res_kalman.csv'), index=False)
-
-
 class RNNRunner:
     """Runs the RNN predictor with specified model (LSTM, GRU...)
 
@@ -292,7 +142,7 @@ class RNNRunner:
         self.input_dim = len(self.features)
         self.output_dim = len(self.outputs)  # 3 position parameter + 4 rotation parameter
         self.hidden_dim = 512  # number of features in hidden state
-        self.batch_size = 128	
+        self.batch_size = 128
         self.n_epochs = 500
         self.dropout = 0
         self.layer_dim = 1  # the number of LSTM layers stacked on top of each other
@@ -538,4 +388,157 @@ class RNNRunner:
         # log predicted values and targets
         utils.log_predictions(predictions, self.model_name, self.params, pred_dic)
         # log_targets(targets, self.model_name)
+
+
+class BaselineRunner:
+    """Runs the baseline no-prediction case over all traces"""
+    def __init__(self, pred_window, dataset_path, results_path):
+        self.cfg = toml.load(config_path)
+        self.dt = self.cfg['dt']
+        self.pred_window = pred_window * 1e-3   # convert to seconds
+        self.dataset_path = dataset_path
+        self.results_path = results_path
+        self.coords = self.cfg['pos_coords'] + self.cfg['quat_coords']
+        
+    def run(self):
+        logging.info("Baseline (no-prediction)")
+        results = []
+        
+        for trace_path in utils.get_csv_files(self.dataset_path):
+            basename = os.path.splitext(os.path.basename(trace_path))[0]
+            logging.info("-------------------------------------------------------------------------")
+            logging.info("Trace path: %s", trace_path)
+            logging.info("-------------------------------------------------------------------------")
+            for w in self.pred_window:
+                logging.info("Prediction window = %s ms", w * 1e3)
+                
+                # Read trace from CSV file
+                df_trace = pd.read_csv(trace_path)
+                data = df_trace[self.coords].to_numpy()
+                
+                pred_step = int(w / self.dt)
+                targets = data[pred_step:, :]   # Assumption: LAT = E2E latency
+                preditions = data[:-pred_step, :]
+
+                # create csv-file that can be to be used for plotting
+                # utils.log_predictions(preditions[:, :7], 'baseline')
+                
+                # Compute evaluation metrics
+                eval = Evaluator(targets, preditions, pred_step)
+                eval.eval_baseline()
+                metrics = np.array(list(eval.metrics.values()))
+                result_one_experiment = list(np.hstack((basename, w, metrics)))
+                results.append(result_one_experiment)
+                logging.info("--------------------------------------------------------------")
+        
+        df_results = pd.DataFrame(results, columns=['Trace', 'LAT', 'mae_euc', 'mae_ang',
+                                                    'rmse_euc', 'rmse_ang'])
+        df_results.to_csv(os.path.join(self.results_path, 'res_baseline.csv'), index=False)
+        
+        
+class KalmanRunner:
+    """Runs the Kalman predictor over all traces"""
+    def __init__(self, pred_window, dataset_path, results_path):
+        self.cfg = toml.load(config_path)
+        self.dt = self.cfg['dt']
+        self.pred_window = pred_window * 1e-3   # convert to seconds
+        self.dataset_path = dataset_path
+        self.results_path = results_path
+        self.coords = self.cfg['pos_coords'] + self.cfg['quat_coords']
+        self.kf = KalmanFilter(dim_x = self.cfg['dim_x'], dim_z = self.cfg['dim_z'])
+        setattr(self.kf, 'x_pred', self.kf.x)
+
+        # First-order motion model: insert dt into the diagonal blocks of F
+        f = np.array([[1.0, self.dt], [0.0, 1.0]])
+        self.kf.F = block_diag(f, f, f, f, f, f, f)
+
+        # Inserts 1 into the blocks of H to select the measuremetns
+        np.put(self.kf.H, np.arange(0, self.kf.H.size, self.kf.dim_x + 2), 1.0)
+        self.kf.R *= self.cfg['var_R']
+        Q_pos = Q_discrete_white_noise(dim=2, dt=self.dt, var=self.cfg['var_Q_pos'], block_size=3)
+        Q_ang = Q_discrete_white_noise(dim=2, dt=self.dt, var=self.cfg['var_Q_ang'], block_size=4)
+        self.kf.Q = block_diag(Q_pos, Q_ang)
+
+    def reset(self):
+        logging.debug("Reset Kalman filter")
+        self.kf.x = np.zeros((self.cfg['dim_x'], 1))
+        self.kf.P = np.eye(self.cfg['dim_x'])
+
+    def lookahead(self):
+        self.kf.x_pred = np.dot(self.kf.F_lookahead, self.kf.x)
+
+    def run_single(self, trace_path, w):
+        # Adjust F depending on the lookahead time
+        f_l = np.array([[1.0, w], [0.0, 1.0]])
+        setattr(self.kf, 'F_lookahead', block_diag(f_l, f_l, f_l, f_l, f_l, f_l, f_l))
+
+        # Read trace from CSV file
+        df_trace = pd.read_csv(trace_path)
+        xs, covs, x_preds = [], [], []
+        zs = df_trace[self.coords].to_numpy()
+        z_prev = np.zeros(7)
+        for z in zs:
+            sign_array = -np.sign(z_prev[3:]) * np.sign(z[3:])
+            sign_flipped = all(e == 1 for e in sign_array)
+            if sign_flipped:
+                logging.debug("A sign flip occurred.")
+                self.reset()
+            self.kf.predict()
+            self.kf.update(z)
+            self.lookahead()
+            xs.append(self.kf.x)
+            covs.append(self.kf.P)
+            x_preds.append(self.kf.x_pred)
+            z_prev = z
+        
+        # Compute evaluation metrics
+        xs = np.array(xs).squeeze()
+        covs = np.array(covs).squeeze()
+        x_preds = np.array(x_preds).squeeze()
+        # print(x_preds[:, ::2])
+        # print(x_preds.shape)
+        # create csv-file that can be to be used for plotting
+        # utils.log_predictions(x_preds[:, ::2], 'kalman')
+        pred_step = int(w / self.dt)
+        eval = Evaluator(zs, x_preds[:, ::2], pred_step)
+        eval.eval_kalman()
+        metrics = np.array(list(eval.metrics.values()))
+        euc_dists = eval.euc_dists
+        ang_dists = np.rad2deg(eval.ang_dists)
+        
+        return metrics, euc_dists, ang_dists
+    
+    def run(self):
+        logging.info("Kalman filter")
+        results = []
+        
+        dists_path = os.path.join(self.results_path, 'distances')
+        if not os.path.exists(dists_path):
+            os.makedirs(dists_path, exist_ok=True)
+        
+        for trace_path in utils.get_csv_files(self.dataset_path):
+            basename = os.path.splitext(os.path.basename(trace_path))[0]
+            print("-------------------------------------------------------------------------")
+            logging.info("Trace path: %s", trace_path)
+            print("-------------------------------------------------------------------------")
+            for w in self.pred_window:
+                logging.info("Prediction window = %s ms", w * 1e3)
+                self.reset()
+
+                metrics, euc_dists, ang_dists = self.run_single(trace_path, w)
+                np.save(os.path.join(dists_path, 
+                                        'euc_dists_{}_{}ms.npy'.format(basename, int(w*1e3))), euc_dists)
+                np.save(os.path.join(dists_path, 
+                                        'ang_dists_{}_{}ms.npy'.format(basename, int(w*1e3))), ang_dists)
+                result_single = list(np.hstack((basename, w, metrics)))
+                results.append(result_single)
+                print("--------------------------------------------------------------")
+
+        # Save metrics
+        df_results = pd.DataFrame(results, columns=['Trace', 'LAT', 'mae_euc', 'mae_ang',
+                                                    'rmse_euc', 'rmse_ang'])
+        df_results.to_csv(os.path.join(self.results_path, 'res_kalman.csv'), index=False)
+
+
+
 
