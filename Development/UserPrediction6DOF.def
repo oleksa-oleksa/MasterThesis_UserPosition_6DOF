@@ -8,7 +8,6 @@ From: pytorch/pytorch:1.9.1-cuda11.1-cudnn8-runtime
     ./data/flipped /opt/data/flipped
     ./results /opt/results
     requirements.txt /opt
-    config.toml /opt
 
 %post
     # Python lives in a Anaconda environment in the container, so the PATH must be adjusted before conda can be called
