@@ -51,7 +51,7 @@ from matplotlib.ticker import MultipleLocator, FormatStrFormatter
 from scipy.signal import savgol_filter
 from UserPrediction6DOF.tools import utils
 
-style_path = os.path.join(os.getcwd(), 'UserPrediction6DOF/style.json')
+style_path = os.path.join(os.getcwd(), 'UserPrediction6DOF/tools/style.json')
 style = json.load(open(style_path))
 
 # Fixes type 1 fonts issue

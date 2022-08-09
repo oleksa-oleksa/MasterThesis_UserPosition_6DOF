@@ -296,7 +296,7 @@ class RNNRunner():
         self.output_dim = len(self.outputs)  # 3 position parameter + 4 rotation parameter
         self.hidden_dim = 512  # number of features in hidden state
         self.batch_size = 128	
-        self.n_epochs = 500
+        self.n_epochs = 1
         self.dropout = 0
         self.layer_dim = 1  # the number of LSTM layers stacked on top of each other
         self.seq_length_input = 20  # input length of timeseries from the past
@@ -507,7 +507,7 @@ class RNNRunner():
         nn_train.train(train_loader, val_loader, self.n_epochs)
 
         # Plot train and validation losses
-        # self.plotter.plot_losses(nn_train.train_losses, nn_train.val_losses, self.params, self.results_path)
+        self.plotter.plot_losses(nn_train.train_losses, nn_train.val_losses, self.params, self.results_path)
 
         # PREDICTION ON TEST DATA
         logging.info('Training finished. Starting prediction on test data!')
