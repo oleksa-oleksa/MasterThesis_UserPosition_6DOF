@@ -50,13 +50,13 @@ from .reporter import Reporter
 from UserPrediction6DOF.tools import utils
 from .plotter import DataPlotter
 
+config_path = "UserPrediction6DOF/tools/config.toml"
 
 class Application:
     """Command line interface for the pred6dof application"""
 
     def __init__(self):
         """Initializes a new application instance"""
-        config_path = os.path.join(os.getcwd(), 'config.toml')
         self.cfg = toml.load(config_path)
 
         self.command = None

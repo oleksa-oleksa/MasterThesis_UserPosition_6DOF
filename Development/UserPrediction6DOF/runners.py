@@ -61,6 +61,7 @@ from .plotter import DataPlotter
 from torchinfo import summary
 
 cuda_path = "/mnt/output"
+config_path = "UserPrediction6DOF/tools/config.toml"
 job_id = os.path.basename(os.path.normpath(cuda_path))
 
 # For more readable printing
@@ -70,7 +71,6 @@ np.set_printoptions(precision=6, suppress=True, linewidth=np.inf)
 class BaselineRunner():
     """Runs the baseline no-prediction case over all traces"""
     def __init__(self, pred_window, dataset_path, results_path):
-        config_path = os.path.join(os.getcwd(), 'config.toml')
         self.cfg = toml.load(config_path)
         self.dt = self.cfg['dt']
         self.pred_window = pred_window * 1e-3   # convert to seconds
@@ -117,7 +117,6 @@ class BaselineRunner():
 class KalmanRunner():
     """Runs the Kalman predictor over all traces"""
     def __init__(self, pred_window, dataset_path, results_path):
-        config_path = os.path.join(os.getcwd(), 'config.toml')
         self.cfg = toml.load(config_path)
         self.dt = self.cfg['dt']
         self.pred_window = pred_window * 1e-3   # convert to seconds
@@ -177,7 +176,7 @@ class KalmanRunner():
         # print(x_preds[:, ::2])
         # print(x_preds.shape)
         # create csv-file that can be to be used for plotting
-        # log_predictions(x_preds[:, ::2], 'kalman')
+        # utils.log_predictions(x_preds[:, ::2], 'kalman')
         pred_step = int(w / self.dt)
         eval = Evaluator(zs, x_preds[:, ::2], pred_step)
         eval.eval_kalman()
@@ -253,7 +252,6 @@ class RNNRunner():
 
     def __init__(self, model_name, pred_window, dataset_path, results_path):
         # -----  PRESET ----------#
-        config_path = os.path.join(os.getcwd(), 'config.toml')
         self.cuda = torch.cuda.is_available()
         self.cfg = toml.load(config_path)
         self.dt = self.cfg['dt']
