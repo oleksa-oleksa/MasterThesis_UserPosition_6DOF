@@ -335,7 +335,7 @@ def log_parameters(df_results, params):
     logging.info(f"Saved model parameters to file: {csv_file}")
 
 
-def log_predictions(predictions, name, params=None):
+def log_predictions(predictions, name, params=None, res=None):
     result_path = ""
     if torch.cuda.is_available():
         result_path = "/mnt/output/job_results"
@@ -346,11 +346,15 @@ def log_predictions(predictions, name, params=None):
     if not os.path.exists(dest):
         os.makedirs(dest)
 
-    if params is None:
+    if params is None or res is None:
         csv_file = f"{name}_predictions.csv"
 
     else:
-        csv_file = f"hid{params['hidden_dim']}_epochs{params['epochs']}_batch{params['batch_size']}_{datetime.now().strftime('%d.%m_%H%M%S')}.csv"
+        metric = list(res.keys())
+        csv_file = f"{metric[0]}_{res.get(metric[0]):.4f}_hid{params['hidden_dim']}_batch{params['batch_size']}" \
+                   f"_epochs{params['epochs']}_LR{params['lr']}_every{params['lr_epochs']}_epochs_" \
+                   f"with_WD{params['weight_decay']}_" \
+                   f"for_LAT{int(params['LAT']*1e3)}_{datetime.now().strftime('%d.%m_%H%M%S')}.csv"
 
     log_path = os.path.join(dest, csv_file)
 

@@ -22,3 +22,4 @@ statsmodels
 toml 
 tornado
 torchinfo
+pdflatex

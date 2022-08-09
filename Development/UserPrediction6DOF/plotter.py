@@ -339,7 +339,7 @@ class DataPlotter():
             logging.info("Plotting trace {} and saving to file {}".format(trace_path, dest))
 
     @staticmethod
-    def plot_losses(train_losses, val_losses, params, results_path):
+    def plot_losses(train_losses, val_losses, params, res, results_path):
         plt.plot(train_losses, label="Training loss")
         plt.plot(val_losses, label="Validation loss")
         plt.legend()
@@ -355,10 +355,9 @@ class DataPlotter():
         out = os.path.join(head, 'losses')
         if not os.path.exists(out):
             os.makedirs(out)
-        dest = os.path.join(out, f"Fig-LAT{int(params['LAT']*1e3)}_"
-                            f"hid{params['hidden_dim']}_epochs{params['epochs']}_"
-                            f"batch{params['batch_size']}_drop{params['dropout']}_"
-                            f"layers{params['layers']}.pdf")
+        dest = os.path.join(out, f"MAE{res:.4f}_hid{params['hidden_dim']}_batch{params['batch_size']}"
+                                 f"_epochs{params['epochs']}_LR{params['lr']}_every{params['lr_epochs']}_epochs_"
+                                 f"with_WD{params['weight_decay']}_for_LAT{int(params['LAT']*1e3)}.pdf")
         plt.savefig(dest)
         logging.info(f"Saved to file {dest}")
 
