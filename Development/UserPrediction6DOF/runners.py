@@ -291,9 +291,9 @@ class RNNRunner:
         # self.num_past = 20  # number of past time series to predict future
         self.input_dim = len(self.features)
         self.output_dim = len(self.outputs)  # 3 position parameter + 4 rotation parameter
-        self.hidden_dim = 1  # number of features in hidden state
+        self.hidden_dim = 512  # number of features in hidden state
         self.batch_size = 128	
-        self.n_epochs = 3
+        self.n_epochs = 500
         self.dropout = 0
         self.layer_dim = 1  # the number of LSTM layers stacked on top of each other
         self.seq_length_input = 20  # input length of timeseries from the past
