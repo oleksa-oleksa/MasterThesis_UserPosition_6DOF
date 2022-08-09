@@ -364,6 +364,36 @@ def log_predictions(predictions, name, params=None, res=None):
     logging.info(f"Saved prediction to file: {log_path}")
 
 
+def log_losses(train_losses, val_losses, name, params=None, res=None):
+    result_path = ""
+    if torch.cuda.is_available():
+        result_path = "/mnt/output/job_results"
+    if not torch.cuda.is_available():
+        result_path = os.path.join(os.getcwd(), 'results/')
+
+    dest = os.path.join(result_path, 'losses', name)
+    if not os.path.exists(dest):
+        os.makedirs(dest)
+
+    metric = list(res.keys())
+    csv_file = f"{metric[0]}_{res.get(metric[0]):.4f}_hid{params['hidden_dim']}_batch{params['batch_size']}" \
+               f"_epochs{params['epochs']}_LR{params['lr']}_every{params['lr_epochs']}_epochs_" \
+               f"with_WD{params['weight_decay']}_" \
+                   f"for_LAT{int(params['LAT']*1e3)}_{datetime.now().strftime('%d.%m_%H%M%S')}.csv"
+
+    log_path = os.path.join(dest, csv_file)
+
+    data_tuples = list(zip(train_losses, val_losses))
+    df = pd.DataFrame(data_tuples, columns=['Train_loss', 'Val_loss'])
+
+    df.to_csv(log_path, index=False)
+    #
+    # with open(log_path, "w+") as my_csv:
+    #     csv_writer = csv.writer(my_csv, delimiter=',')
+    #     csv_writer.writerows(predictions)
+    logging.info(f"Saved prediction to file: {log_path}")
+
+
 def log_targets(targets, name):
     result_path = ""
     if torch.cuda.is_available():

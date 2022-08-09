@@ -50,12 +50,9 @@ from filterpy.kalman import KalmanFilter
 from UserPrediction6DOF.models.lstm import LSTMModel1, LSTMModel2, LSTMModel3, LSTMModel4
 from UserPrediction6DOF.models.gru import GRUModel1
 from UserPrediction6DOF.models.lstm_fcn import LSTMFCNModel
-from .optimization import RNNOptimization
 from .nn_trainer import NNTrainer
 from scipy.linalg import block_diag
 from .evaluator import Evaluator, DeepLearnEvaluator
-from sklearn.preprocessing import minmax_scale
-from sklearn.preprocessing import MinMaxScaler
 from UserPrediction6DOF.tools import dataset_tools, utils
 from .plotter import DataPlotter
 from torchinfo import summary
@@ -294,9 +291,9 @@ class RNNRunner:
         # self.num_past = 20  # number of past time series to predict future
         self.input_dim = len(self.features)
         self.output_dim = len(self.outputs)  # 3 position parameter + 4 rotation parameter
-        self.hidden_dim = 512  # number of features in hidden state
+        self.hidden_dim = 1  # number of features in hidden state
         self.batch_size = 128	
-        self.n_epochs = 500
+        self.n_epochs = 3
         self.dropout = 0
         self.layer_dim = 1  # the number of LSTM layers stacked on top of each other
         self.seq_length_input = 20  # input length of timeseries from the past
@@ -528,14 +525,17 @@ class RNNRunner:
                                    'rmse_euc': deep_eval.metrics['rmse_euc'], 'rmse_ang': deep_eval.metrics['rmse_ang']})
         df_results.to_csv(os.path.join(self.results_path, 'res_lstm.csv'), index=False)
 
-        # Plot train and validation losses
-        self.plotter.plot_losses(nn_train.train_losses, nn_train.val_losses, self.params,
-                                 deep_eval.metrics['mae_euc'], self.results_path)
+        # LOGGING AND PLOTTING
+        pred_dic = {'MAE_pos': deep_eval.metrics['mae_euc']}
 
+        # Plot train and validation losses
+        # self.plotter.plot_losses(nn_train.train_losses, nn_train.val_losses, self.params, pred_dic, self.results_path)
+
+        # log train/val losses as csv-files
+        utils.log_losses(nn_train.train_losses, nn_train.val_losses, self.model_name, self.params, pred_dic)
         # log model parameters
         utils.log_parameters(df_results, self.params)
         # log predicted values and targets
-        pred_dic = {'MAE_pos': deep_eval.metrics['mae_euc']}
         utils.log_predictions(predictions, self.model_name, self.params, pred_dic)
         # log_targets(targets, self.model_name)
 

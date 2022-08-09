@@ -349,13 +349,13 @@ class DataPlotter():
                   f"layers: {params['layers']}")
         plt.xlabel("Epochs")
         plt.ylabel("Losses")
-        #plt.show()
 
         head, _ = os.path.split(results_path)
         out = os.path.join(head, 'losses')
         if not os.path.exists(out):
             os.makedirs(out)
-        dest = os.path.join(out, f"MAE{res:.4f}_hid{params['hidden_dim']}_batch{params['batch_size']}"
+        metric = list(res.keys())
+        dest = os.path.join(out, f"{metric[0]}_{res.get(metric[0]):.4f}_hid{params['hidden_dim']}_batch{params['batch_size']}"
                                  f"_epochs{params['epochs']}_LR{params['lr']}_every{params['lr_epochs']}_epochs_"
                                  f"with_WD{params['weight_decay']}_for_LAT{int(params['LAT']*1e3)}.pdf")
         plt.savefig(dest)
