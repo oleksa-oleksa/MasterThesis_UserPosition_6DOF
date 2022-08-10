@@ -143,7 +143,7 @@ class RNNRunner:
         self.output_dim = len(self.outputs)  # 3 position parameter + 4 rotation parameter
         self.hidden_dim = 512  # number of features in hidden state
         self.batch_size = 128
-        self.n_epochs = 500
+        self.n_epochs = 5
         self.dropout = 0
         self.layer_dim = 1  # the number of LSTM layers stacked on top of each other
         self.seq_length_input = 20  # input length of timeseries from the past
@@ -215,7 +215,7 @@ class RNNRunner:
         elif model_name == "lstm-fcn":
             self.model = LSTMFCNModel(self.input_dim, self.hidden_dim,
                                       self.output_dim, self.dropout, self.layer_dim, self.batch_size)
-        elif model_name == "gru":
+        elif model_name == "gru1":
             self.model = GRUModel1(self.input_dim, self.hidden_dim,
                                    self.output_dim, self.dropout, self.layer_dim)
 

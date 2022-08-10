@@ -16,7 +16,7 @@ class GRUModel1(nn.Module):
     """
     def __init__(self, input_dim, hidden_dim, output_dim, dropout_prob, layer_dim=1):
         super(GRUModel1, self).__init__()
-        self.name = "GRU with Sliding Window"
+        self.name = "Basic GRU with Sliding Window"
 
         # Defining the number of layers and the nodes in each layer
         self.layer_dim = layer_dim
@@ -38,8 +38,6 @@ class GRUModel1(nn.Module):
         logging.info(F"Model {self.name}. GPU with cuda: {self.cuda}")
 
     def forward(self, x):
-        batch_size, sequence_length = x.shape[0], x.shape[1]
-        print(f'batch_size: {batch_size}, sequence_length: {sequence_length}')
         if self.cuda:
             x = x.cuda()
         # Initializing hidden state for first input with zeros
@@ -50,21 +48,9 @@ class GRUModel1(nn.Module):
 
         # Forward propagation by passing in the input and hidden state into the model
         out, _ = self.gru(x, h0.detach())
-        print(f"out BEFORE -1 {out.shape}")
-
-        # Reshaping the outputs in the shape of (batch_size, seq_length, hidden_size)
-        # so that it can fit into the fully connected layer
-
-        # prediction only 1 row
-        # out = out[:, -1, :]
-        # print(f"out AFTER -1 {out.shape}")
+        # print(f"out BEFORE FC {out.shape}")
 
         # Convert the final state to our desired output shape (batch_size, output_dim)
         out = self.fc(out)
-        print(f"out AFTER FC {out.shape}")
-
-        out = out.view([batch_size, -1, self.output_dim])
-        print(f"out AFTER -1 to batch {out.shape}")
-
-
+        # print(f"out AFTER FC {out.shape}")
         return out
