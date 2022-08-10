@@ -1,2 +1,2 @@
 hidden_dim,batch_size,lr_adam,lr_epochs,lr_multiplicator,weight_decay_adam,layers,dropout,n_epochs
-512,128,0.0001,30,0.5,0.000000000001,1,0,500
+512,128,0.0001,30,0.5,0.000000000001,1,0,5
