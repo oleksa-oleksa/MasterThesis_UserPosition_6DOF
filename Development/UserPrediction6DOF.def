@@ -2,6 +2,10 @@ Bootstrap: docker
 From: pytorch/pytorch:1.9.1-cuda11.1-cudnn8-runtime
 
 %files
+    ./UserPrediction6DOF /opt/UserPrediction6DOF
+    ./data/interpolated  /opt/data/interpolated
+    ./data/flipped /opt/data/flipped
+    ./results /opt/results
     requirements.txt /opt
 
 %post
