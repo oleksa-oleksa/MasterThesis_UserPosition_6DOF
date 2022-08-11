@@ -1,2 +1,1 @@
-MAE_pos,MAE_rot,RMSE_pos,RMSE_rot,LAT,hidden_dim,epochs,batch_size,dropout,layers,model,seq_length_input,lr,lr_reducing,weight_decay,lr_epochs,patience,delta,lr_multiplicator
-
+d
