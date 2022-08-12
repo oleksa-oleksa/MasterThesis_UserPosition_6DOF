@@ -98,3 +98,4 @@ trained_models
 */.ipynb_checkpoints/*
 */notebooks/.ipynb_checkpoints
 */gpu_jobs_results*/*
+**/*.numbers
