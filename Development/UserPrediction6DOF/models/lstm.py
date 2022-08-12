@@ -134,15 +134,16 @@ class LSTMModel2(nn.Module):
         self.output_dim = output_dim  # outputs
         self.seq_length_input = seq_length_input  # sequence length
         self.seq_length_output = seq_length_output  # otput length of timeseries in the future
+        self.inner_size = 2 * hidden_dim
 
         # with batch_first = True, only the input and output tensors are reported with batch first.
         # The initial memory states (h_init and c_init) are still reported with batch second.
-        self.lstm = nn.LSTM(input_size=input_dim, hidden_size=hidden_dim,
+        self.lstm = nn.LSTM(input_size=input_dim, hidden_size=hidden_dim, 
                             num_layers=layer_dim, batch_first=True, dropout=dropout)  # lstm
         self.relu_1 = nn.ReLU()
-        self.fc_1 = nn.Linear(hidden_dim, 128)  # fully connected 1
+        self.fc_1 = nn.Linear(hidden_dim, self.inner_size)  # fully connected 1
         self.relu_2 = nn.ReLU()
-        self.fc_2 = nn.Linear(128, output_dim)  # fully connected last layer
+        self.fc_2 = nn.Linear(self.inner_size, output_dim)  # fully connected last layer
 
         self.cuda = torch.cuda.is_available()
         if self.cuda:
