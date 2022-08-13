@@ -156,7 +156,6 @@ class LSTMModel2(nn.Module):
         self.fc_1.cuda()
         self.relu_2.cuda()
         self.fc_2.cuda()
-        self.fc_lstm.cuda()
 
     def forward(self, x):
         # print(f"x: {x.shape}")
