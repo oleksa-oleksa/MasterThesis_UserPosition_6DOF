@@ -202,11 +202,11 @@ class LSTMModel3(nn.Module):
         self.output_dim = output_dim  # outputs
         self.seq_length_input = seq_length_input  # sequence length
         self.seq_length_output = seq_length_output  # otput length of timeseries in the future
-        self.inner_size = 128
+        self.inner_size = 2 * hidden_dim
 
         # with batch_first = True, only the input and output tensors are reported with batch first.
         # The initial memory states (h_init and c_init) are still reported with batch second.
-        self.lstm = nn.LSTM(input_size=self.input_size, hidden_size=hidden_dim,
+        self.lstm = nn.LSTM(input_size=input_dim, hidden_size=hidden_dim,
                             num_layers=layer_dim, batch_first=True, dropout=dropout)  # lstm
         self.mish_1 = nn.Mish()
         self.fc_1 = nn.Linear(hidden_dim, self.inner_size)  # fully connected 1
@@ -269,24 +269,24 @@ class LSTMModel4(nn.Module):
         self.output_dim = output_dim  # outputs
         self.seq_length_input = seq_length_input  # sequence length
         self.seq_length_output = seq_length_output  # otput length of timeseries in the future
-        self.inner_size = 2 * hidden_dim
-        self.lstm_dropout = 0.2
+        # self.inner_size = 2 * hidden_dim
+        self.lstm_dropout = 0.1
 
         # with batch_first = True, only the input and output tensors are reported with batch first.
         # The initial memory states (h_init and c_init) are still reported with batch second.
         
-        self.lstm_1 = nn.LSTM(input_size=self.input_size, hidden_size=self.hidden_size,
-                            num_layers=layer_dim, batch_first=True, dropout=dropout)  # lstm
+        self.lstm_1 = nn.LSTM(input_size=input_dim, hidden_size=hidden_dim,
+                              num_layers=layer_dim, batch_first=True, dropout=0)  # lstm
         self.drop_1 = nn.Dropout3d(p=self.lstm_dropout)
         self.mish_1 = nn.Mish()
-
-        self.lstm_2 = nn.LSTM(input_size=self.hidden_size, hidden_size=self.inner_size,
-                              num_layers=layer_dim, batch_first=True, dropout=dropout)
+        self.lstm_2 = nn.LSTM(input_size=hidden_dim, hidden_size=self.inner_size,
+                              num_layers=layer_dim, batch_first=True, dropout=0)
+        self.drop_2 = nn.Dropout3d(p=self.lstm_dropout)
         self.mish_2 = nn.Mish()
-        self.fc_2 = nn.Linear(self.inner_size, self.hidden_size)
-        
-        self.relu_3 = nn.ReLU()
-        self.fc_3 = nn.Linear(self.hidden_size, output_dim)
+        self.fc_2 = nn.Linear(self.inner_size, hidden_dim)
+        self.mish_3 = nn.Mish()
+        self.fc_3 = nn.Linear(hidden_dim, output_dim)
+
         self.cuda = torch.cuda.is_available()
         if self.cuda:
             self.convert_to_cuda()
@@ -297,9 +297,10 @@ class LSTMModel4(nn.Module):
         self.drop_1.cuda()
         self.mish_1.cuda()
         self.lstm_2.cuda()
+        self.drop_2.cuda()
         self.mish_2.cuda()
         self.fc_2.cuda()
-        self.relu_3.cuda()
+        self.mish_3.cuda()
         self.fc_3.cuda()
 
     def forward(self, x):
@@ -316,12 +317,13 @@ class LSTMModel4(nn.Module):
             h_0_2, c_0_2 = h_0_2.cuda(), c_0_2.cuda()
 
         # Propagate input through LSTM
-        output, (hn, cn) = self.lstm_1(x, (h_0, c_0))  # lstm with input, hidden, and internal state
-        out = self.drop_1(output)
+        out, (hn, cn) = self.lstm_1(x, (h_0, c_0))  # lstm with input, hidden, and internal state
+        out = self.drop_1(out)
         out = self.mish_1(out)
-        output, (hn_2, cn_2) = self.lstm_2(out, (h_0_2, c_0_2))  # lstm with input, hidden, and internal state
-        out = self.mish_2(output)
+        out, (hn_2, cn_2) = self.lstm_2(out, (h_0_2, c_0_2))  # lstm with input, hidden, and internal state
+        out = self.drop_2(out)
+        out = self.mish_2(out)
         out = self.fc_2(out)  
-        out = self.relu_3(out)
+        out = self.mish_3(out)
         out = self.fc_3(out)
         return out
