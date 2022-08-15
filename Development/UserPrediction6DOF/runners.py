@@ -48,7 +48,7 @@ import torch.optim as optim
 from filterpy.common import Q_discrete_white_noise
 from filterpy.kalman import KalmanFilter
 from UserPrediction6DOF.models.lstm import LSTMModel1, LSTMModel2, LSTMModel3, LSTMModel4
-from UserPrediction6DOF.models.gru import GRUModel1
+from UserPrediction6DOF.models.gru import GRUModel1, GRUModel3
 from UserPrediction6DOF.models.lstm_fcn import LSTMFCNModel
 from .nn_trainer import NNTrainer
 from scipy.linalg import block_diag
@@ -141,11 +141,11 @@ class RNNRunner:
         # self.num_past = 20  # number of past time series to predict future
         self.input_dim = len(self.features)
         self.output_dim = len(self.outputs)  # 3 position parameter + 4 rotation parameter
-        self.hidden_dim = 512  # number of features in hidden state
-        self.batch_size = 128
+        self.hidden_dim = 128  # number of features in hidden state
+        self.batch_size = 256
         self.n_epochs = 500
         self.dropout = 0
-        self.layer_dim = 1  # the number of LSTM layers stacked on top of each other
+        self.layer_dim = 1  # the number of RNN layers stacked on top of each other
         self.seq_length_input = 20  # input length of timeseries from the past
         self.seq_length_output = self.pred_step  # output length of timeseries in the future
         self.patience = 7
@@ -217,6 +217,10 @@ class RNNRunner:
                                       self.output_dim, self.dropout, self.layer_dim, self.batch_size)
         elif model_name == "gru1":
             self.model = GRUModel1(self.input_dim, self.hidden_dim,
+                                   self.output_dim, self.dropout, self.layer_dim)
+
+        elif model_name == "gru3":
+            self.model = GRUModel3(self.input_dim, self.hidden_dim,
                                    self.output_dim, self.dropout, self.layer_dim)
 
         self.params = {'LAT': self.pred_window[0], 'hidden_dim': self.hidden_dim, 'epochs': self.n_epochs,

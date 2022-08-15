@@ -206,7 +206,7 @@ class LSTMModel3(nn.Module):
 
         # with batch_first = True, only the input and output tensors are reported with batch first.
         # The initial memory states (h_init and c_init) are still reported with batch second.
-        self.lstm = nn.LSTM(input_size=input_dim, hidden_size=hidden_dim,
+        self.lstm_1 = nn.LSTM(input_size=input_dim, hidden_size=hidden_dim,
                             num_layers=layer_dim, batch_first=True, dropout=dropout)  # lstm
         self.mish_1 = nn.Mish()
         self.fc_1 = nn.Linear(hidden_dim, self.inner_size)  # fully connected 1
@@ -218,7 +218,7 @@ class LSTMModel3(nn.Module):
         logging.info(F"Init model {self.name}")
 
     def convert_to_cuda(self):
-        self.lstm.cuda()
+        self.lstm_1.cuda()
         self.mish_1.cuda()
         self.fc_1.cuda()
         self.mish_2.cuda()
@@ -237,7 +237,7 @@ class LSTMModel3(nn.Module):
             h_0, c_0 = h_0.cuda(), c_0.cuda()
 
         # Propagate input through LSTM
-        output, (hn, cn) = self.lstm(x, (h_0, c_0))  # lstm with input, hidden, and internal state
+        output, (hn, cn) = self.lstm_1(x, (h_0, c_0))  # lstm with input, hidden, and internal state
         # print(f"lstm output: {output.shape}")
         # print(f"hn before -1: {hn.shape}")
         # hn = hn.view(-1, self.hidden_size)  # reshaping the data for Dense layer next
