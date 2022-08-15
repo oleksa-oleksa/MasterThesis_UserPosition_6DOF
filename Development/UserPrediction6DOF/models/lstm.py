@@ -269,7 +269,7 @@ class LSTMModel4(nn.Module):
         self.output_dim = output_dim  # outputs
         self.seq_length_input = seq_length_input  # sequence length
         self.seq_length_output = seq_length_output  # otput length of timeseries in the future
-        # self.inner_size = 2 * hidden_dim
+        self.inner_size = 2 * hidden_dim
         self.lstm_dropout = 0.1
 
         # with batch_first = True, only the input and output tensors are reported with batch first.
