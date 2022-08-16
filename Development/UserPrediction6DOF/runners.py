@@ -213,7 +213,7 @@ class RNNRunner:
                                     self.seq_length_output, self.output_dim,
                                     self.dropout, self.layer_dim)
         elif model_name == "lstm-fcn1":
-            self.model = LSTMFCNModel1(self.input_dim, self.output_dim)
+            self.model = LSTMFCNModel1(self.input_dim, self.output_dim, self.seq_length_input)
         elif model_name == "gru1":
             self.model = GRUModel1(self.input_dim, self.hidden_dim,
                                    self.output_dim, self.dropout, self.layer_dim)

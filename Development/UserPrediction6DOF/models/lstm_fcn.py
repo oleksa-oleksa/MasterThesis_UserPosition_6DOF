@@ -3,6 +3,7 @@ import torch.nn as nn
 import logging
 import os
 from UserPrediction6DOF.models.lstm import LSTMModel1
+from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
 
 
 class LSTMFCNModel1(nn.Module):
@@ -20,7 +21,7 @@ class LSTMFCNModel1(nn.Module):
         will process only1time step with N variables.
 
     """
-    def __init__(self, input_dim, output_dim):
+    def __init__(self, input_dim, output_dim, seq_length):
         """Works both on CPU and GPU without additional modifications"""
         super(LSTMFCNModel1, self).__init__()
         self.name = "LSTM-FCN1"
@@ -28,6 +29,7 @@ class LSTMFCNModel1(nn.Module):
         # Defining the number of layers and the nodes in each layer
         self.hidden_dim = 512
         self.layer_dim = 1
+        self.seq_length = seq_length
 
         # LSTM layers (default 1)
         # setting batch_first=True requires the input to have the shape [batch_size, seq_len, input_size]
@@ -75,8 +77,10 @@ class LSTMFCNModel1(nn.Module):
             x = x.cuda()
 
         # 2D LSTM
-        # print(f"x input: {x.size()}")
-        x_lstm = self.lstm(x)
+        print(f"x input: {x.size()}")
+        packed_embed = pack_padded_sequence(x, self.seq_length, batch_first=True)
+        print(f'packed_embed: {packed_embed.size()}')
+        x_lstm = self.lstm(packed_embed)
         print(f'lstm after ltsm(x): {x_lstm.size()}')
         x_lstm = self.dropout(x_lstm)
 
