@@ -97,7 +97,7 @@ class GRUModel3(nn.Module):
 
         if self.cuda:
             x = x.cuda()
-            h0 = h_0.cuda()
+            h_0 = h_0.cuda()
 
         # Propagate input through LSTM
         out, _ = self.gru_1(x, h_0.detach())
