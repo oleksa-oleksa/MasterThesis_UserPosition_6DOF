@@ -49,7 +49,7 @@ from filterpy.common import Q_discrete_white_noise
 from filterpy.kalman import KalmanFilter
 from UserPrediction6DOF.models.lstm import LSTMModel1, LSTMModel2, LSTMModel3, LSTMModel4
 from UserPrediction6DOF.models.gru import GRUModel1, GRUModel3
-from UserPrediction6DOF.models.lstm_fcn import LSTMFCNModelKeras
+from UserPrediction6DOF.models.lstm_fcn import LSTMFCNModel1
 from .nn_trainer import NNTrainer
 from scipy.linalg import block_diag
 from .evaluator import Evaluator, DeepLearnEvaluator
@@ -141,9 +141,9 @@ class RNNRunner:
         # self.num_past = 20  # number of past time series to predict future
         self.input_dim = len(self.features)
         self.output_dim = len(self.outputs)  # 3 position parameter + 4 rotation parameter
-        self.hidden_dim = 2  # number of features in hidden state
-        self.batch_size = 256
-        self.n_epochs = 2
+        self.hidden_dim = 512  # number of features in hidden state
+        self.batch_size = 128
+        self.n_epochs = 500
         self.dropout = 0
         self.layer_dim = 1  # the number of RNN layers stacked on top of each other
         self.seq_length_input = 20  # input length of timeseries from the past
@@ -212,9 +212,8 @@ class RNNRunner:
             self.model = LSTMModel4(self.seq_length_input, self.input_dim, self.hidden_dim,
                                     self.seq_length_output, self.output_dim,
                                     self.dropout, self.layer_dim)
-        elif model_name == "lstm-fcn-keras":
-            self.model = LSTMFCNModelKeras(self.input_dim, self.hidden_dim,
-                                      self.output_dim, self.dropout, self.layer_dim, self.batch_size)
+        elif model_name == "lstm-fcn1":
+            self.model = LSTMFCNModel1(self.input_dim, self.output_dim)
         elif model_name == "gru1":
             self.model = GRUModel1(self.input_dim, self.hidden_dim,
                                    self.output_dim, self.dropout, self.layer_dim)

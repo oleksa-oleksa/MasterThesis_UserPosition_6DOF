@@ -71,7 +71,7 @@ class LSTMModel1(nn.Module):
 
         """
 
-    def __init__(self, input_dim, hidden_dim, output_dim, dropout, layer_dim=1):
+    def __init__(self, input_dim, hidden_dim, output_dim, dropout=0, layer_dim=1):
         """Works both on CPU and GPU without additional modifications"""
         super(LSTMModel1, self).__init__()
         self.name = "Basic simple LSTM with Sliding Window"
