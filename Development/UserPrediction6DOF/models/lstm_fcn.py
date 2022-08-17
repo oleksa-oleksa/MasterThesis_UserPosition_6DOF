@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import logging
 import os
+import math
 from UserPrediction6DOF.models.lstm import LSTMModel1
 from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
 
@@ -40,10 +41,12 @@ class LSTMFCNModel1(nn.Module):
         self.conv1 = nn.Conv1d(in_channels=input_dim, out_channels=128, kernel_size=8)
         self.bn1 = nn.BatchNorm1d(num_features=128, eps=1e-3, momentum=0.99)
         self.relu1 = nn.LeakyReLU()
+        self.squeeze_1 = FCNSqueezeBLock(128)
 
         self.conv2 = nn.Conv1d(in_channels=128, out_channels=256, kernel_size=5)
         self.bn2 = nn.BatchNorm1d(num_features=256, eps=1e-3, momentum=0.99)
         self.relu2 = nn.LeakyReLU()
+        self.squeeze_2 = FCNSqueezeBLock(256)
 
         self.conv3 = nn.Conv1d(in_channels=256, out_channels=128, kernel_size=3)
         self.bn3 = nn.BatchNorm1d(num_features=128, eps=1e-3, momentum=0.99)
@@ -55,22 +58,26 @@ class LSTMFCNModel1(nn.Module):
         self.softmax = nn.Softmax()
 
         self.cuda = torch.cuda.is_available()
+
         if self.cuda:
-            self.lstm.cuda()
-            self.dropout.cuda()
-            self.conv1.cuda()
-            self.bn1.cuda()
-            self.relu1.cuda()
-            self.conv2.cuda()
-            self.bn2.cuda()
-            self.relu2.cuda()
-            self.conv3.cuda()
-            self.bn3.cuda()
-            self.relu3.cuda()
-            self.pool.cuda()
-            self.fc.cuda()
-            self.softmax.cuda()
+            self.convert_to_cuda()
         logging.info(F"Model {self.name} on GPU with cuda: {self.cuda}")
+
+    def convert_to_cuda(self):
+        self.lstm.cuda()
+        self.dropout.cuda()
+        self.conv1.cuda()
+        self.bn1.cuda()
+        self.relu1.cuda()
+        self.conv2.cuda()
+        self.bn2.cuda()
+        self.relu2.cuda()
+        self.conv3.cuda()
+        self.bn3.cuda()
+        self.relu3.cuda()
+        self.pool.cuda()
+        self.fc.cuda()
+        self.softmax.cuda()
 
     def forward(self, x):
         if self.cuda:
@@ -78,11 +85,7 @@ class LSTMFCNModel1(nn.Module):
 
         # 2D LSTM
         print(f"x input: {x.size()}")
-        lens = torch.Tensor(x.size(0))
-        print(lens.size())
-        packed_embed = pack_padded_sequence(x, lens, batch_first=True)
-        print(f'packed_embed: {packed_embed.size()}')
-        x_lstm = self.lstm(packed_embed)
+        x_lstm = self.lstm(x)
         print(f'lstm after ltsm(x): {x_lstm.size()}')
         x_lstm = self.dropout(x_lstm)
 
@@ -96,10 +99,12 @@ class LSTMFCNModel1(nn.Module):
         x_fcn = self.conv1(x_fcn)
         x_fcn = self.bn1(x_fcn)
         x_fcn = self.relu1(x_fcn)
+        x_fcn = self.squeeze_1(x_fcn)
 
         x_fcn = self.conv2(x_fcn)
         x_fcn = self.bn2(x_fcn)
         x_fcn = self.relu2(x_fcn)
+        x_fcn = self.squeeze_2(x_fcn)
 
         x_fcn = self.conv3(x_fcn)
         x_fcn = self.bn3(x_fcn)
@@ -115,6 +120,35 @@ class LSTMFCNModel1(nn.Module):
 
         out = self.softmax(out)
         return out
+
+
+class FCNSqueezeBLock(nn.Module):
+    def __init__(self, filters):
+        super(FCNSqueezeBLock, self).__init__()
+        self.name = "FCN Squeeze BLock"
+        # squeeze block
+        self.reduction_ratio = 16
+        self.filters = filters
+        self.reduced_filters = math.floor(filters / self.reduction_ratio)
+
+        self.se_1 = nn.Linear(filters, self.reduced_filters)
+        self.se_2 = nn.ReLU()
+        self.se_3 = nn.Linear(self.reduced_filters, filters)
+        self.se_4 = nn.Sigmoid()
+
+        self.cuda = torch.cuda.is_available()
+
+    def forward(self, x):
+        if self.cuda:
+            x = x.cuda()
+
+        x = self.se_1(x)
+        x = self.se_2(x)
+        x = self.se_3(x)
+        x = self.se_4(x)
+        x = torch.matmul(self.filters, x)
+        
+        return x
 
 
 class LSTMFCNModelSWP(nn.Module):
