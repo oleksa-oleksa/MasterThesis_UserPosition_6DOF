@@ -161,3 +161,65 @@ class GRUModel31(nn.Module):
         out = self.mish_1(out)
         out = self.fc_1(out)
         return out
+
+
+class GRUModel32(nn.Module):
+    """
+    Next you are going to use 2 LSTM layers with the same hyperparameters stacked over each other
+    (via hidden_size), you have defined the 2 Fully Connected layers, the ReLU layer, and some helper variables. Next,
+    you are going to define the forward pass of the LSTM
+    """
+    def __init__(self, input_dim, hidden_dim, output_dim):
+        super(GRUModel32, self).__init__()
+        self.name = "Stacked GRU33 with MISH"
+        self.layer_dim = 1  # number of layers
+        self.dropout = 0
+        self.input_dim = input_dim  # input size
+        self.hidden_dim = hidden_dim  # hidden state
+        self.output_dim = output_dim  # outputs
+
+        # with batch_first = True, only the input and output tensors are reported with batch first.
+        # The initial memory states (h_init and c_init) are still reported with batch second.
+        self.gru_1 = nn.GRU(input_dim, hidden_dim, self.layer_dim, batch_first=True, dropout=self.dropout)
+        self.mish_1 = nn.Mish()
+        self.gru_2 = nn.GRU(hidden_dim, hidden_dim, self.layer_dim, batch_first=True, dropout=self.dropout)
+        self.mish_2 = nn.Mish()
+        self.gru_3 = nn.GRU(hidden_dim, hidden_dim, self.layer_dim, batch_first=True, dropout=self.dropout)
+        self.mish_3 = nn.Mish()
+        self.fc_3 = nn.Linear(hidden_dim, output_dim)
+        self.cuda = torch.cuda.is_available()
+        if self.cuda:
+            self.convert_to_cuda()
+        logging.info(F"Init model {self.name}")
+
+    def convert_to_cuda(self):
+        self.gru_1.cuda()
+        self.mish_1.cuda()
+        self.gru_2.cuda()
+        self.mish_2.cuda()
+        self.gru_3.cuda()
+        self.mish_3.cuda()
+        self.fc_3.cuda()
+
+    def forward(self, x):
+        # print(f"x: {x.shape}")
+        # define the hidden state, and internal state first, initialized with zeros
+        h_1 = torch.zeros(self.layer_dim, x.size(0), self.hidden_dim).requires_grad_()  # hidden state
+        h_2 = torch.zeros(self.layer_dim, x.size(0), self.hidden_dim).requires_grad_()  # hidden state
+        h_3 = torch.zeros(self.layer_dim, x.size(0), self.hidden_dim).requires_grad_()  # hidden state
+
+        if self.cuda:
+            x = x.cuda()
+            h_1 = h_1.cuda()
+            h_2 = h_2.cuda()
+            h_3 = h_3.cuda()
+
+        # Propagate input through GRU with Mish Activation Layers
+        out, h_2 = self.gru_1(x, h_1.detach())
+        out = self.mish_1(out)
+        out, h_3 = self.gru_2(out, h_2.detach())
+        out = self.mish_2(out)
+        out, _ = self.gru_3(out, h_3.detach())
+        out = self.mish_3(out)
+        out = self.fc_3(out)
+        return out
