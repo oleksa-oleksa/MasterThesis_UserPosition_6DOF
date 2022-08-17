@@ -469,8 +469,8 @@ class Application:
             '--model',
             dest='model',
             type=str,
-            choices=['lstm-fcn1', 'lstm1', 'lstm2', 'lstm3', 'lstm4', 'gru1', 'gru3'],
-            default='lstm',
+            choices=['lstm-fcn1', 'lstm1', 'lstm2', 'lstm3', 'lstm4', 'gru1', 'gru3', 'gru31'],
+            default='lstm1',
             help='Selects RNN variant'
         )
 

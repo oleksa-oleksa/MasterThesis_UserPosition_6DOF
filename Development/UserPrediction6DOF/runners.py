@@ -48,7 +48,7 @@ import torch.optim as optim
 from filterpy.common import Q_discrete_white_noise
 from filterpy.kalman import KalmanFilter
 from UserPrediction6DOF.models.lstm import LSTMModel1, LSTMModel2, LSTMModel3, LSTMModel4
-from UserPrediction6DOF.models.gru import GRUModel1, GRUModel3
+from UserPrediction6DOF.models.gru import GRUModel1, GRUModel3, GRUModel31
 from UserPrediction6DOF.models.lstm_fcn import LSTMFCNModel1
 from .nn_trainer import NNTrainer
 from scipy.linalg import block_diag
@@ -214,6 +214,7 @@ class RNNRunner:
                                     self.dropout, self.layer_dim)
         elif model_name == "lstm-fcn1":
             self.model = LSTMFCNModel1(self.input_dim, self.output_dim, self.seq_length_input)
+
         elif model_name == "gru1":
             self.model = GRUModel1(self.input_dim, self.hidden_dim,
                                    self.output_dim, self.dropout, self.layer_dim)
@@ -221,6 +222,8 @@ class RNNRunner:
         elif model_name == "gru3":
             self.model = GRUModel3(self.input_dim, self.hidden_dim,
                                    self.output_dim, self.dropout, self.layer_dim)
+        elif model_name == "gru31":
+            self.model = GRUModel31(self.input_dim, self.hidden_dim, self.output_dim)
 
         self.params = {'LAT': self.pred_window[0], 'hidden_dim': self.hidden_dim, 'epochs': self.n_epochs,
                        'batch_size': self.batch_size, 'dropout': self.dropout, 'layers': self.layer_dim,

@@ -29,7 +29,7 @@ class LSTMFCNModel1(nn.Module):
         # Defining the number of layers and the nodes in each layer
         self.hidden_dim = 512
         self.layer_dim = 1
-        self.seq_length = seq_length
+        self.seq_length = torch.Tensor([seq_length])
 
         # LSTM layers (default 1)
         # setting batch_first=True requires the input to have the shape [batch_size, seq_len, input_size]
@@ -78,7 +78,9 @@ class LSTMFCNModel1(nn.Module):
 
         # 2D LSTM
         print(f"x input: {x.size()}")
-        packed_embed = pack_padded_sequence(x, self.seq_length, batch_first=True)
+        lens = torch.Tensor(x.size(0))
+        print(lens.size())
+        packed_embed = pack_padded_sequence(x, lens, batch_first=True)
         print(f'packed_embed: {packed_embed.size()}')
         x_lstm = self.lstm(packed_embed)
         print(f'lstm after ltsm(x): {x_lstm.size()}')

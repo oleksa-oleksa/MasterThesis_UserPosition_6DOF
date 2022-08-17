@@ -99,7 +99,7 @@ class GRUModel3(nn.Module):
             x = x.cuda()
             h_0 = h_0.cuda()
 
-        # Propagate input through LSTM
+        # Propagate input through GRU
         out, _ = self.gru_1(x, h_0.detach())
         # print(f"lstm output: {output.shape}")
         # print(f"hn before -1: {hn.shape}")
@@ -122,11 +122,11 @@ class GRUModel31(nn.Module):
     (via hidden_size), you have defined the 2 Fully Connected layers, the ReLU layer, and some helper variables. Next,
     you are going to define the forward pass of the LSTM
     """
-    def __init__(self, input_dim, hidden_dim, output_dim, dropout_prob, layer_dim=1):
+    def __init__(self, input_dim, hidden_dim, output_dim):
         super(GRUModel31, self).__init__()
         self.name = "GRU3 with 2 FC and 2 MISH"
-        self.layer_dim = layer_dim  # number of layers
-        self.dropout = dropout_prob
+        self.layer_dim = 1  # number of layers
+        self.dropout = 0
         self.input_dim = input_dim  # input size
         self.hidden_dim = hidden_dim  # hidden state
         self.output_dim = output_dim  # outputs
@@ -134,11 +134,9 @@ class GRUModel31(nn.Module):
 
         # with batch_first = True, only the input and output tensors are reported with batch first.
         # The initial memory states (h_init and c_init) are still reported with batch second.
-        self.gru_1 = nn.GRU(input_dim, hidden_dim, layer_dim, batch_first=True, dropout=dropout_prob)
+        self.gru_1 = nn.GRU(input_dim, hidden_dim, self.layer_dim, batch_first=True, dropout=self.dropout)
         self.mish_1 = nn.Mish()
-        self.fc_1 = nn.Linear(hidden_dim, self.inner_size)  # fully connected 1
-        self.mish_2 = nn.Mish()
-        self.fc_2 = nn.Linear(self.inner_size, output_dim)  # fully connected last layer
+        self.fc_1 = nn.Linear(hidden_dim, self.output_dim)  # fully connected 1
         self.cuda = torch.cuda.is_available()
         if self.cuda:
             self.convert_to_cuda()
@@ -148,8 +146,6 @@ class GRUModel31(nn.Module):
         self.gru_1.cuda()
         self.mish_1.cuda()
         self.fc_1.cuda()
-        self.mish_2.cuda()
-        self.fc_2.cuda()
 
     def forward(self, x):
         # print(f"x: {x.shape}")
@@ -160,18 +156,8 @@ class GRUModel31(nn.Module):
             x = x.cuda()
             h_0 = h_0.cuda()
 
-        # Propagate input through LSTM
+        # Propagate input through GRU
         out, _ = self.gru_1(x, h_0.detach())
-        # print(f"lstm output: {output.shape}")
-        # print(f"hn before -1: {hn.shape}")
-        # hn = hn.view(-1, self.hidden_size)  # reshaping the data for Dense layer next
-        # print(f"hn -1: {hn.shape}")
         out = self.mish_1(out)
-        # print(f"mish_1: {out.shape}")
-        out = self.fc_1(out)  # First Dense
-        # print(f"Second Dense fc_1: {out.shape}")
-        out = self.mish_2(out)  # relu
-        # print(f"mish_1: {out.shape}")
-        out = self.fc_2(out)  # Final Output
-        # print(f"Final Output fc_2: {out.shape}")
+        out = self.fc_1(out)
         return out
