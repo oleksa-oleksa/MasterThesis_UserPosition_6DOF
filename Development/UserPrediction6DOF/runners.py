@@ -227,6 +227,8 @@ class RNNRunner:
 
         elif model_name == "gru32":
             self.model = GRUModel32(self.input_dim, self.hidden_dim, self.output_dim)
+        elif model_name == "gru33":
+            self.model = GRUModel32(self.input_dim, self.hidden_dim, self.output_dim)
 
         self.params = {'LAT': self.pred_window[0], 'hidden_dim': self.hidden_dim, 'epochs': self.n_epochs,
                        'batch_size': self.batch_size, 'dropout': self.dropout, 'layers': self.layer_dim,

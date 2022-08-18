@@ -147,7 +147,7 @@ class FCNSqueezeBLock(nn.Module):
         x = self.se_3(x)
         x = self.se_4(x)
         x = torch.matmul(self.filters, x)
-        
+
         return x
 
 
