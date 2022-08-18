@@ -470,7 +470,7 @@ class Application:
             dest='model',
             type=str,
             choices=['lstm-fcn1', 'lstm1', 'lstm2', 'lstm3', 'lstm4', 'gru1', 'gru3', 'gru31', 'gru32',
-                     'gru33'],
+                     'gru33', 'gru34'],
             default='lstm1',
             help='Selects RNN variant'
         )
