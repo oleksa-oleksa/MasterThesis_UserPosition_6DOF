@@ -276,7 +276,7 @@ class GRUModel33(nn.Module):
     def forward(self, x):
         # print(f"x: {x.shape}")
         # define the hidden state, and internal state first, initialized with zeros
-        h_1 = torch.zeros(self.layer_dim, x.size(0), self.hidden_dim).requires_grad_()  # hidden state
+        h_1 = torch.zeros(self.layer_dim, x.size(0), self.inner_size).requires_grad_()  # hidden state
         h_2 = torch.zeros(self.layer_dim, x.size(0), self.hidden_dim).requires_grad_()  # hidden state
         h_3 = torch.zeros(self.layer_dim, x.size(0), self.hidden_dim).requires_grad_()  # hidden state
 
@@ -334,16 +334,11 @@ class GRUModel34(nn.Module):
         self.drop_1.cuda()
 
     def forward(self, x):
-        # print(f"x: {x.shape}")
-        # define the hidden state, and internal state first, initialized with zeros
-        h_1 = torch.zeros(self.layer_dim, x.size(0), self.hidden_dim).requires_grad_()  # hidden state
-
         if self.cuda:
             x = x.cuda()
-            h_1 = h_1.cuda()
 
         # Propagate input through GRU with Mish Activation Layers
-        out, _ = self.gru_1(x, h_1.detach())
+        out, _ = self.gru_1(x)
         out = self.mish_1(out)
         out = self.drop_1(out)
 

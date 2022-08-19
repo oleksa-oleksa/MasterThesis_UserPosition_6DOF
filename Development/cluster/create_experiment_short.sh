@@ -10,7 +10,7 @@ for hidden_dim in $(seq 9 1 10)
         do
             for lr_adam in $(seq 0.0001 0.0001 0.0003)
             do
-                for lr_epochs in $(seq 50 10 70)
+                for lr_epochs in $(seq 30 20 70)
                 do
                     for lr_multiplicator in $(seq 0.3 0.1 0.6)
                     do
