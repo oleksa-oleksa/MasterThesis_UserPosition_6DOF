@@ -310,7 +310,7 @@ class GRUModel34(nn.Module):
     """
     def __init__(self, input_dim, hidden_dim, output_dim):
         super(GRUModel34, self).__init__()
-        self.name = "Stacked GRU33 with MISH and Dropout"
+        self.name = "GRU34 using GRU1 with MISH and Dropout"
         self.layer_dim = 1  # number of layers
         self.dropout = 0.3
         self.input_dim = input_dim  # input size
@@ -320,26 +320,31 @@ class GRUModel34(nn.Module):
 
         # with batch_first = True, only the input and output tensors are reported with batch first.
         # The initial memory states (h_init and c_init) are still reported with batch second.
-        self.gru_1 = GRUModel1(input_dim, hidden_dim, output_dim, dropout_prob=0, layer_dim=1)
+        self.gru_1 = nn.GRU(input_dim, self.hidden_dim, self.layer_dim, batch_first=True, dropout=0)
         self.mish_1 = nn.Mish()
         self.drop_1 = nn.Dropout3d(p=self.dropout)
-
+        self.fc_1 = nn.Linear(self.hidden_dim, self.output_dim)
         self.cuda = torch.cuda.is_available()
         if self.cuda:
             self.convert_to_cuda()
         logging.info(F"Init model {self.name}")
 
     def convert_to_cuda(self):
+        self.gru_1.cuda()
         self.mish_1.cuda()
         self.drop_1.cuda()
+        self.fc_1.cuda()
 
     def forward(self, x):
+        h_1 = torch.zeros(self.layer_dim, x.size(0), self.hidden_dim).requires_grad_()  # hidden state
+
         if self.cuda:
             x = x.cuda()
+            h_1 = h_1.cuda()
 
         # Propagate input through GRU with Mish Activation Layers
-        out = self.gru_1(x)
+        out, _ = self.gru_1(x, h_1.detach())
         out = self.mish_1(out)
         out = self.drop_1(out)
-
+        out = self.fc_1(out)
         return out
