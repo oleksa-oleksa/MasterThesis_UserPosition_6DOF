@@ -338,7 +338,7 @@ class GRUModel34(nn.Module):
             x = x.cuda()
 
         # Propagate input through GRU with Mish Activation Layers
-        out, _ = self.gru_1(x)
+        out = self.gru_1(x)
         out = self.mish_1(out)
         out = self.drop_1(out)
 
