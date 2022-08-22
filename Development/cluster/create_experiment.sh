@@ -8,7 +8,7 @@ for hidden_dim in $(seq 7 1 10)
     do
         for batch_size in $(seq 7 1 9)
         do
-            for lr_adam in $(seq 0.0001 0.0001 0.0007)
+            for lr_adam in $(seq 0.0001 0.0002 0.0005)
             do
                 for lr_epochs in $(seq 30 20 70)
                 do
