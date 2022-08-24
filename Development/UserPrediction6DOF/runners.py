@@ -48,7 +48,7 @@ import torch.optim as optim
 from filterpy.common import Q_discrete_white_noise
 from filterpy.kalman import KalmanFilter
 from UserPrediction6DOF.models.lstm import LSTMModel1, LSTMModel2, LSTMModel3, LSTMModel4
-from UserPrediction6DOF.models.gru import GRUModel1, GRUModel3, GRUModel31, GRUModel32, GRUModel33, GRUModel34
+from UserPrediction6DOF.models.gru import GRUModel1, GRUModel3, GRUModel31, GRUModel32, GRUModel33, GRUModel34, GRUModel35
 from UserPrediction6DOF.models.lstm_fcn import LSTMFCNModel1
 from .nn_trainer import NNTrainer
 from scipy.linalg import block_diag
@@ -231,7 +231,8 @@ class RNNRunner:
             self.model = GRUModel33(self.input_dim, self.hidden_dim, self.output_dim)
         elif model_name == "gru34":
             self.model = GRUModel34(self.input_dim, self.hidden_dim, self.output_dim)
-
+        elif model_name == "gru35":
+            self.model = GRUModel35(self.input_dim, self.hidden_dim, self.output_dim)
         self.params = {'LAT': self.pred_window[0], 'hidden_dim': self.hidden_dim, 'epochs': self.n_epochs,
                        'batch_size': self.batch_size, 'dropout': self.dropout, 'layers': self.layer_dim,
                        'model': model_name, 'seq_length_input': self.seq_length_input, 'lr': self.learning_rate,
