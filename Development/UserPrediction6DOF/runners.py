@@ -192,34 +192,57 @@ class RNNRunner:
     def create_model(self, model_name):
         # batch_first=True --> input is [batch_size, seq_len, input_size]
         # SELECTS MODEL
-        if model_name == "lstm1":
-            self.model = LSTMModel1(self.input_dim, self.hidden_dim, self.output_dim)
-        elif model_name == "lstm2":
-            self.model = LSTMModel2(self.input_dim, self.hidden_dim, self.output_dim)
-        elif model_name == "lstm3":
-            self.model = LSTMModel3(self.input_dim, self.hidden_dim, self.output_dim)
-        elif model_name == "lstm4":
-            self.model = LSTMModel4(self.input_dim, self.hidden_dim, self.output_dim)
-        elif model_name == "lstm-fcn1":
-            self.model = LSTMFCNModel1(self.input_dim, self.output_dim, self.seq_length_input)
+        known_models = {
+            'lstm1': LSTMModel1,
+            'lstm2': LSTMModel2,
+            'lstm3': LSTMModel3,
+            'lstm4': LSTMModel4,
+            'lstm-fcn1': LSTMFCNModel1,
+            'gru1': GRUModel1,
+            'gru3': GRUModel3,
+            'gru31': GRUModel31,
+            'gru32': GRUModel32,
+            'gru33': GRUModel33,
+            'gru34': GRUModel34,
+            'gru35': GRUModel35
+        }
 
-        elif model_name == "gru1":
-            self.model = GRUModel1(self.input_dim, self.hidden_dim,
-                                   self.output_dim)
+        try:
+            selected_model = known_models[model_name]
+        except KeyError:
+            raise RuntimeError(f"{model_name} is not a valid model name")
 
-        elif model_name == "gru3":
-            self.model = GRUModel3(self.input_dim, self.hidden_dim, self.output_dim)
-        elif model_name == "gru31":
-            self.model = GRUModel31(self.input_dim, self.hidden_dim, self.output_dim)
+        self.model = selected_model(self.input_dim, self.hidden_dim, self.output_dim)
 
-        elif model_name == "gru32":
-            self.model = GRUModel32(self.input_dim, self.hidden_dim, self.output_dim)
-        elif model_name == "gru33":
-            self.model = GRUModel33(self.input_dim, self.hidden_dim, self.output_dim)
-        elif model_name == "gru34":
-            self.model = GRUModel34(self.input_dim, self.hidden_dim, self.output_dim)
-        elif model_name == "gru35":
-            self.model = GRUModel35(self.input_dim, self.hidden_dim, self.output_dim)
+
+        # if model_name == "lstm1":
+        #     self.model = LSTMModel1(self.input_dim, self.hidden_dim, self.output_dim)
+        # elif model_name == "lstm2":
+        #     self.model = LSTMModel2(self.input_dim, self.hidden_dim, self.output_dim)
+        # elif model_name == "lstm3":
+        #     self.model = LSTMModel3(self.input_dim, self.hidden_dim, self.output_dim)
+        # elif model_name == "lstm4":
+        #     self.model = LSTMModel4(self.input_dim, self.hidden_dim, self.output_dim)
+        # elif model_name == "lstm-fcn1":
+        #     self.model = LSTMFCNModel1(self.input_dim, self.output_dim, self.seq_length_input)
+        #
+        # elif model_name == "gru1":
+        #     self.model = GRUModel1(self.input_dim, self.hidden_dim,
+        #                            self.output_dim)
+        #
+        # elif model_name == "gru3":
+        #     self.model = GRUModel3(self.input_dim, self.hidden_dim, self.output_dim)
+        # elif model_name == "gru31":
+        #     self.model = GRUModel31(self.input_dim, self.hidden_dim, self.output_dim)
+        #
+        # elif model_name == "gru32":
+        #     self.model = GRUModel32(self.input_dim, self.hidden_dim, self.output_dim)
+        # elif model_name == "gru33":
+        #     self.model = GRUModel33(self.input_dim, self.hidden_dim, self.output_dim)
+        # elif model_name == "gru34":
+        #     self.model = GRUModel34(self.input_dim, self.hidden_dim, self.output_dim)
+        # elif model_name == "gru35":
+        #     self.model = GRUModel35(self.input_dim, self.hidden_dim, self.output_dim)
         self.params = {'LAT': self.pred_window[0], 'epochs': self.n_epochs, 'hidden_dim': self.hidden_dim,
                        'batch_size': self.batch_size, 'model': model_name, 'seq_length_input': self.seq_length_input,
                        'lr': self.learning_rate, 'lr_reducing': self.reducing_learning_rate, 'lr_epochs': self.lr_epochs,
@@ -241,8 +264,27 @@ class RNNRunner:
         logging.info(self.model)
         summary(self.model, input_size=(self.batch_size, self.seq_length_input, self.input_dim))
 
-    def prepare_dataset(self, prepare_raw_dataset, prepare_test, add_sliding_window, load_before_split_with_sliding,
-                        load_test_val_train_split_with_sliding, split_train_test_with_sliding, load_train_test_with_sliding):
+    def _prepare_test(self):
+        df = dataset_tools.load_dataset(self.dataset_path)
+        # short test if train-val-test was used
+        df_test_slice = pd.DataFrame(data=df.iloc[96023:, :], columns=df.columns)
+        # test without validation dataset
+        # df_test_slice = pd.DataFrame(data=df.iloc[84006:, :], columns=df.columns)
+        print(df_test_slice.shape)
+
+        test_path = os.path.join(self.dataset_path, 'test')
+        if not os.path.exists(test_path):
+            os.makedirs(test_path, exist_ok=True)
+        df_test_slice.to_csv(os.path.join(test_path, '1.csv'), index=False)
+        logging.info('TEST 1.csv for Kalman and Baseline is created!')
+
+    def prepare_dataset(self, prepare_raw_dataset=False,
+                        prepare_test=False,
+                        add_sliding_window=False,
+                        load_before_split_with_sliding=False,
+                        load_test_val_train_split_with_sliding=False,
+                        split_train_test_with_sliding=False,
+                        load_train_test_with_sliding=False):
         if prepare_raw_dataset:
             # Read full dataset from CSV file
             df = dataset_tools.load_dataset(self.dataset_path)
@@ -329,13 +371,11 @@ class RNNRunner:
         self.print_model_info()
 
         # preparing arrays for future initialization
-        self.prepare_dataset(prepare_raw_dataset=False,
-                             prepare_test=False,
-                             add_sliding_window=False,
-                             load_before_split_with_sliding=False,
-                             load_test_val_train_split_with_sliding=True,
-                             split_train_test_with_sliding=False,
-                             load_train_test_with_sliding=False)
+        self.prepare_dataset(load_test_val_train_split_with_sliding=True,
+                             bar=True)
+
+        self.dataset_load_val_....()
+        self.bar()
 
         # Mean Squared Error Loss Function
         # average of the squared differences between actual values and predicted values
