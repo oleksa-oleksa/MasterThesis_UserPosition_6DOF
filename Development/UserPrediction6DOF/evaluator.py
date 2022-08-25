@@ -143,12 +143,11 @@ class DeepLearnEvaluator():
 
         self.compute_metrics(preds_pos, preds_rot, actual_pos, actual_rot)
 
-    def calc_angular_dist(self, preds_rot, actual_rot):
-        # difference quaternion joining q1 to q2, representing the difference rotation
-        quats = zip(preds_rot, actual_rot)
-        z = [q1 * q2.conjugate for q1, q2 in quats]
-        theta = 2 * np.arccos(np.abs(z.real))
-        return theta
+    @staticmethod
+    def calc_angular_dist(preds_rot, actual_rot):
+        zs = [q1 * q2.conjugate for q1, q2 in zip(preds_rot, actual_rot)]
+        theta = [2 * np.arccos(np.abs(z.real)) for z in zs]
+        return np.array(theta)
 
     def compute_metrics(self, preds_pos, preds_rot, actual_pos, actual_rot):
         """

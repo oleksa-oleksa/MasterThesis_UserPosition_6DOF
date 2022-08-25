@@ -220,12 +220,10 @@ class RNNRunner:
             self.model = GRUModel34(self.input_dim, self.hidden_dim, self.output_dim)
         elif model_name == "gru35":
             self.model = GRUModel35(self.input_dim, self.hidden_dim, self.output_dim)
-        self.params = {'LAT': self.pred_window[0], 'hidden_dim': self.hidden_dim, 'epochs': self.n_epochs,
-                       'batch_size': self.batch_size, 'dropout': self.dropout, 'layers': self.layer_dim,
-                       'model': model_name, 'seq_length_input': self.seq_length_input, 'lr': self.learning_rate,
-                       'lr_reducing': self.reducing_learning_rate, 'lr_epochs': self.lr_epochs,
-                       'weight_decay': self.weight_decay, 'patience': self.patience, 'delta': self.delta,
-                       'lr_multiplicator': self.lr_multiplicator}
+        self.params = {'LAT': self.pred_window[0], 'epochs': self.n_epochs, 'hidden_dim': self.hidden_dim,
+                       'batch_size': self.batch_size, 'model': model_name, 'seq_length_input': self.seq_length_input,
+                       'lr': self.learning_rate, 'lr_reducing': self.reducing_learning_rate, 'lr_epochs': self.lr_epochs,
+                       'lr_multiplicator': self.lr_multiplicator, 'weight_decay': self.weight_decay}
 
     def print_model_info(self):
         logging.info("----------------- Runing RNN Predictor ---------------------")
