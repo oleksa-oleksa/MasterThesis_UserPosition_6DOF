@@ -120,7 +120,8 @@ class DeepLearnEvaluator():
         self.predictions = predictions
         self.actual_values = actual_values
         self.euc_dists = None
-        self.ang_dists = None
+        self.angular_dist = None
+        self.geodesic_dist = None
         self.metrics = {}
 
     def eval_model(self):
@@ -142,6 +143,13 @@ class DeepLearnEvaluator():
 
         self.compute_metrics(preds_pos, preds_rot, actual_pos, actual_rot)
 
+    def calc_angular_dist(self, preds_rot, actual_rot):
+        # difference quaternion joining q1 to q2, representing the difference rotation
+        quats = zip(preds_rot, actual_rot)
+        z = [q1 * q2.conjugate for q1, q2 in quats]
+        theta = 2 * np.arccos(np.abs(z.real))
+        return theta
+
     def compute_metrics(self, preds_pos, preds_rot, actual_pos, actual_rot):
         """
         Based on a rule of thumb, RMSE values between 0.2 and 0.5
@@ -149,28 +157,21 @@ class DeepLearnEvaluator():
         """
         # Compute Eucliden and angular distances
         self.euc_dists = np.linalg.norm(preds_pos - actual_pos, axis=1)
-        self.ang_dists = np.array([Quaternion.distance(q1, q2) for q1, q2 in zip(preds_rot,
-                                                                                 actual_rot)])
+        self.angular_dist = self.calc_angular_dist(preds_rot, actual_rot)
+        self.geodesic_dist = np.array([Quaternion.distance(q1, q2) for q1, q2 in zip(preds_rot, actual_rot)])
 
         # Mean Absolute Error (MAE)
         self.metrics['mae_euc'] = np.sum(self.euc_dists) / self.euc_dists.shape[0]
         logging.info("MAE position = %s", self.metrics['mae_euc'])
-        self.metrics['mae_ang'] = np.rad2deg(np.sum(self.ang_dists) / self.ang_dists.shape[0])
-        logging.info("MAE rotation = %s", self.metrics['mae_ang'])
+        self.metrics['mae_ang'] = np.rad2deg(np.sum(self.angular_dist) / preds_rot.shape[0])
+        logging.info("MAE rotation angular = %s", self.metrics['mae_ang'])
+        self.metrics['mae_geo'] = np.rad2deg(np.sum(self.geodesic_dist) / self.geodesic_dist.shape[0])
+        logging.info("MAE rotation geodesic = %s", self.metrics['mae_geo'])
 
         # Root Mean Squared Error (RMSE)
         self.metrics['rmse_euc'] = np.sqrt((self.euc_dists ** 2).mean())
         logging.info("RMSE position = %s", self.metrics['rmse_euc'])
-        self.metrics['rmse_ang'] = np.rad2deg(np.sqrt((self.ang_dists ** 2).mean()))
-        logging.info("RMSE rotation = %s", self.metrics['rmse_ang'])
-
-        """
-        result_metrics = {'mae': mean_absolute_error(df.value, df.prediction),
-                          'rmse': mean_squared_error(df.value, df.prediction) ** 0.5,
-                          'r2': r2_score(df.value, df.prediction)}
-
-        print("Mean Absolute Error:       ", result_metrics["mae"])
-        print("Root Mean Squared Error:   ", result_metrics["rmse"])
-        print("R^2 Score:                 ", result_metrics["r2"])
-        return result_metrics
-        """
+        self.metrics['rmse_ang'] = np.rad2deg(np.sqrt((self.angular_dist ** 2).mean()))
+        logging.info("RMSE rotation angular = %s", self.metrics['rmse_ang'])
+        self.metrics['rmse_geo'] = np.rad2deg(np.sqrt((self.geodesic_dist ** 2).mean()))
+        logging.info("RMSE rotation geodesic = %s", self.metrics['rmse_geo'])

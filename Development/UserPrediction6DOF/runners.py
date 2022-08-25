@@ -136,9 +136,9 @@ class RNNRunner:
         # self.num_past = 20  # number of past time series to predict future
         self.input_dim = len(self.features)
         self.output_dim = len(self.outputs)  # 3 position parameter + 4 rotation parameter
-        self.hidden_dim = 512  # number of features in hidden state
-        self.batch_size = 128
-        self.n_epochs = 500
+        self.hidden_dim = 16  # number of features in hidden state
+        self.batch_size = 1024
+        self.n_epochs = 5
         self.dropout = 0
         self.layer_dim = 1  # the number of RNN layers stacked on top of each other
         self.seq_length_input = 20  # input length of timeseries from the past
@@ -363,18 +363,25 @@ class RNNRunner:
         deep_eval = DeepLearnEvaluator(predictions, targets)
         deep_eval.eval_model()
         euc_dists = deep_eval.euc_dists
-        ang_dists = np.rad2deg(deep_eval.ang_dists)
+        ang_dists = np.rad2deg(deep_eval.angular_dist)
+        geo_dists = np.rad2deg(deep_eval.geodesic_dist)
 
         np.save(os.path.join(self.dists_path,
                              'euc_dists_{}_{}ms.npy'.format(self.model.name, int(self.pred_window * 1e3))), euc_dists)
         np.save(os.path.join(self.dists_path,
                              'ang_dists_{}_{}ms.npy'.format(self.model.name, int(self.pred_window * 1e3))), ang_dists)
+        np.save(os.path.join(self.dists_path,
+                             'geo_dists_{}_{}ms.npy'.format(self.model.name, int(self.pred_window * 1e3))), geo_dists)
 
         logging.info("--------------------------------------------------------------")
         df_results = pd.DataFrame({'Trace': "dataset", 'LAT' : self.pred_window,
-                                   'mae_euc': deep_eval.metrics['mae_euc'], 'mae_ang': deep_eval.metrics['mae_ang'],
-                                   'rmse_euc': deep_eval.metrics['rmse_euc'], 'rmse_ang': deep_eval.metrics['rmse_ang']})
-        df_results.to_csv(os.path.join(self.results_path, 'res_lstm.csv'), index=False)
+                                   'mae_euc': deep_eval.metrics['mae_euc'],
+                                   'mae_ang': deep_eval.metrics['mae_ang'],
+                                   'mae_geo': deep_eval.metrics['mae_geo'],
+                                   'rmse_euc': deep_eval.metrics['rmse_euc'],
+                                   'rmse_ang': deep_eval.metrics['rmse_ang'],
+                                   'rmse_geo': deep_eval.metrics['rmse_geo']})
+        df_results.to_csv(os.path.join(self.results_path, 'res_{}.csv'.format(self.model.name)))
 
         # LOGGING AND PLOTTING
         pred_dic = {'MAE_pos': deep_eval.metrics['mae_euc']}
