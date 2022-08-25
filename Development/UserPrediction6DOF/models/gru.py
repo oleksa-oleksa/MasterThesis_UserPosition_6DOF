@@ -15,19 +15,19 @@ class GRUModel1(nn.Module):
     the reset gate decides how much of the past information to forget.
     Doing fewer tensor operations, GRUs are often faster and require less memory than LSTMs.
     """
-    def __init__(self, input_dim, hidden_dim, output_dim, dropout_prob, layer_dim=1):
+    def __init__(self, input_dim, hidden_dim, output_dim):
         super(GRUModel1, self).__init__()
         self.name = "Basic GRU with Sliding Window"
 
         # Defining the number of layers and the nodes in each layer
-        self.layer_dim = layer_dim
         self.hidden_dim = hidden_dim
         self.output_dim = output_dim
+        self.dropout = 0
+        self.layer_dim = 1
 
         # GRU layers
-        self.gru = nn.GRU(
-            input_dim, hidden_dim, layer_dim, batch_first=True, dropout=dropout_prob
-        )
+        self.gru = nn.GRU(input_size=input_dim, hidden_size=hidden_dim,
+                          num_layers=self.layer_dim, batch_first=True, dropout=self.dropout)
 
         # Fully connected layer
         self.fc = nn.Linear(hidden_dim, output_dim)
@@ -62,19 +62,20 @@ class GRUModel3(nn.Module):
     (via hidden_size), you have defined the 2 Fully Connected layers, the ReLU layer, and some helper variables. Next,
     you are going to define the forward pass of the LSTM
     """
-    def __init__(self, input_dim, hidden_dim, output_dim, dropout_prob, layer_dim=1):
+    def __init__(self, input_dim, hidden_dim, output_dim):
         super(GRUModel3, self).__init__()
         self.name = "GRU3 with 2 FC and 2 MISH"
-        self.layer_dim = layer_dim  # number of layers
-        self.dropout = dropout_prob
         self.input_dim = input_dim  # input size
         self.hidden_dim = hidden_dim  # hidden state
         self.output_dim = output_dim  # outputs
         self.inner_size = 2 * hidden_dim
+        self.dropout = 0
+        self.layer_dim = 1
 
         # with batch_first = True, only the input and output tensors are reported with batch first.
         # The initial memory states (h_init and c_init) are still reported with batch second.
-        self.gru_1 = nn.GRU(input_dim, hidden_dim, layer_dim, batch_first=True, dropout=dropout_prob)
+        self.gru = nn.GRU(input_size=input_dim, hidden_size=hidden_dim,
+                          num_layers=self.layer_dim, batch_first=True, dropout=self.dropout)
         self.mish_1 = nn.Mish()
         self.fc_1 = nn.Linear(hidden_dim, self.inner_size)  # fully connected 1
         self.mish_2 = nn.Mish()
@@ -125,17 +126,18 @@ class GRUModel31(nn.Module):
     """
     def __init__(self, input_dim, hidden_dim, output_dim):
         super(GRUModel31, self).__init__()
-        self.name = "GRU3 with 2 FC and 2 MISH"
-        self.layer_dim = 1  # number of layers
-        self.dropout = 0
+        self.name = "GRU3 with 1 FC and 1 MISH"
         self.input_dim = input_dim  # input size
         self.hidden_dim = hidden_dim  # hidden state
         self.output_dim = output_dim  # outputs
         self.inner_size = 2 * hidden_dim
+        self.dropout = 0
+        self.layer_dim = 1
 
         # with batch_first = True, only the input and output tensors are reported with batch first.
         # The initial memory states (h_init and c_init) are still reported with batch second.
-        self.gru_1 = nn.GRU(input_dim, hidden_dim, self.layer_dim, batch_first=True, dropout=self.dropout)
+        self.gru = nn.GRU(input_size=input_dim, hidden_size=hidden_dim,
+                          num_layers=self.layer_dim, batch_first=True, dropout=self.dropout)
         self.mish_1 = nn.Mish()
         self.fc_1 = nn.Linear(hidden_dim, self.output_dim)  # fully connected 1
         self.cuda = torch.cuda.is_available()
@@ -185,8 +187,6 @@ class GRUModel32(nn.Module):
         self.mish_1 = nn.Mish()
         self.gru_2 = nn.GRU(hidden_dim, hidden_dim, self.layer_dim, batch_first=True, dropout=self.dropout)
         self.mish_2 = nn.Mish()
-        self.gru_3 = nn.GRU(hidden_dim, hidden_dim, self.layer_dim, batch_first=True, dropout=self.dropout)
-        self.mish_3 = nn.Mish()
         self.fc_3 = nn.Linear(hidden_dim, output_dim)
         self.cuda = torch.cuda.is_available()
         if self.cuda:
@@ -198,8 +198,6 @@ class GRUModel32(nn.Module):
         self.mish_1.cuda()
         self.gru_2.cuda()
         self.mish_2.cuda()
-        self.gru_3.cuda()
-        self.mish_3.cuda()
         self.fc_3.cuda()
 
     def forward(self, x):
@@ -207,21 +205,17 @@ class GRUModel32(nn.Module):
         # define the hidden state, and internal state first, initialized with zeros
         h_1 = torch.zeros(self.layer_dim, x.size(0), self.hidden_dim).requires_grad_()  # hidden state
         h_2 = torch.zeros(self.layer_dim, x.size(0), self.hidden_dim).requires_grad_()  # hidden state
-        h_3 = torch.zeros(self.layer_dim, x.size(0), self.hidden_dim).requires_grad_()  # hidden state
 
         if self.cuda:
             x = x.cuda()
             h_1 = h_1.cuda()
             h_2 = h_2.cuda()
-            h_3 = h_3.cuda()
 
         # Propagate input through GRU with Mish Activation Layers
         out, h_2 = self.gru_1(x, h_1.detach())
         out = self.mish_1(out)
-        out, h_3 = self.gru_2(out, h_2.detach())
+        out, _ = self.gru_2(out, h_2.detach())
         out = self.mish_2(out)
-        out, _ = self.gru_3(out, h_3.detach())
-        out = self.mish_3(out)
         out = self.fc_3(out)
         return out
 
@@ -236,26 +230,21 @@ class GRUModel33(nn.Module):
         super(GRUModel33, self).__init__()
         self.name = "Stacked GRU33 with MISH and Dropout"
         self.layer_dim = 1  # number of layers
-        self.dropout = 0.3
+        self.dropout = 0.2
         self.input_dim = input_dim  # input size
         self.hidden_dim = hidden_dim  # hidden state
         self.output_dim = output_dim  # outputs
-        self.inner_size = math.floor(hidden_dim / 2)
 
         # with batch_first = True, only the input and output tensors are reported with batch first.
         # The initial memory states (h_init and c_init) are still reported with batch second.
-        self.gru_1 = nn.GRU(input_dim, self.inner_size, self.layer_dim, batch_first=True, dropout=self.dropout)
+        self.gru_1 = nn.GRU(input_dim, self.hidden_dim, self.layer_dim, batch_first=True, dropout=self.dropout)
         self.mish_1 = nn.Mish()
         self.drop_1 = nn.Dropout3d(p=self.dropout)
 
-        self.gru_2 = nn.GRU(self.inner_size, hidden_dim, self.layer_dim, batch_first=True, dropout=self.dropout)
+        self.gru_2 = nn.GRU(self.hidden_dim, output_dim, self.layer_dim, batch_first=True, dropout=self.dropout)
         self.mish_2 = nn.Mish()
-        self.drop_2 = nn.Dropout3d(p=self.dropout)
 
-        self.gru_3 = nn.GRU(hidden_dim, hidden_dim, self.layer_dim, batch_first=True, dropout=self.dropout)
-        self.mish_3 = nn.Mish()
-
-        self.pool = nn.AdaptiveMaxPool1d(output_size=output_dim)
+        # self.pool = nn.AdaptiveMaxPool1d(output_size=output_dim)
 
         self.cuda = torch.cuda.is_available()
         if self.cuda:
@@ -268,36 +257,28 @@ class GRUModel33(nn.Module):
         self.drop_1.cuda()
         self.gru_2.cuda()
         self.mish_2.cuda()
-        self.drop_2.cuda()
-        self.gru_3.cuda()
-        self.mish_3.cuda()
-        self.pool.cuda()
+        # self.pool.cuda()
 
     def forward(self, x):
         # print(f"x: {x.shape}")
         # define the hidden state, and internal state first, initialized with zeros
-        h_1 = torch.zeros(self.layer_dim, x.size(0), self.inner_size).requires_grad_()  # hidden state
-        h_2 = torch.zeros(self.layer_dim, x.size(0), self.hidden_dim).requires_grad_()  # hidden state
-        h_3 = torch.zeros(self.layer_dim, x.size(0), self.hidden_dim).requires_grad_()  # hidden state
+        h_1 = torch.zeros(self.layer_dim, x.size(0), self.hidden_dim).requires_grad_()  # hidden state
+        h_2 = torch.zeros(self.layer_dim, x.size(0), self.output_dim).requires_grad_()  # hidden state
 
         if self.cuda:
             x = x.cuda()
             h_1 = h_1.cuda()
             h_2 = h_2.cuda()
-            h_3 = h_3.cuda()
 
         # Propagate input through GRU with Mish Activation Layers
         out, h_2 = self.gru_1(x, h_1.detach())
         out = self.mish_1(out)
         out = self.drop_1(out)
 
-        out, h_3 = self.gru_2(out, h_2.detach())
+        out, _ = self.gru_2(out, h_2.detach())
         out = self.mish_2(out)
-        out = self.drop_2(out)
 
-        out, _ = self.gru_3(out, h_3.detach())
-        out = self.mish_3(out)
-        out = self.pool(out)
+        # out = self.pool(out)
 
         return out
 
@@ -310,9 +291,9 @@ class GRUModel34(nn.Module):
     """
     def __init__(self, input_dim, hidden_dim, output_dim):
         super(GRUModel34, self).__init__()
-        self.name = "GRU34 using GRU1 with MISH and Dropout"
+        self.name = "1-layered GRU34 with MISH and Dropout"
         self.layer_dim = 1  # number of layers
-        self.dropout = 0.3
+        self.dropout = 0.2
         self.input_dim = input_dim  # input size
         self.hidden_dim = hidden_dim  # hidden state
         self.output_dim = output_dim  # outputs
@@ -320,7 +301,7 @@ class GRUModel34(nn.Module):
 
         # with batch_first = True, only the input and output tensors are reported with batch first.
         # The initial memory states (h_init and c_init) are still reported with batch second.
-        self.gru_1 = nn.GRU(input_dim, self.hidden_dim, self.layer_dim, batch_first=True, dropout=0)
+        self.gru_1 = nn.GRU(input_dim, self.hidden_dim, self.layer_dim, batch_first=True, dropout=self.dropout)
         self.mish_1 = nn.Mish()
         self.drop_1 = nn.Dropout3d(p=self.dropout)
         self.fc_1 = nn.Linear(self.hidden_dim, self.output_dim)
@@ -358,7 +339,7 @@ class GRUModel35(nn.Module):
     """
     def __init__(self, input_dim, hidden_dim, output_dim):
         super(GRUModel35, self).__init__()
-        self.name = "GRU34 using GRU1 with MISH and Dropout"
+        self.name = "GRU34 using GRU1 with Dropout only"
         self.layer_dim = 1  # number of layers
         self.dropout = 0.05
         self.input_dim = input_dim  # input size
@@ -368,8 +349,7 @@ class GRUModel35(nn.Module):
 
         # with batch_first = True, only the input and output tensors are reported with batch first.
         # The initial memory states (h_init and c_init) are still reported with batch second.
-        self.gru_1 = nn.GRU(input_dim, self.hidden_dim, self.layer_dim, batch_first=True, dropout=0)
-        # self.mish_1 = nn.Mish()
+        self.gru_1 = nn.GRU(input_dim, self.hidden_dim, self.layer_dim, batch_first=True, dropout=self.dropout)
         self.drop_1 = nn.Dropout3d(p=self.dropout)
         self.fc_1 = nn.Linear(self.hidden_dim, self.output_dim)
         self.cuda = torch.cuda.is_available()
@@ -379,10 +359,8 @@ class GRUModel35(nn.Module):
 
     def convert_to_cuda(self):
         self.gru_1.cuda()
-        # self.mish_1.cuda()
         self.drop_1.cuda()
         self.fc_1.cuda()
-
 
     def forward(self, x):
         h_1 = torch.zeros(self.layer_dim, x.size(0), self.hidden_dim).requires_grad_()  # hidden state
@@ -393,7 +371,6 @@ class GRUModel35(nn.Module):
 
         # Propagate input through GRU with Mish Activation Layers
         out, _ = self.gru_1(x, h_1.detach())
-        # out = self.mish_1(out)
         out = self.drop_1(out)
         out = self.fc_1(out)
         return out

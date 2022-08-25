@@ -71,19 +71,21 @@ class LSTMModel1(nn.Module):
 
         """
 
-    def __init__(self, input_dim, hidden_dim, output_dim, dropout=0, layer_dim=1):
+    def __init__(self, input_dim, hidden_dim, output_dim):
         """Works both on CPU and GPU without additional modifications"""
         super(LSTMModel1, self).__init__()
         self.name = "Basic simple LSTM with Sliding Window"
 
         # Defining the number of layers and the nodes in each layer
         self.hidden_dim = hidden_dim
-        self.layer_dim = layer_dim
         self.output_dim = output_dim
+        self.dropout = 0
+        self.layer_dim = 1
 
         # LSTM layers (default 1)
         # setting batch_first=True requires the input to have the shape [batch_size, seq_len, input_size]
-        self.lstm = nn.LSTM(input_dim, hidden_dim, layer_dim, batch_first=True, dropout=dropout)
+        self.lstm = nn.LSTM(input_size=input_dim, hidden_size=hidden_dim,
+                            num_layers=self.layer_dim, batch_first=True, dropout=self.dropout)
 
         # Fully connected layer maps last LSTM output (hidden dimension) to the label dimension
         self.fc = nn.Linear(hidden_dim, output_dim)
@@ -124,22 +126,20 @@ class LSTMModel2(nn.Module):
     (via hidden_size), you have defined the 2 Fully Connected layers, the ReLU layer, and some helper variables. Next,
     you are going to define the forward pass of the LSTM
     """
-    def __init__(self, seq_length_input, input_dim, hidden_dim, seq_length_output, output_dim, dropout, layer_dim):
+    def __init__(self, input_dim, hidden_dim, output_dim):
         super(LSTMModel2, self).__init__()
         self.name = "LSTM2 with 2 FC and 2 ReLU"
-        self.num_layers = layer_dim  # number of layers
-        self.dropout = dropout
         self.input_size = input_dim  # input size
         self.hidden_size = hidden_dim  # hidden state
         self.output_dim = output_dim  # outputs
-        self.seq_length_input = seq_length_input  # sequence length
-        self.seq_length_output = seq_length_output  # otput length of timeseries in the future
         self.inner_size = 2 * hidden_dim
+        self.dropout = 0
+        self.layer_dim = 1
 
         # with batch_first = True, only the input and output tensors are reported with batch first.
         # The initial memory states (h_init and c_init) are still reported with batch second.
         self.lstm = nn.LSTM(input_size=input_dim, hidden_size=hidden_dim, 
-                            num_layers=layer_dim, batch_first=True, dropout=dropout)  # lstm
+                            num_layers=self.layer_dim, batch_first=True, dropout=self.dropout)
         self.relu_1 = nn.ReLU()
         self.fc_1 = nn.Linear(hidden_dim, self.inner_size)  # fully connected 1
         self.relu_2 = nn.ReLU()
@@ -160,9 +160,9 @@ class LSTMModel2(nn.Module):
     def forward(self, x):
         # print(f"x: {x.shape}")
         # define the hidden state, and internal state first, initialized with zeros
-        h_0 = Variable(torch.zeros(self.num_layers, x.shape[0], self.hidden_size))  # hidden state
+        h_0 = Variable(torch.zeros(self.layer_dim, x.shape[0], self.hidden_size))  # hidden state
         # print(f"h_0: {h_0.shape}")
-        c_0 = Variable(torch.zeros(self.num_layers, x.shape[0], self.hidden_size))  # internal state
+        c_0 = Variable(torch.zeros(self.layer_dim, x.shape[0], self.hidden_size))  # internal state
         # print(f"c_0: {c_0.shape}")
 
         if self.cuda:
@@ -192,22 +192,20 @@ class LSTMModel3(nn.Module):
     (via hidden_size), you have defined the 2 Fully Connected layers, the ReLU layer, and some helper variables. Next,
     you are going to define the forward pass of the LSTM
     """
-    def __init__(self, seq_length_input, input_dim, hidden_dim, seq_length_output, output_dim, dropout, layer_dim):
+    def __init__(self, input_dim, hidden_dim, output_dim):
         super(LSTMModel3, self).__init__()
         self.name = "LSTM3 with 2 FC and 2 MISH"
-        self.num_layers = layer_dim  # number of layers
-        self.dropout = dropout
         self.input_size = input_dim  # input size
         self.hidden_size = hidden_dim  # hidden state
         self.output_dim = output_dim  # outputs
-        self.seq_length_input = seq_length_input  # sequence length
-        self.seq_length_output = seq_length_output  # otput length of timeseries in the future
         self.inner_size = 2 * hidden_dim
+        self.dropout = 0
+        self.layer_dim = 1
 
         # with batch_first = True, only the input and output tensors are reported with batch first.
         # The initial memory states (h_init and c_init) are still reported with batch second.
         self.lstm_1 = nn.LSTM(input_size=input_dim, hidden_size=hidden_dim,
-                            num_layers=layer_dim, batch_first=True, dropout=dropout)  # lstm
+                              num_layers=self.layer_dim, batch_first=True, dropout=self.dropout)  # lstm
         self.mish_1 = nn.Mish()
         self.fc_1 = nn.Linear(hidden_dim, self.inner_size)  # fully connected 1
         self.mish_2 = nn.Mish()
@@ -227,9 +225,9 @@ class LSTMModel3(nn.Module):
     def forward(self, x):
         # print(f"x: {x.shape}")
         # define the hidden state, and internal state first, initialized with zeros
-        h_0 = Variable(torch.zeros(self.num_layers, x.shape[0], self.hidden_size))  # hidden state
+        h_0 = Variable(torch.zeros(self.layer_dim, x.shape[0], self.hidden_size))  # hidden state
         # print(f"h_0: {h_0.shape}")
-        c_0 = Variable(torch.zeros(self.num_layers, x.shape[0], self.hidden_size))  # internal state
+        c_0 = Variable(torch.zeros(self.layer_dim, x.shape[0], self.hidden_size))  # internal state
         # print(f"c_0: {c_0.shape}")
 
         if self.cuda:
@@ -259,17 +257,15 @@ class LSTMModel4(nn.Module):
     (via hidden_size), you have defined the 2 Fully Connected layers, the ReLU layer, and some helper variables. Next,
     you are going to define the forward pass of the LSTM
     """
-    def __init__(self, seq_length_input, input_dim, hidden_dim, seq_length_output, output_dim, dropout, layer_dim):
+    def __init__(self, input_dim, hidden_dim, output_dim, dropout, layer_dim):
         super(LSTMModel4, self).__init__()
         self.name = "LSTM4 with Dropout and 3 FC and 2 MISH"
-        self.num_layers = layer_dim  # number of layers
         self.dropout = dropout
         self.input_size = input_dim  # input size
         self.hidden_size = hidden_dim  # hidden state
         self.output_dim = output_dim  # outputs
-        self.seq_length_input = seq_length_input  # sequence length
-        self.seq_length_output = seq_length_output  # otput length of timeseries in the future
         self.inner_size = 2 * hidden_dim
+        self.layer_dim = 1  # number of layers
         self.lstm_dropout = 0.1
 
         # with batch_first = True, only the input and output tensors are reported with batch first.
@@ -305,11 +301,11 @@ class LSTMModel4(nn.Module):
 
     def forward(self, x):
         # define the hidden state, and internal state first, initialized with zeros
-        h_0 = Variable(torch.zeros(self.num_layers, x.shape[0], self.hidden_size))  # hidden state
-        c_0 = Variable(torch.zeros(self.num_layers, x.shape[0], self.hidden_size))  # internal state
+        h_0 = Variable(torch.zeros(self.layer_dim, x.shape[0], self.hidden_size))  # hidden state
+        c_0 = Variable(torch.zeros(self.layer_dim, x.shape[0], self.hidden_size))  # internal state
 
-        h_0_2 = Variable(torch.zeros(self.num_layers, x.shape[0], self.inner_size))  # hidden state
-        c_0_2 = Variable(torch.zeros(self.num_layers, x.shape[0], self.inner_size))  # internal state
+        h_0_2 = Variable(torch.zeros(self.layer_dim, x.shape[0], self.inner_size))  # hidden state
+        c_0_2 = Variable(torch.zeros(self.layer_dim, x.shape[0], self.inner_size))  # internal state
 
         if self.cuda:
             x = x.cuda()

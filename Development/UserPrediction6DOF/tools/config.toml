@@ -12,3 +12,13 @@ dim_z = 7           # measurement vector dimension
 var_R = 1e-6        # measurement noise variance
 var_Q_pos = 1e3     # process noise variance (positional components)
 var_Q_ang = 4e6     # process noise variance (angular components)
+
+# RNN
+dataset =
+prepare_raw_dataset=False,
+prepare_test=False,
+add_sliding_window=False,
+load_before_split_with_sliding=False,
+load_test_val_train_split_with_sliding=True,
+split_train_test_with_sliding=False,
+load_train_test_with_sliding=False

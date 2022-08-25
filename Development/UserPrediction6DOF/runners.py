@@ -110,17 +110,12 @@ class RNNRunner:
         self.dists_path = None  # set by prepare_environment()
         self.model = None  # set by select_model()
         self.params = None  # set by select_model()
-        self.prepare_raw_dataset = False
-        self.prepare_test = False
-        self.add_sliding_window = False
-        self.load_before_split_with_sliding = False
-        self.load_test_val_train_split_with_sliding = False
-        self.split_train_test_with_sliding = True
         self.X, self.y = [], []
         self.X_w, self.y_w = [], []
         self.X_train, self.X_val, self.X_test = [], [], []
         self.y_train, self.y_val, self.y_test = [], [], []
         self.plotter = DataPlotter()
+        self.config = None
 
         # -------------  FEATURES ---------------#
         self.features = self.cfg['pos_coords'] + self.cfg['quat_coords'] + self.cfg['velocity']
@@ -198,30 +193,22 @@ class RNNRunner:
         # batch_first=True --> input is [batch_size, seq_len, input_size]
         # SELECTS MODEL
         if model_name == "lstm1":
-            self.model = LSTMModel1(self.input_dim, self.hidden_dim,
-                                    self.output_dim, self.dropout, self.layer_dim)
+            self.model = LSTMModel1(self.input_dim, self.hidden_dim, self.output_dim)
         elif model_name == "lstm2":
-            self.model = LSTMModel2(self.seq_length_input, self.input_dim, self.hidden_dim,
-                                    self.seq_length_output, self.output_dim,
-                                    self.dropout, self.layer_dim)
+            self.model = LSTMModel2(self.input_dim, self.hidden_dim, self.output_dim)
         elif model_name == "lstm3":
-            self.model = LSTMModel3(self.seq_length_input, self.input_dim, self.hidden_dim,
-                                    self.seq_length_output, self.output_dim,
-                                    self.dropout, self.layer_dim)
+            self.model = LSTMModel3(self.input_dim, self.hidden_dim, self.output_dim)
         elif model_name == "lstm4":
-            self.model = LSTMModel4(self.seq_length_input, self.input_dim, self.hidden_dim,
-                                    self.seq_length_output, self.output_dim,
-                                    self.dropout, self.layer_dim)
+            self.model = LSTMModel4(self.input_dim, self.hidden_dim, self.output_dim)
         elif model_name == "lstm-fcn1":
             self.model = LSTMFCNModel1(self.input_dim, self.output_dim, self.seq_length_input)
 
         elif model_name == "gru1":
             self.model = GRUModel1(self.input_dim, self.hidden_dim,
-                                   self.output_dim, self.dropout, self.layer_dim)
+                                   self.output_dim)
 
         elif model_name == "gru3":
-            self.model = GRUModel3(self.input_dim, self.hidden_dim,
-                                   self.output_dim, self.dropout, self.layer_dim)
+            self.model = GRUModel3(self.input_dim, self.hidden_dim, self.output_dim)
         elif model_name == "gru31":
             self.model = GRUModel31(self.input_dim, self.hidden_dim, self.output_dim)
 
