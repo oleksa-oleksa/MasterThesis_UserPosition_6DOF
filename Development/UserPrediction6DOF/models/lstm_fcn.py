@@ -34,8 +34,13 @@ class LSTMFCNModel1(nn.Module):
 
         # LSTM layers (default 1)
         # setting batch_first=True requires the input to have the shape [batch_size, seq_len, input_size]
-        self.lstm = LSTMModel1(input_dim, self.hidden_dim, output_dim, dropout=0, layer_dim=1)
+        self.lstm = nn.LSTM(input_size=input_dim, hidden_size=hidden_dim,
+                            num_layers=self.layer_dim, batch_first=True, dropout=self.dropout)
         self.dropout = nn.Dropout2d(0.8)
+
+
+        # Fully connected layer maps last LSTM output (hidden dimension) to the label dimension
+        self.fc = nn.Linear(hidden_dim, output_dim)
 
         # PyTorch initializes the conv and linear weights with kaiming_uniform
         self.conv1 = nn.Conv1d(in_channels=input_dim, out_channels=128, kernel_size=8)
