@@ -136,11 +136,9 @@ class RNNRunner:
         # self.num_past = 20  # number of past time series to predict future
         self.input_dim = len(self.features)
         self.output_dim = len(self.outputs)  # 3 position parameter + 4 rotation parameter
-        self.hidden_dim = 512  # number of features in hidden state
-        self.batch_size = 1024
+        self.hidden_dim = 1024  # number of features in hidden state
+        self.batch_size = 512
         self.n_epochs = 250
-        self.dropout = 0
-        self.layer_dim = 1  # the number of RNN layers stacked on top of each other
         self.seq_length_input = 20  # input length of timeseries from the past
         self.seq_length_output = self.pred_step  # output length of timeseries in the future
 
@@ -312,7 +310,6 @@ class RNNRunner:
             self.y_train = utils.load_numpy_array(self.dataset_path, 'y_train')
             self.y_test = utils.load_numpy_array(self.dataset_path, 'y_test')
 
-
     # --------------- RUN RNN PREDICTOR --------------------- #
     def run(self):
         self.print_model_info()
@@ -372,8 +369,10 @@ class RNNRunner:
 
         # log train/val losses as csv-files
         utils.log_losses(nn_train.train_losses, nn_train.val_losses, self.model_name, self.params, pred_dic)
+
         # log model parameters
         utils.log_parameters(df_results, self.params)
+
         # log predicted values and targets
         utils.log_predictions(predictions, self.model_name, self.params, pred_dic)
         # log_targets(targets, self.model_name)

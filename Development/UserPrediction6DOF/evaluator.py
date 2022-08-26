@@ -40,6 +40,7 @@
 import numpy as np
 from pyquaternion import Quaternion
 import logging
+import warnings
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 
 
@@ -145,9 +146,13 @@ class DeepLearnEvaluator():
 
     @staticmethod
     def calc_angular_dist(preds_rot, actual_rot):
+
         zs = [q1 * q2.conjugate for q1, q2 in zip(preds_rot, actual_rot)]
-        theta = [2 * np.arccos(np.abs(z.real)) for z in zs]
-        return np.array(theta)
+        reals = np.fromiter((z.real for z in zs), dtype=float)
+        reals = reals[(reals >= -1) & (reals <=1)]
+        theta = 2*np.arccos(np.abs(reals))
+        logging.info(f'np.arccos() out or range [-1..1]: {preds_rot.shape[0] - theta.shape[0]} times!')
+        return theta
 
     def compute_metrics(self, preds_pos, preds_rot, actual_pos, actual_rot):
         """
@@ -162,7 +167,7 @@ class DeepLearnEvaluator():
         # Mean Absolute Error (MAE)
         self.metrics['mae_euc'] = np.sum(self.euc_dists) / self.euc_dists.shape[0]
         logging.info("MAE position = %s", self.metrics['mae_euc'])
-        self.metrics['mae_ang'] = np.rad2deg(np.sum(self.angular_dist) / preds_rot.shape[0])
+        self.metrics['mae_ang'] = np.rad2deg(np.sum(self.angular_dist) / self.angular_dist.shape[0])
         logging.info("MAE rotation angular = %s", self.metrics['mae_ang'])
         self.metrics['mae_geo'] = np.rad2deg(np.sum(self.geodesic_dist) / self.geodesic_dist.shape[0])
         logging.info("MAE rotation geodesic = %s", self.metrics['mae_geo'])

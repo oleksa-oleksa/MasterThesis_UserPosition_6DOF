@@ -338,7 +338,7 @@ def log_parameters(df_results, params):
     except IOError:
         print("I/O error")
 
-    logging.info(f"log_path file {log_path} exists: {os.path.exists(log_path)}")
+    # logging.info(f"log_path file {log_path} exists: {os.path.exists(log_path)}")
     logging.info(f"Saved model parameters to file: {csv_file}")
 
 
