@@ -190,7 +190,6 @@ class RNNRunner:
                 self.lr_multiplicator = float(os.getenv('LR_MULTIPLICATOR'))
 
     def create_model(self, model_name):
-        # batch_first=True --> input is [batch_size, seq_len, input_size]
         # SELECTS MODEL
         known_models = {
             'lstm1': LSTMModel1,
@@ -214,35 +213,6 @@ class RNNRunner:
 
         self.model = selected_model(self.input_dim, self.hidden_dim, self.output_dim)
 
-
-        # if model_name == "lstm1":
-        #     self.model = LSTMModel1(self.input_dim, self.hidden_dim, self.output_dim)
-        # elif model_name == "lstm2":
-        #     self.model = LSTMModel2(self.input_dim, self.hidden_dim, self.output_dim)
-        # elif model_name == "lstm3":
-        #     self.model = LSTMModel3(self.input_dim, self.hidden_dim, self.output_dim)
-        # elif model_name == "lstm4":
-        #     self.model = LSTMModel4(self.input_dim, self.hidden_dim, self.output_dim)
-        # elif model_name == "lstm-fcn1":
-        #     self.model = LSTMFCNModel1(self.input_dim, self.output_dim, self.seq_length_input)
-        #
-        # elif model_name == "gru1":
-        #     self.model = GRUModel1(self.input_dim, self.hidden_dim,
-        #                            self.output_dim)
-        #
-        # elif model_name == "gru3":
-        #     self.model = GRUModel3(self.input_dim, self.hidden_dim, self.output_dim)
-        # elif model_name == "gru31":
-        #     self.model = GRUModel31(self.input_dim, self.hidden_dim, self.output_dim)
-        #
-        # elif model_name == "gru32":
-        #     self.model = GRUModel32(self.input_dim, self.hidden_dim, self.output_dim)
-        # elif model_name == "gru33":
-        #     self.model = GRUModel33(self.input_dim, self.hidden_dim, self.output_dim)
-        # elif model_name == "gru34":
-        #     self.model = GRUModel34(self.input_dim, self.hidden_dim, self.output_dim)
-        # elif model_name == "gru35":
-        #     self.model = GRUModel35(self.input_dim, self.hidden_dim, self.output_dim)
         self.params = {'LAT': self.pred_window[0], 'epochs': self.n_epochs, 'hidden_dim': self.hidden_dim,
                        'batch_size': self.batch_size, 'model': model_name, 'seq_length_input': self.seq_length_input,
                        'lr': self.learning_rate, 'lr_reducing': self.reducing_learning_rate, 'lr_epochs': self.lr_epochs,
@@ -276,43 +246,21 @@ class RNNRunner:
         if not os.path.exists(test_path):
             os.makedirs(test_path, exist_ok=True)
         df_test_slice.to_csv(os.path.join(test_path, '1.csv'), index=False)
-        logging.info('TEST 1.csv for Kalman and Baseline is created!')
+        logging.info(f'TEST 1.csv for {self.model_name} is created!')
 
-    def prepare_dataset(self, prepare_raw_dataset=False,
-                        prepare_test=False,
-                        add_sliding_window=False,
-                        load_before_split_with_sliding=False,
-                        load_test_val_train_split_with_sliding=False,
-                        split_train_test_with_sliding=False,
-                        load_train_test_with_sliding=False):
-        if prepare_raw_dataset:
-            # Read full dataset from CSV file
-            df = dataset_tools.load_dataset(self.dataset_path)
-            # create 2D arrays of features and outputs
-            self.X, self.y = dataset_tools.prepare_X_y(df, self.features, self.seq_length_input, self.pred_step, self.outputs)
+    def _prepare_raw_dataset(self):
+        # Read full dataset from CSV file
+        df = dataset_tools.load_dataset(self.dataset_path)
+        # create 2D arrays of features and outputs
+        self.X, self.y = dataset_tools.prepare_X_y(df, self.features, self.seq_length_input, self.pred_step, self.outputs)
 
-        # prepare and save separate file for testing with Kalman and Baseline
-        if prepare_test:
-            df = dataset_tools.load_dataset(self.dataset_path)
-            # short test if train-val-test was used
-            df_test_slice = pd.DataFrame(data=df.iloc[96023:, :], columns=df.columns)
-            # test without validation dataset
-            # df_test_slice = pd.DataFrame(data=df.iloc[84006:, :], columns=df.columns)
-            print(df_test_slice.shape)
+    def _add_sliding_window(self):
+        # Features and outputs with sequence_len = sliding window
+        self.X_w, self.y_w = dataset_tools.add_sliding_window(self.X, self.y, self.seq_length_input, self.pred_step)
+        utils.save_numpy_array(self.dataset_path, 'X_w', self.X_w)
+        utils.save_numpy_array(self.dataset_path, 'y_w', self.y_w)
 
-            test_path = os.path.join(self.dataset_path, 'test')
-            if not os.path.exists(test_path):
-                os.makedirs(test_path, exist_ok=True)
-            df_test_slice.to_csv(os.path.join(test_path, '1.csv'), index=False)
-            logging.info('TEST 1.csv for Kalman and Baseline is created!')
-
-        if add_sliding_window:
-            # Features and outputs with sequence_len = sliding window
-            self.X_w, self.y_w = dataset_tools.add_sliding_window(self.X, self.y, self.seq_length_input, self.pred_step)
-            utils.save_numpy_array(self.dataset_path, 'X_w', self.X_w)
-            utils.save_numpy_array(self.dataset_path, 'y_w', self.y_w)
-
-        if load_before_split_with_sliding:
+    def _load_before_split_with_sliding(self):
             self.X_w = utils.load_numpy_array(self.dataset_path, 'X_w')
             self.y_w = utils.load_numpy_array(self.dataset_path, 'y_w')
 
@@ -335,7 +283,7 @@ class RNNRunner:
             utils.save_numpy_array(path, 'y_val', self.y_val)
             utils.save_numpy_array(path, 'y_test', self.y_test)
 
-        if load_test_val_train_split_with_sliding:
+    def _load_test_val_train_split_with_sliding(self):
             path = os.path.join(self.dataset_path, 'train_val_test')
             self.X_train = utils.load_numpy_array(path, 'X_train')
             self.X_val = utils.load_numpy_array(path, 'X_val')
@@ -344,13 +292,13 @@ class RNNRunner:
             self.y_val = utils.load_numpy_array(path, 'y_val')
             self.y_test = utils.load_numpy_array(path, 'y_test')
 
-        if split_train_test_with_sliding:
+    def _split_train_test_with_sliding(self):
             self.X_w = utils.load_numpy_array(self.dataset_path, 'X_w')
             self.y_w = utils.load_numpy_array(self.dataset_path, 'y_w')
 
             # Splitting the data into train and test sets
             self.X_train, self.X_test, self.y_train, self.y_test = \
-                dataset_tools.test_train_split(self.X_w, self.y_w, 0.3)
+                dataset_tools.test_train_split(self.X_w, self.y_w, test_ratio=0.3)
 
             logging.info(f"X_train {self.X_train.shape}, X_test{self.X_test.shape}, "
                          f"y_train {self.y_train.shape}, y_test {self.y_test.shape}")
@@ -360,22 +308,19 @@ class RNNRunner:
             utils.save_numpy_array(self.dataset_path, 'y_train', self.y_train)
             utils.save_numpy_array(self.dataset_path, 'y_test', self.y_test)
 
-        if load_train_test_with_sliding:
+    def _load_train_test_with_sliding(self):
             self.X_train = utils.load_numpy_array(self.dataset_path, 'X_train')
             self.X_test = utils.load_numpy_array(self.dataset_path, 'X_test')
             self.y_train = utils.load_numpy_array(self.dataset_path, 'y_train')
             self.y_test = utils.load_numpy_array(self.dataset_path, 'y_test')
+
 
     # --------------- RUN RNN PREDICTOR --------------------- #
     def run(self):
         self.print_model_info()
 
         # preparing arrays for future initialization
-        self.prepare_dataset(load_test_val_train_split_with_sliding=True,
-                             bar=True)
-
-        self.dataset_load_val_....()
-        self.bar()
+        self._load_test_val_train_split_with_sliding()
 
         # Mean Squared Error Loss Function
         # average of the squared differences between actual values and predicted values
