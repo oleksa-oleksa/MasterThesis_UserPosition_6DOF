@@ -86,7 +86,7 @@ class GRUModel3(nn.Module):
         logging.info(F"Init model {self.name}")
 
     def convert_to_cuda(self):
-        self.gru_1.cuda()
+        self.gru.cuda()
         self.mish_1.cuda()
         self.fc_1.cuda()
         self.mish_2.cuda()
@@ -102,7 +102,7 @@ class GRUModel3(nn.Module):
             h_0 = h_0.cuda()
 
         # Propagate input through GRU
-        out, _ = self.gru_1(x, h_0.detach())
+        out, _ = self.gru(x, h_0.detach())
         # print(f"lstm output: {output.shape}")
         # print(f"hn before -1: {hn.shape}")
         # hn = hn.view(-1, self.hidden_size)  # reshaping the data for Dense layer next
@@ -136,7 +136,7 @@ class GRUModel31(nn.Module):
 
         # with batch_first = True, only the input and output tensors are reported with batch first.
         # The initial memory states (h_init and c_init) are still reported with batch second.
-        self.gru = nn.GRU(input_size=input_dim, hidden_size=hidden_dim,
+        self.gru_1 = nn.GRU(input_size=input_dim, hidden_size=hidden_dim,
                           num_layers=self.layer_dim, batch_first=True, dropout=self.dropout)
         self.mish_1 = nn.Mish()
         self.fc_1 = nn.Linear(hidden_dim, self.output_dim)  # fully connected 1

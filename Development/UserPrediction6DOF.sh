@@ -21,6 +21,8 @@
 # to build container write from ssh terminal
 # singularity build --force --fakeroot UserPrediction6DOF.sif UserPrediction6DOF.def
 
+OUT_DIR=jobs_results_gru3_final
+
 source "/etc/slurm/local_job_dir.sh"
 mkdir -p "${LOCAL_JOB_DIR}/job_results"
 mkdir -p "${LOCAL_JOB_DIR}/job_results/figures"
@@ -28,7 +30,7 @@ mkdir -p "${LOCAL_JOB_DIR}/job_results/tabular"
 mkdir -p "${LOCAL_JOB_DIR}/job_results/tabular/distances"
 mkdir -p "${LOCAL_JOB_DIR}/job_results/predictions"
 mkdir -p "${LOCAL_JOB_DIR}/job_results/losses"
-mkdir -p $SLURM_SUBMIT_DIR/jobs_results_gru1_final
+mkdir -p $SLURM_SUBMIT_DIR/$OUT_DIR
 
 # run job and bind the output dir
 # Launch the singularity image with --nv for nvidia support.
@@ -39,7 +41,7 @@ singularity run --nv  --bind ${LOCAL_JOB_DIR}:/mnt/output ./UserPrediction6DOF.s
 # Doing this after the singularity run call ensures, that the data is copied back even when your singularity run fails.
 cd $LOCAL_JOB_DIR
 tar -zcvf zz_${SLURM_JOB_ID}.tar job_results
-cp zz_${SLURM_JOB_ID}.tar $SLURM_SUBMIT_DIR/jobs_results_gru1_final
+cp zz_${SLURM_JOB_ID}.tar $SLURM_SUBMIT_DIR/$OUT_DIR
 rm -rf ${LOCAL_JOB_DIR}/job_results
 
 
