@@ -27,8 +27,7 @@ class NNTrainer:
         logging.info(f'{self.model.name} training started!')
 
         # initialize the early_stopping object
-        early_stopping = EarlyStopping(patience=self.params['patience'], verbose=False,
-                                       delta=self.params['delta'], trace_func=logging.info)
+        early_stopping = EarlyStopping(trace_func=logging.info)
 
         for epoch in range(1, n_epochs + 1):
             batch_losses = []

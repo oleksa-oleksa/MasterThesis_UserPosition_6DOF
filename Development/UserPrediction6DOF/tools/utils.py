@@ -308,19 +308,22 @@ def log_parameters(df_results, params):
         result_path = os.path.join(os.getcwd(), 'results')
     csv_file = "model_parameters_adjust_log.csv"
     log_path = os.path.join(result_path, csv_file)
-    csv_columns = ['MAE_euc', 'MAE_ang', 'MAE_geo' 'RMSE_euc', 'RMSE_ang', 'RMSE_geo',
+    csv_columns = ['mae_euc', 'mae_ang', 'mae_geo', 'rmse_euc', 'rmse_ang', 'rmse_geo',
                    'LAT', 'epochs', 'hidden_dim', 'batch_size', 'model', 'seq_length_input',
                    'lr', 'lr_reducing', 'lr_epochs', 'lr_multiplicator', 'weight_decay']
     file_exists = os.path.isfile(log_path)
 
     # model evaluation results
     dict_data = [
-        {'MAE_euc': df_results.iloc[0]["mae_euc"],
-         'MAE_ang': df_results.iloc[0]["mae_ang"],
-         'MAE_geo': df_results.iloc[0]["mae_geo"],
-         'RMSE_euc': df_results.iloc[0]["rmse_euc"],
-         'RMSE_ang': df_results.iloc[0]["rmse_ang"],
-         'RMSE_geo': df_results.iloc[0]["rmse_ang"]}]
+        {'mae_euc': df_results.iloc[0]["mae_euc"],
+         'mae_ang': df_results.iloc[0]["mae_ang"],
+         'mae_geo': df_results.iloc[0]["mae_geo"],
+         'rmse_euc': df_results.iloc[0]["rmse_euc"],
+         'rmse_ang': df_results.iloc[0]["rmse_ang"],
+         'rmse_geo': df_results.iloc[0]["rmse_geo"]}]
+
+    # print(f'dict_data: {dict_data}')
+    # print(f'params: {params}')
 
     # adding model parameters
     dict_data[0].update(params)

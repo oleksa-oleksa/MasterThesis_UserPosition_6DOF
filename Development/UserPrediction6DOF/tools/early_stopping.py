@@ -6,7 +6,7 @@ cuda_path = "/mnt/output"
 
 class EarlyStopping:
     """Early stops the training if validation loss doesn't improve after a given patience."""
-    def __init__(self, patience=7, verbose=False, delta=0, path='checkpoint.pt', trace_func=print):
+    def __init__(self, patience=7, verbose=False, delta=0.005, path='checkpoint.pt', trace_func=print):
         """
         Args:
             patience (int): How long to wait after last time validation loss improved.
@@ -20,12 +20,14 @@ class EarlyStopping:
             trace_func (function): trace print function.
                             Default: print
         """
+
+        self.patience = 7
+        self.delta = delta
         self.verbose = verbose
         self.counter_increased = 0
         self.counter_repeated = 0
         self.early_stop = False
         self.val_loss_min = np.Inf
-        self.delta = delta
         self.output = './results/checkpoint'
         self.file = path
         self.path = None
@@ -35,7 +37,6 @@ class EarlyStopping:
             self.path = os.path.join(self.output, self.file)
         self.trace_func = trace_func
         self.last_loss = None
-        self.patience = patience
         self.patience_repeated = int(patience * 2.2)
         self.step = 0.0001
 
