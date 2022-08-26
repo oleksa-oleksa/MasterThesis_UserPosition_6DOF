@@ -74,7 +74,7 @@ class GRUModel3(nn.Module):
 
         # with batch_first = True, only the input and output tensors are reported with batch first.
         # The initial memory states (h_init and c_init) are still reported with batch second.
-        self.gru = nn.GRU(input_size=input_dim, hidden_size=hidden_dim,
+        self.gru_1 = nn.GRU(input_size=input_dim, hidden_size=hidden_dim,
                           num_layers=self.layer_dim, batch_first=True, dropout=self.dropout)
         self.mish_1 = nn.Mish()
         self.fc_1 = nn.Linear(hidden_dim, self.inner_size)  # fully connected 1
