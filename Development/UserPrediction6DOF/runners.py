@@ -138,7 +138,7 @@ class RNNRunner:
         self.output_dim = len(self.outputs)  # 3 position parameter + 4 rotation parameter
         self.hidden_dim = 1024  # number of features in hidden state
         self.batch_size = 512
-        self.n_epochs = 250
+        self.n_epochs = 500
         self.seq_length_input = 20  # input length of timeseries from the past
         self.seq_length_output = self.pred_step  # output length of timeseries in the future
 
