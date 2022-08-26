@@ -3,8 +3,6 @@ import torch.nn as nn
 import logging
 import os
 import math
-from UserPrediction6DOF.models.lstm import LSTMModel1
-from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
 
 
 class LSTMFCNModel1(nn.Module):
@@ -22,13 +20,13 @@ class LSTMFCNModel1(nn.Module):
         will process only1time step with N variables.
 
     """
-    def __init__(self, input_dim, output_dim, seq_length):
+    def __init__(self, input_dim, hidden_dim, output_dim):
         """Works both on CPU and GPU without additional modifications"""
         super(LSTMFCNModel1, self).__init__()
         self.name = "LSTM-FCN1"
 
         # Defining the number of layers and the nodes in each layer
-        self.hidden_dim = 512
+        self.hidden_dim_lstm = 512
         self.layer_dim = 1
         self.seq_length = torch.Tensor([seq_length])
 
