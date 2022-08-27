@@ -230,19 +230,22 @@ class GRUModel33(nn.Module):
         super(GRUModel33, self).__init__()
         self.name = "Stacked GRU33 with MISH and Dropout"
         self.layer_dim = 1  # number of layers
-        self.dropout = 0.2
+        self.dropout_layer = 0.2
+        self.dropout_gru = 0
         self.input_dim = input_dim  # input size
         self.hidden_dim = hidden_dim  # hidden state
         self.output_dim = output_dim  # outputs
 
         # with batch_first = True, only the input and output tensors are reported with batch first.
         # The initial memory states (h_init and c_init) are still reported with batch second.
-        self.gru_1 = nn.GRU(input_dim, self.hidden_dim, self.layer_dim, batch_first=True, dropout=self.dropout)
+        self.gru_1 = nn.GRU(input_dim, self.hidden_dim, self.layer_dim, batch_first=True, dropout=self.dropout_gru)
         self.mish_1 = nn.Mish()
-        self.drop_1 = nn.Dropout3d(p=self.dropout)
+        self.drop_1 = nn.Dropout3d(p=self.dropout_layer)
 
-        self.gru_2 = nn.GRU(self.hidden_dim, output_dim, self.layer_dim, batch_first=True, dropout=self.dropout)
+        self.gru_2 = nn.GRU(self.hidden_dim, self.hidden_dim, self.layer_dim, batch_first=True, dropout=self.dropout_gru)
         self.mish_2 = nn.Mish()
+
+        self.fc = nn.Linear(self.hidden_dim, self.output_dim)
 
         # self.pool = nn.AdaptiveMaxPool1d(output_size=output_dim)
 
@@ -257,6 +260,7 @@ class GRUModel33(nn.Module):
         self.drop_1.cuda()
         self.gru_2.cuda()
         self.mish_2.cuda()
+        self.fc.cuda()
         # self.pool.cuda()
 
     def forward(self, x):
@@ -279,7 +283,7 @@ class GRUModel33(nn.Module):
         out = self.mish_2(out)
 
         # out = self.pool(out)
-
+        out = self.fc(out)
         return out
 
 
