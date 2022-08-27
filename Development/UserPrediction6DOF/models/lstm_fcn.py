@@ -7,18 +7,19 @@ import math
 
 class LSTMFCNModel1(nn.Module):
     """
-        Implements LSTM FCN models, from the paper
-        LSTM Fully Convolutional Networks for Time Series Classification,
+        Implements MLSTM FCN model from the paper
+        MLSTM Fully Convolutional Networks for Time Series Classification,
         augment the fast classification performance of Temporal Convolutional
         layers with the precise classification
         of Long Short Term Memory Recurrent Neural Networks.
 
-        The dimension shuffle transposes the input univariate time series of
-        N time steps and1variable into a multivariate time series
-        of N variables and 1 time step. In other words, when dimension shuffle
-        is  applied  to  the  input  before  the  LSTM  block,  the LSTM block
-        will process only1time step with N variables.
+        The input to the model is of the shape (Batchsize, Number of timesteps, Number of variables)
 
+        The shuffle operation is applied before the LSTM to obtain the input shape
+        (Batchsize, Number of variables, Number of timesteps).
+
+        The original shape (Batchsize, Number of timesteps, Number of variables)
+        is passed to Fully Convolutional Network (FCN)
     """
     def __init__(self, input_dim, hidden_dim, output_dim):
         """Works both on CPU and GPU without additional modifications"""
@@ -26,21 +27,29 @@ class LSTMFCNModel1(nn.Module):
         self.name = "LSTM-FCN1"
 
         # Defining the number of layers and the nodes in each layer
-        self.hidden_dim_lstm = 512
+        self.hidden_dim_lstm = hidden_dim
         self.layer_dim = 1
-        self.seq_length = torch.Tensor([seq_length])
+        self.dropout_lstm = 0
+        self.dropout_layer = 0.8
+        self.timestamps = 20
 
-        # LSTM layers (default 1)
-        # setting batch_first=True requires the input to have the shape [batch_size, seq_len, input_size]
-        self.lstm = nn.LSTM(input_size=input_dim, hidden_size=hidden_dim,
-                            num_layers=self.layer_dim, batch_first=True, dropout=self.dropout)
-        self.dropout = nn.Dropout2d(0.8)
+        '''
+        original MLSTM-FCN from work of Karim et al. has Masking layer in Keras
+        # Masking is a way to tell sequence-processing layers that certain timesteps in an input are missing, 
+        and thus should be skipped when processing the data
+        We assume to get the dataset without missed timestemps because HoloLens is able 
+        to deliver sensor measurements constantly. 
+        '''
+        # ========= LSTM with Dropout ===================== #
+        # shape [batch_size, seq_len, input_size]
 
-
+        self.lstm = nn.LSTM(input_size=self.timestamps, hidden_size=self.hidden_dim_lstm,
+                            num_layers=self.layer_dim, batch_first=True, dropout=self.dropout_lstm)
+        self.dropout_lstm = nn.Dropout2d(self.dropout_layer)
         # Fully connected layer maps last LSTM output (hidden dimension) to the label dimension
-        self.fc = nn.Linear(hidden_dim, output_dim)
+        self.fc_lstm = nn.Linear(self.hidden_dim_lstm, output_dim)
 
-        # PyTorch initializes the conv and linear weights with kaiming_uniform
+        # ========= Fully connected networrk  ===================== #
         self.conv1 = nn.Conv1d(in_channels=input_dim, out_channels=128, kernel_size=8)
         self.bn1 = nn.BatchNorm1d(num_features=128, eps=1e-3, momentum=0.99)
         self.relu1 = nn.LeakyReLU()
@@ -66,6 +75,15 @@ class LSTMFCNModel1(nn.Module):
             self.convert_to_cuda()
         logging.info(F"Model {self.name} on GPU with cuda: {self.cuda}")
 
+    def pre_shuffle_input_lstm(self, x):
+        """
+        input will be pre-shuffled to be in the shape
+        (Batchsize, Number of variables, Number of timesteps)
+        """
+        if self.cuda:
+            x = x.cuda()
+        return torch.permute(x, (0, 2, 1))
+
     def convert_to_cuda(self):
         self.lstm.cuda()
         self.dropout.cuda()
@@ -83,12 +101,25 @@ class LSTMFCNModel1(nn.Module):
         self.softmax.cuda()
 
     def forward(self, x):
+
+        # ========= LSTM with Dropout ===================== #
+        # Initializing hidden state for first input with zeros
+        h0 = torch.zeros(self.layer_dim, x.size(0), self.hidden_dim).requires_grad_()
+        # Initializing cell state for first input with zeros
+        c0 = torch.zeros(self.layer_dim, x.size(0), self.hidden_dim).requires_grad_()
+
         if self.cuda:
             x = x.cuda()
+            h0, c0 = h0.cuda(), c0.cuda()
 
-        # 2D LSTM
-        print(f"x input: {x.size()}")
-        x_lstm = self.lstm(x)
+        print(f"Input: {x.size()}")
+
+        # shuffle operation is applied before the LSTM to obtain the input shape
+        # (Batchsize, Number of variables, Number of timesteps)
+        x_shuffled = self.pre_shuffle_input_lstm(x)
+        print(f"x_shuffled: {x_shuffled.size()}")
+
+        x_lstm, (hn, cn) = self.lstm(x_shuffled, (h0.detach(), c0.detach()))
         print(f'lstm after ltsm(x): {x_lstm.size()}')
         x_lstm = self.dropout(x_lstm)
 
@@ -96,6 +127,11 @@ class LSTMFCNModel1(nn.Module):
         # x_fcn = torch.squeeze(x)
         # print(f"x_fcn squeeze: {x_fcn.size()}")
         # dims in permute (tuple of python:ints) – The desired ordering of dimensions
+        '''
+        What permute function does is rearranges the original tensor according to the desired ordering, 
+        note permute is different from reshape function, because when apply permute, 
+        the elements in tensor follow the index you provide where in reshape it's not
+        '''
         x_fcn = torch.permute(x, (0, 2, 1))
         print(f'fcn after permute: {x_fcn.size()}')
 
