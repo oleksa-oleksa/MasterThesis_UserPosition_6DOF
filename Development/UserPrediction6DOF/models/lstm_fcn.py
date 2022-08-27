@@ -29,7 +29,7 @@ class LSTMFCNModel1(nn.Module):
         # Defining the number of layers and the nodes in each layer
         self.hidden_dim_lstm = hidden_dim
         self.layer_dim = 1
-        self.dropout_lstm = 0
+        self.dropout = 0
         self.dropout_layer = 0.8
         self.timestamps = 20
 
@@ -43,11 +43,11 @@ class LSTMFCNModel1(nn.Module):
         # ========= LSTM with Dropout ===================== #
         # shape [batch_size, seq_len, input_size]
 
-        self.lstm = nn.LSTM(input_size=self.timestamps, hidden_size=self.hidden_dim_lstm,
-                            num_layers=self.layer_dim, batch_first=True, dropout=self.dropout_lstm)
-        self.dropout_lstm = nn.Dropout2d(self.dropout_layer)
+        self.lstm_model = nn.LSTM(input_size=self.timestamps, hidden_size=self.hidden_dim_lstm,
+                            num_layers=self.layer_dim, batch_first=True, dropout=self.dropout)
+        self.lstm_dropout = nn.Dropout2d(self.dropout_layer)
         # Fully connected layer maps last LSTM output (hidden dimension) to the label dimension
-        self.fc_lstm = nn.Linear(self.hidden_dim_lstm, output_dim)
+        self.lstm_fc = nn.Linear(self.hidden_dim_lstm, output_dim)
 
         # ========= Fully connected networrk  ===================== #
         self.conv1 = nn.Conv1d(in_channels=input_dim, out_channels=128, kernel_size=8)
@@ -85,8 +85,9 @@ class LSTMFCNModel1(nn.Module):
         return torch.permute(x, (0, 2, 1))
 
     def convert_to_cuda(self):
-        self.lstm.cuda()
-        self.dropout.cuda()
+        self.lstm_model.cuda()
+        self.lstm_dropout.cuda()
+        self.lstm_fc.cuda()
         self.conv1.cuda()
         self.bn1.cuda()
         self.relu1.cuda()
@@ -104,9 +105,9 @@ class LSTMFCNModel1(nn.Module):
 
         # ========= LSTM with Dropout ===================== #
         # Initializing hidden state for first input with zeros
-        h0 = torch.zeros(self.layer_dim, x.size(0), self.hidden_dim).requires_grad_()
+        h0 = torch.zeros(self.layer_dim, x.size(0), self.hidden_dim_lstm).requires_grad_()
         # Initializing cell state for first input with zeros
-        c0 = torch.zeros(self.layer_dim, x.size(0), self.hidden_dim).requires_grad_()
+        c0 = torch.zeros(self.layer_dim, x.size(0), self.hidden_dim_lstm).requires_grad_()
 
         if self.cuda:
             x = x.cuda()
@@ -119,19 +120,13 @@ class LSTMFCNModel1(nn.Module):
         x_shuffled = self.pre_shuffle_input_lstm(x)
         print(f"x_shuffled: {x_shuffled.size()}")
 
-        x_lstm, (hn, cn) = self.lstm(x_shuffled, (h0.detach(), c0.detach()))
+        x_lstm, (hn, cn) = self.lstm_model(x_shuffled, (h0.detach(), c0.detach()))
         print(f'lstm after ltsm(x): {x_lstm.size()}')
-        x_lstm = self.dropout(x_lstm)
+        x_lstm = self.lstm_dropout(x_lstm)
+        x_lstm_out = self.lstm_fc(x_lstm)
+        print(f'lstm out: {x_lstm_out.size()}')
 
-        # 1D FCN
-        # x_fcn = torch.squeeze(x)
-        # print(f"x_fcn squeeze: {x_fcn.size()}")
-        # dims in permute (tuple of python:ints) – The desired ordering of dimensions
-        '''
-        What permute function does is rearranges the original tensor according to the desired ordering, 
-        note permute is different from reshape function, because when apply permute, 
-        the elements in tensor follow the index you provide where in reshape it's not
-        '''
+
         x_fcn = torch.permute(x, (0, 2, 1))
         print(f'fcn after permute: {x_fcn.size()}')
 
