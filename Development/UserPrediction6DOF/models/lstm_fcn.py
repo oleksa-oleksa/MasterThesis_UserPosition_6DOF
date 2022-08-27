@@ -132,9 +132,9 @@ class LSTMFCNModel1(nn.Module):
         x_fcn = self.conv1(x)
         x_fcn = self.bn1(x_fcn)
         x_fcn = self.relu1(x_fcn)
-        print(f"FCN out 1 block 128: {x.size()}")
+        print(f"FCN out 1 block 128: {x_fcn.size()}")
         x_fcn = self.squeeze_1(x_fcn)
-        print(f"FCN squeeze 1: {x.size()}")
+        print(f"FCN squeeze 1: {x_fcn.size()}")
 
 
         x_fcn = self.conv2(x_fcn)
@@ -173,7 +173,9 @@ class FCNSqueezeBLock(nn.Module):
         self.reduction_ratio = 16
         self.filters = filters
         self.reduced_filters = math.floor(filters / self.reduction_ratio)
+        print(f'reduction_ratio: {self.reduction_ratio}, filters: {self.filters}, reduced_filters: {self.reduced_filters}')
 
+        self.se_pool = self.pool = nn.AdaptiveMaxPool1d(output_size=self.filters)
         self.se_1 = nn.Linear(filters, self.reduced_filters)
         self.se_2 = nn.ReLU()
         self.se_3 = nn.Linear(self.reduced_filters, filters)
@@ -184,12 +186,14 @@ class FCNSqueezeBLock(nn.Module):
     def forward(self, x):
         if self.cuda:
             x = x.cuda()
-
-        x = self.se_1(x)
-        x = self.se_2(x)
-        x = self.se_3(x)
-        x = self.se_4(x)
-        x = torch.matmul(self.filters, x)
-
-        return x
+        print(f"Input Squeeze: {x.size()}")
+        x_se = self.se_pool(x)
+        print(f"se_pool out: {x_se.size()}")
+        x_se = self.se_1(x_se)
+        x_se = self.se_2(x_se)
+        x_se = self.se_3(x_se)
+        x_se = self.se_4(x_se)
+        print(f"se_4 out: {x_se.size()}")
+        x_out = torch.matmul(x, x_se)
+        return x_out
 
