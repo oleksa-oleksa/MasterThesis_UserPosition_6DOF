@@ -34,4 +34,4 @@ From: pytorch/pytorch:1.9.1-cuda11.1-cudnn8-runtime
     # python -m UserPrediction6DOF run -a rnn -m gru1 -w 100 -d data/interpolated
 
     # run with dataset with flipped quaternions
-    python -m UserPrediction6DOF run -a rnn -m gru31 -w 100 -d data/flipped
+    python -m UserPrediction6DOF run -a rnn -m gru33 -w 100 -d data/flipped
