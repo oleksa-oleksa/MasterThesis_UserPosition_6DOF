@@ -56,7 +56,7 @@ class GRUModel1(nn.Module):
         return out
 
 
-class GRUModelBidir1(nn.Module):
+class GRUModelBiDir1(nn.Module):
     """
     Specified bidirectional=True, pytorch will do the rest.
     The output will be (seq length, batch, hidden_size * 2)
@@ -73,7 +73,7 @@ class GRUModelBidir1(nn.Module):
     Doing fewer tensor operations, GRUs are often faster and require less memory than LSTMs.
     """
     def __init__(self, input_dim, hidden_dim, output_dim):
-        super(GRUModelBidir1, self).__init__()
+        super(GRUModelBiDir1, self).__init__()
         self.name = "Bidirectional GRU"
 
         # Defining the number of layers and the nodes in each layer
@@ -81,37 +81,42 @@ class GRUModelBidir1(nn.Module):
         self.output_dim = output_dim
         self.dropout = 0
         self.layer_dim = 1
-        self.num_directions = 2 # bidirectional GRU
 
-        # GRU layers
-        self.gru = nn.GRU(input_size=input_dim, hidden_size=hidden_dim * self.num_directions,
-                          num_layers=self.layer_dim, batch_first=True,
-                          dropout=self.dropout, bidirectional=True)
+        # Define the initial linear hidden layer
+        self.init_linear = nn.Linear(self.input_dim, self.input_dim)
+        self.bi_gru = nn.GRU(input_size=input_dim, hidden_size=self.hidden_dim,
+                             num_layers=self.layer_dim, batch_first=True,
+                             dropout=self.dropout, bidirectional=True)
 
-        # Fully connected layer
-        self.fc = nn.Linear(hidden_dim, output_dim)
+        '''
+        self.reverse_gru = torch.nn.GRU(input_size=hidden_dim, hidden_size=hidden_dim,
+                                        num_layers=self.layer_dim, batch_first=True,
+                                        dropout=self.dropout, bidirectional=False)
+        '''
+        # Define the output layer
+        self.out_linear = nn.Linear(self.hidden_dim * 2, output_dim)
 
         self.cuda = torch.cuda.is_available()
         if self.cuda:
-            self.gru.cuda()
-            self.fc.cuda()
+            self.init_linear.cuda()
+            self.bi_gru.cuda()
+            self.out_linear.cuda()
         logging.info(F"Model {self.name}. GPU with cuda: {self.cuda}")
 
     def forward(self, x):
         # Initializing hidden state for first input with zeros
-        h0 = torch.zeros(self.layer_dim * self.num_directions, x.size(0), self.hidden_dim * self.num_directions).requires_grad_()
+        h0 = torch.zeros(self.layer_dim, x.size(0), self.hidden_dim).requires_grad_()
 
         if self.cuda:
             x = x.cuda()
             h0 = h0.cuda()
 
+        linear_input = self.init_linear(x)
         # Forward propagation by passing in the input and hidden state into the model
-        out, _ = self.gru(x, h0.detach())
-        # print(f"out BEFORE FC {out.shape}")
-
-        # Convert the final state to our desired output shape (batch_size, output_dim)
-        out = self.fc(out)
-        # print(f"out AFTER FC {out.shape}")
+        bi_output, _ = self.bi_gru(linear_input, h0.detach())
+        print(f"bi_output {bi_output.shape}")
+        out = self.out_linear(bi_output)
+        print(f"out AFTER FC {out.shape}")
         return out
 
 

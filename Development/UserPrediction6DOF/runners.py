@@ -48,7 +48,7 @@ import torch.optim as optim
 from filterpy.common import Q_discrete_white_noise
 from filterpy.kalman import KalmanFilter
 from UserPrediction6DOF.models.lstm import LSTMModel1, LSTMModel2, LSTMModel3, LSTMModel4
-from UserPrediction6DOF.models.gru import GRUModel1, GRUModel3, GRUModel31, GRUModel32, GRUModel33, GRUModel35, GRUModelBidir1
+from UserPrediction6DOF.models.gru import GRUModel1, GRUModel3, GRUModel31, GRUModel32, GRUModel33, GRUModel35, GRUModelBiDir1
 from UserPrediction6DOF.models.lstm_fcn import LSTMFCNModel1
 from .nn_trainer import NNTrainer
 from scipy.linalg import block_diag
@@ -136,9 +136,9 @@ class RNNRunner:
         # self.num_past = 20  # number of past time series to predict future
         self.input_dim = len(self.features)
         self.output_dim = len(self.outputs)  # 3 position parameter + 4 rotation parameter
-        self.hidden_dim = 1024  # number of features in hidden state
+        self.hidden_dim = 16  # number of features in hidden state
         self.batch_size = 512
-        self.n_epochs = 500
+        self.n_epochs = 3
         self.seq_length_input = 20  # input length of timeseries from the past
         self.seq_length_output = self.pred_step  # output length of timeseries in the future
 
@@ -198,9 +198,8 @@ class RNNRunner:
             'gru31': GRUModel31,
             'gru32': GRUModel32,
             'gru33': GRUModel33,
-            'gru34': GRUModel34,
             'gru35': GRUModel35,
-            'gru-bi1': GRUModelBidir1
+            'gru-bi1': GRUModelBiDir1
         }
 
         try:
