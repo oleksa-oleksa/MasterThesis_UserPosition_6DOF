@@ -245,9 +245,9 @@ class GRUModel33(nn.Module):
         self.gru_2 = nn.GRU(self.hidden_dim, self.hidden_dim, self.layer_dim, batch_first=True, dropout=self.dropout_gru)
         self.mish_2 = nn.Mish()
 
-        self.fc = nn.Linear(self.hidden_dim, self.output_dim)
+        # self.fc = nn.Linear(self.hidden_dim, self.output_dim)
 
-        # self.pool = nn.AdaptiveMaxPool1d(output_size=output_dim)
+        self.pool = nn.AdaptiveMaxPool1d(output_size=output_dim)
 
         self.cuda = torch.cuda.is_available()
         if self.cuda:
@@ -260,8 +260,8 @@ class GRUModel33(nn.Module):
         self.drop_1.cuda()
         self.gru_2.cuda()
         self.mish_2.cuda()
-        self.fc.cuda()
-        # self.pool.cuda()
+        # self.fc.cuda()
+        self.pool.cuda()
 
     def forward(self, x):
         # print(f"x: {x.shape}")
@@ -282,8 +282,8 @@ class GRUModel33(nn.Module):
         out, _ = self.gru_2(out, h_2.detach())
         out = self.mish_2(out)
 
-        # out = self.pool(out)
-        out = self.fc(out)
+        out = self.pool(out)
+        # out = self.fc(out)
         return out
 
 
@@ -305,7 +305,7 @@ class GRUModel34(nn.Module):
 
         # with batch_first = True, only the input and output tensors are reported with batch first.
         # The initial memory states (h_init and c_init) are still reported with batch second.
-        self.gru_1 = nn.GRU(input_dim, self.hidden_dim, self.layer_dim, batch_first=True, dropout=self.dropout)
+        self.gru_1 = nn.GRU(input_dim, self.hidden_dim, self.layer_dim, batch_first=True, dropout=0)
         self.mish_1 = nn.Mish()
         self.drop_1 = nn.Dropout3d(p=self.dropout)
         self.fc_1 = nn.Linear(self.hidden_dim, self.output_dim)
@@ -353,7 +353,7 @@ class GRUModel35(nn.Module):
 
         # with batch_first = True, only the input and output tensors are reported with batch first.
         # The initial memory states (h_init and c_init) are still reported with batch second.
-        self.gru_1 = nn.GRU(input_dim, self.hidden_dim, self.layer_dim, batch_first=True, dropout=self.dropout)
+        self.gru_1 = nn.GRU(input_dim, self.hidden_dim, self.layer_dim, batch_first=True, dropout=0)
         self.drop_1 = nn.Dropout3d(p=self.dropout)
         self.fc_1 = nn.Linear(self.hidden_dim, self.output_dim)
         self.cuda = torch.cuda.is_available()
