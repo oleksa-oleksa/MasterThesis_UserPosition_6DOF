@@ -56,6 +56,111 @@ class GRUModel1(nn.Module):
         return out
 
 
+class GRUModel2(nn.Module):
+    """
+    Gated Recurrent Units (GRU) is a slightly more streamlined variant
+    that provides comparable performance and considerably faster computation.
+    Like LSTMs, they also capture long-term dependencies, but they do so
+    by using reset and update gates without any cell state.
+
+    While the update gate determines how much of the past information needs to be kept,
+    the reset gate decides how much of the past information to forget.
+    Doing fewer tensor operations, GRUs are often faster and require less memory than LSTMs.
+    """
+    def __init__(self, input_dim, hidden_dim, output_dim):
+        super(GRUModel2, self).__init__()
+        self.name = "GRU with Input Linear Layer"
+
+        # Defining the number of layers and the nodes in each layer
+        self.hidden_dim = hidden_dim
+        self.output_dim = output_dim
+        self.dropout = 0
+        self.layer_dim = 1
+
+        # GRU layers
+        self.init_linear = nn.Linear(input_dim, input_dim)
+
+        self.gru = nn.GRU(input_size=input_dim, hidden_size=hidden_dim,
+                          num_layers=self.layer_dim, batch_first=True, dropout=self.dropout)
+        self.out_linear = nn.Linear(self.hidden_dim, output_dim)
+
+        self.cuda = torch.cuda.is_available()
+        if self.cuda:
+            self.init_linear.cuda()
+            self.gru.cuda()
+            self.out_linear.cuda()
+        logging.info(F"Model {self.name}. GPU with cuda: {self.cuda}")
+
+    def forward(self, x):
+        # Initializing hidden state for first input with zeros
+        h0 = torch.zeros(self.layer_dim, x.size(0), self.hidden_dim).requires_grad_()
+
+        if self.cuda:
+            x = x.cuda()
+            h0 = h0.cuda()
+
+        linear_input = self.init_linear(x)
+        # Forward propagation by passing in the input and hidden state into the model
+        gru_output, _ = self.gru(linear_input, h0.detach())
+        # print(f"bi_output {bi_output.shape}")
+        out = self.out_linear(gru_output)
+        return out
+
+
+class GRUModel21(nn.Module):
+    """
+    Gated Recurrent Units (GRU) is a slightly more streamlined variant
+    that provides comparable performance and considerably faster computation.
+    Like LSTMs, they also capture long-term dependencies, but they do so
+    by using reset and update gates without any cell state.
+
+    While the update gate determines how much of the past information needs to be kept,
+    the reset gate decides how much of the past information to forget.
+    Doing fewer tensor operations, GRUs are often faster and require less memory than LSTMs.
+    """
+    def __init__(self, input_dim, hidden_dim, output_dim):
+        super(GRUModel21, self).__init__()
+        self.name = "GRU with Input Linear and Mish"
+
+        # Defining the number of layers and the nodes in each layer
+        self.hidden_dim = hidden_dim
+        self.output_dim = output_dim
+        self.dropout = 0
+        self.layer_dim = 1
+
+        # GRU layers
+        self.init_linear = nn.Linear(input_dim, input_dim)
+
+        self.gru = nn.GRU(input_size=input_dim, hidden_size=hidden_dim,
+                          num_layers=self.layer_dim, batch_first=True, dropout=self.dropout)
+        self.mish_1 = nn.Mish()
+        self.out_linear = nn.Linear(self.hidden_dim, output_dim)
+
+        self.cuda = torch.cuda.is_available()
+        if self.cuda:
+            self.init_linear.cuda()
+            self.gru.cuda()
+            self.mish_1.cuda()
+            self.out_linear.cuda()
+        logging.info(F"Model {self.name}. GPU with cuda: {self.cuda}")
+
+    def forward(self, x):
+        # Initializing hidden state for first input with zeros
+        h0 = torch.zeros(self.layer_dim, x.size(0), self.hidden_dim).requires_grad_()
+
+        if self.cuda:
+            x = x.cuda()
+            h0 = h0.cuda()
+
+        linear_input = self.init_linear(x)
+        # Forward propagation by passing in the input and hidden state into the model
+        gru_output, _ = self.gru(linear_input, h0.detach())
+        out = self.mish_1(gru_output)
+        # print(f"bi_output {bi_output.shape}")
+        out = self.out_linear(out)
+        return out
+
+
 class GRUModelBiDir1(nn.Module):
     """
     Specified bidirectional=True, pytorch will do the rest.
@@ -83,7 +188,7 @@ class GRUModelBiDir1(nn.Module):
         self.layer_dim = 1
 
         # Define the initial linear hidden layer
-        self.init_linear = nn.Linear(self.input_dim, self.input_dim)
+        self.init_linear = nn.Linear(input_dim, input_dim)
         self.bi_gru = nn.GRU(input_size=input_dim, hidden_size=self.hidden_dim,
                              num_layers=self.layer_dim, batch_first=True,
                              dropout=self.dropout, bidirectional=True)
@@ -105,7 +210,7 @@ class GRUModelBiDir1(nn.Module):
 
     def forward(self, x):
         # Initializing hidden state for first input with zeros
-        h0 = torch.zeros(self.layer_dim, x.size(0), self.hidden_dim).requires_grad_()
+        h0 = torch.zeros(self.layer_dim * 2, x.size(0), self.hidden_dim).requires_grad_()
 
         if self.cuda:
             x = x.cuda()
@@ -114,9 +219,71 @@ class GRUModelBiDir1(nn.Module):
         linear_input = self.init_linear(x)
         # Forward propagation by passing in the input and hidden state into the model
         bi_output, _ = self.bi_gru(linear_input, h0.detach())
-        print(f"bi_output {bi_output.shape}")
+        # print(f"bi_output {bi_output.shape}")
         out = self.out_linear(bi_output)
-        print(f"out AFTER FC {out.shape}")
+        # print(f"out AFTER FC {out.shape}")
+        return out
+
+
+class GRUModelBiDir2(nn.Module):
+    """
+    Specified bidirectional=True, pytorch will do the rest.
+    The output will be (seq length, batch, hidden_size * 2)
+    where the hidden_size * 2 features are the forward features
+    concatenated with the backward features.
+
+    Gated Recurrent Units (GRU) is a slightly more streamlined variant
+    that provides comparable performance and considerably faster computation.
+    Like LSTMs, they also capture long-term dependencies, but they do so
+    by using reset and update gates without any cell state.
+
+    While the update gate determines how much of the past information needs to be kept,
+    the reset gate decides how much of the past information to forget.
+    Doing fewer tensor operations, GRUs are often faster and require less memory than LSTMs.
+    """
+    def __init__(self, input_dim, hidden_dim, output_dim):
+        super(GRUModelBiDir2, self).__init__()
+        self.name = "Bidirectional GRU"
+
+        # Defining the number of layers and the nodes in each layer
+        self.hidden_dim = hidden_dim
+        self.output_dim = output_dim
+        self.dropout = 0
+        self.layer_dim = 1
+
+        # Define the initial linear hidden layer
+        self.init_linear = nn.Linear(input_dim, input_dim)
+        self.bi_gru = nn.GRU(input_size=input_dim, hidden_size=self.hidden_dim,
+                             num_layers=self.layer_dim, batch_first=True,
+                             dropout=self.dropout, bidirectional=True)
+
+        self.mish_1 = nn.Mish()
+        # Define the output layer
+        self.out_linear = nn.Linear(self.hidden_dim * 2, output_dim)
+
+        self.cuda = torch.cuda.is_available()
+        if self.cuda:
+            self.init_linear.cuda()
+            self.bi_gru.cuda()
+            self.mish_1.cuda()
+            self.out_linear.cuda()
+        logging.info(F"Model {self.name}. GPU with cuda: {self.cuda}")
+
+    def forward(self, x):
+        # Initializing hidden state for first input with zeros
+        h0 = torch.zeros(self.layer_dim * 2, x.size(0), self.hidden_dim).requires_grad_()
+
+        if self.cuda:
+            x = x.cuda()
+            h0 = h0.cuda()
+
+        linear_input = self.init_linear(x)
+        # Forward propagation by passing in the input and hidden state into the model
+        bi_output, _ = self.bi_gru(linear_input, h0.detach())
+        out = self.mish_1(bi_output)
+        # print(f"bi_output {bi_output.shape}")
+        out = self.out_linear(out)
+        # print(f"out AFTER FC {out.shape}")
         return out
 
 
