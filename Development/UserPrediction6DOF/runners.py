@@ -48,7 +48,7 @@ import torch.optim as optim
 from filterpy.common import Q_discrete_white_noise
 from filterpy.kalman import KalmanFilter
 from UserPrediction6DOF.models.lstm import LSTMModel1, LSTMModel2, LSTMModel3, LSTMModel4
-from UserPrediction6DOF.models.gru import GRUModel1, GRUModel3, GRUModel31, GRUModel32, GRUModel33, GRUModel34, GRUModel35
+from UserPrediction6DOF.models.gru import GRUModel1, GRUModel3, GRUModel31, GRUModel32, GRUModel33, GRUModel34, GRUModel35, GRUModelBidir1
 from UserPrediction6DOF.models.lstm_fcn import LSTMFCNModel1
 from .nn_trainer import NNTrainer
 from scipy.linalg import block_diag
@@ -199,7 +199,8 @@ class RNNRunner:
             'gru32': GRUModel32,
             'gru33': GRUModel33,
             'gru34': GRUModel34,
-            'gru35': GRUModel35
+            'gru35': GRUModel35,
+            'gru-bi1': GRUModelBidir1
         }
 
         try:

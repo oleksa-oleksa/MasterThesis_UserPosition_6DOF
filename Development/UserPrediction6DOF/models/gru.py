@@ -56,6 +56,65 @@ class GRUModel1(nn.Module):
         return out
 
 
+class GRUModelBidir1(nn.Module):
+    """
+    Specified bidirectional=True, pytorch will do the rest.
+    The output will be (seq length, batch, hidden_size * 2)
+    where the hidden_size * 2 features are the forward features
+    concatenated with the backward features.
+
+    Gated Recurrent Units (GRU) is a slightly more streamlined variant
+    that provides comparable performance and considerably faster computation.
+    Like LSTMs, they also capture long-term dependencies, but they do so
+    by using reset and update gates without any cell state.
+
+    While the update gate determines how much of the past information needs to be kept,
+    the reset gate decides how much of the past information to forget.
+    Doing fewer tensor operations, GRUs are often faster and require less memory than LSTMs.
+    """
+    def __init__(self, input_dim, hidden_dim, output_dim):
+        super(GRUModelBidir1, self).__init__()
+        self.name = "Bidirectional GRU"
+
+        # Defining the number of layers and the nodes in each layer
+        self.hidden_dim = hidden_dim
+        self.output_dim = output_dim
+        self.dropout = 0
+        self.layer_dim = 1
+        self.num_directions = 2 # bidirectional GRU
+
+        # GRU layers
+        self.gru = nn.GRU(input_size=input_dim, hidden_size=hidden_dim * self.num_directions,
+                          num_layers=self.layer_dim, batch_first=True,
+                          dropout=self.dropout, bidirectional=True)
+
+        # Fully connected layer
+        self.fc = nn.Linear(hidden_dim, output_dim)
+
+        self.cuda = torch.cuda.is_available()
+        if self.cuda:
+            self.gru.cuda()
+            self.fc.cuda()
+        logging.info(F"Model {self.name}. GPU with cuda: {self.cuda}")
+
+    def forward(self, x):
+        # Initializing hidden state for first input with zeros
+        h0 = torch.zeros(self.layer_dim * self.num_directions, x.size(0), self.hidden_dim * self.num_directions).requires_grad_()
+
+        if self.cuda:
+            x = x.cuda()
+            h0 = h0.cuda()
+
+        # Forward propagation by passing in the input and hidden state into the model
+        out, _ = self.gru(x, h0.detach())
+        # print(f"out BEFORE FC {out.shape}")
+
+        # Convert the final state to our desired output shape (batch_size, output_dim)
+        out = self.fc(out)
+        # print(f"out AFTER FC {out.shape}")
+        return out
+
+
 class GRUModel3(nn.Module):
     """
     Next you are going to use 2 LSTM layers with the same hyperparameters stacked over each other
