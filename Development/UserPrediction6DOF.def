@@ -20,18 +20,5 @@ From: pytorch/pytorch:1.9.1-cuda11.1-cudnn8-runtime
     # Start the training
     cd /opt
 
-    # LSTM
-    # run with interpolated dataset
-    # python -m UserPrediction6DOF run -a rnn -m lstm1 -w 100 -d data/interpolated
-
     # run with dataset with flipped quaternions
-    # python -m UserPrediction6DOF run -a rnn -m lstm3 -w 100 -d data/flipped
-
-
-    # ===============================
-    # GRU
-    # run with interpolated dataset
-    # python -m UserPrediction6DOF run -a rnn -m gru1 -w 100 -d data/interpolated
-
-    # run with dataset with flipped quaternions
-    python -m UserPrediction6DOF run -a rnn -m gru35 -w 100 -d data/flipped
+    python -m UserPrediction6DOF run -a rnn -m gru-bi1 -w 100 -d data/flipped
