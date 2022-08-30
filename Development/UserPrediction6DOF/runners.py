@@ -116,7 +116,6 @@ class RNNRunner:
         self.X_train, self.X_val, self.X_test = [], [], []
         self.y_train, self.y_val, self.y_test = [], [], []
         self.plotter = DataPlotter()
-        self.config = None
 
         # -------------  FEATURES ---------------#
         self.features = self.cfg['pos_coords'] + self.cfg['quat_coords'] + self.cfg['velocity']

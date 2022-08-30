@@ -147,6 +147,21 @@ class Application:
         runner = RNNRunner(model, self.pred_window, self.dataset_path, self.results_path)
         runner.run()
 
+    def run_rnn_pos_rot(self, model):
+        """Runs baseline (no-prediction) on all traces and evaluates the results"""
+        runner = RNNRunner(model, self.pred_window, self.dataset_path, self.results_path)
+        runner.run()
+
+    def run_rnn_pos(self, model):
+        """Runs baseline (no-prediction) on all traces and evaluates the results"""
+        runner = RNNRunner(model, self.pred_window, self.dataset_path, self.results_path)
+        runner.run()
+
+    def run_rnn_rot(self, model):
+        """Runs baseline (no-prediction) on all traces and evaluates the results"""
+        runner = RNNRunner(model, self.pred_window, self.dataset_path, self.results_path)
+        runner.run()
+
     def plot_datasets(self):
         """Plots interpolated trace"""
         plotter = DataPlotter()
@@ -459,7 +474,7 @@ class Application:
             '--algorithm',
             dest='algorithm',
             type=str,
-            choices=['rnn', 'kalman', 'baseline'],
+            choices=['rnn-pos-rot', 'rnn-pos', 'rnn-rot', 'rnn' 'kalman', 'baseline'],
             default='kalman',
             help='Selects which prediction algorithm is run on the data traces'
         )
