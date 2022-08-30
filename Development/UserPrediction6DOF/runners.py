@@ -103,6 +103,7 @@ class RNNRunner:
         self.cuda = torch.cuda.is_available()
         self.model_name = model_name
         self.pred_window = pred_window * 1e-3  # convert to seconds
+        self.dt = 0.005
         self.pred_step = int(self.pred_window / self.dt)
         self.dataset_path = dataset_path
         self.results_path = results_path
@@ -211,15 +212,15 @@ class RNNRunner:
         if dataset is None:
             logging.info(f'No dataset type for model {self.model_name} is provided!')
         elif dataset == 'full':
-            return cfg['pos_coords'] + cfg['quat_coords'] + self.cfg['velocity']
+            return ['x', 'y', 'z', 'qx', 'qy', 'qz', 'qw', 'velocity_x', 'velocity_y', 'velocity_z']
         elif dataset == 'position':
-            return cfg['pos_coords']
+            return ['x', 'y', 'z']
         elif dataset == 'position_velocity':
-            return cfg['pos_coords'] + cfg['velocity']
+            return ['x', 'y', 'z', 'velocity_x', 'velocity_y', 'velocity_z']
         elif dataset == 'rotation':
-            return cfg['quat_coords']
+            return ['qx', 'qy', 'qz', 'qw']
         elif dataset == 'rotation_velocity':
-            return cfg['quat_coords'] + cfg['velocity']
+            return ['qx', 'qy', 'qz', 'qw', 'velocity_x', 'velocity_y', 'velocity_z']
         else:
             logging.info(f'Unknown dataset type {dataset} for model {self.model_name}!')
 

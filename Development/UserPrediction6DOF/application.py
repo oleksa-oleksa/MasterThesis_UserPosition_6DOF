@@ -74,6 +74,7 @@ class Application:
         self.flipped_dataset_path = None
         self.column = None
         self.model = None
+        self.dataset_type = None
         self.norm_dataset_path = None
         self.norm_type = None
 
@@ -144,22 +145,7 @@ class Application:
 
     def run_rnn(self, model):
         """Runs baseline (no-prediction) on all traces and evaluates the results"""
-        runner = RNNRunner(model, self.pred_window, self.dataset_path, self.results_path)
-        runner.run()
-
-    def run_rnn_pos_rot(self, model):
-        """Runs baseline (no-prediction) on all traces and evaluates the results"""
-        runner = RNNRunner(model, self.pred_window, self.dataset_path, self.results_path)
-        runner.run()
-
-    def run_rnn_pos(self, model):
-        """Runs baseline (no-prediction) on all traces and evaluates the results"""
-        runner = RNNRunner(model, self.pred_window, self.dataset_path, self.results_path)
-        runner.run()
-
-    def run_rnn_rot(self, model):
-        """Runs baseline (no-prediction) on all traces and evaluates the results"""
-        runner = RNNRunner(model, self.pred_window, self.dataset_path, self.results_path)
+        runner = RNNRunner(model, self.pred_window, self.dataset_path, self.results_path, self.dataset_type)
         runner.run()
 
     def plot_datasets(self):
@@ -296,6 +282,7 @@ class Application:
             self.dataset_path = args.dataset_path
             self.results_path = args.results_path
             self.model = args.model
+            self.dataset_type = args.dataset_type
             if not os.path.exists(self.results_path):
                 os.makedirs(self.results_path)
             self.pred_window = np.asarray(args.pred_window)
@@ -474,8 +461,8 @@ class Application:
             '--algorithm',
             dest='algorithm',
             type=str,
-            choices=['rnn-pos-rot', 'rnn-pos', 'rnn-rot', 'rnn' 'kalman', 'baseline'],
-            default='kalman',
+            choices=['rnn', 'kalman', 'baseline'],
+            default='rnn',
             help='Selects which prediction algorithm is run on the data traces'
         )
 
@@ -490,6 +477,16 @@ class Application:
                      'gru-bi1', 'gru-bi2'],
             default='gru1',
             help='Selects RNN variant'
+        )
+
+        run_command_parser.add_argument(
+            '-t',
+            '--type',
+            dest='dataset_type',
+            type=str,
+            choices=['full', 'position', 'position_velocity', 'rotation', 'rotation_velocity'],
+            default='full',
+            help='Selects dataset variant'
         )
 
         run_command_parser.add_argument(
