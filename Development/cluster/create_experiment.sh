@@ -2,22 +2,17 @@
 echo "Bash version ${BASH_VERSION}..."
 out=experiment_parameters.csv
 
-echo "hidden_dim,batch_size,lr_adam,lr_epochs,lr_multiplicator" > $out
+echo "hidden_dim,batch_size,lr_adam,lr_epochs,lr_multiplicator,n_epochs" > $out
+lr_adam=0.0001
+lr_multiplicator=0.5
+lr_epochs=0.5
+n_epochs=500
 
-for hidden_dim in $(seq 7 1 10)
+for hidden_dim in $(seq 4 1 11)
     do
-        for batch_size in $(seq 7 1 9)
+        for batch_size in $(seq 4 1 11)
         do
-            for lr_adam in $(seq 0.0001 0.0002 0.0005)
-            do
-                for lr_epochs in $(seq 30 20 70)
-                do
-                    for lr_multiplicator in $(seq 0.1 0.1 0.5)
-                    do
-                        echo "$((2**$hidden_dim)),$((2**$batch_size)),$lr_adam,$lr_epochs,$lr_multiplicator" >> $out
-                    done
-                done
-            done
+           echo "$((2**$hidden_dim)),$((2**$batch_size)),$lr_adam,$lr_epochs,$lr_multiplicator,$n_epochs" >> $out
         done
     done
 echo "$out is written"
