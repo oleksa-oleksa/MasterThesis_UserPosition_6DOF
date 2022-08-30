@@ -98,11 +98,9 @@ class RNNRunner:
 
     """
 
-    def __init__(self, model_name, pred_window, dataset_path, results_path):
+    def __init__(self, model_name, pred_window, dataset_path, results_path, dataset_type):
         # -----  PRESET ----------#
         self.cuda = torch.cuda.is_available()
-        self.cfg = toml.load(config_path)
-        self.dt = self.cfg['dt']
         self.model_name = model_name
         self.pred_window = pred_window * 1e-3  # convert to seconds
         self.pred_step = int(self.pred_window / self.dt)
@@ -117,40 +115,31 @@ class RNNRunner:
         self.y_train, self.y_val, self.y_test = [], [], []
         self.plotter = DataPlotter()
 
-        # -------------  FEATURES ---------------#
-        self.features = self.cfg['pos_coords'] + self.cfg['quat_coords'] + self.cfg['velocity']
-        # only position and rotation
-        # self.features = self.cfg['pos_coords'] + self.cfg['quat_coords']
-
-        # --------------  OUTPUTS ---------------#
-        # position and rotation in future will be predicted
-        self.outputs = self.cfg['pos_coords'] + self.cfg['quat_coords']
-
         # ---------  MODEL HYPERPARAMETERS ----------#
-        self.reducing_learning_rate = True  # decreases LR every ls_epochs for 70%
-        self.learning_rate = 1e-4  # 1e-3 base Adam optimizer
+        self.reducing_learning_rate = True  # decreases LR every ls_epochs for lr_multiplicator
+        self.learning_rate = 1e-4
         self.lr_epochs = 30
         self.lr_multiplicator = 0.5
-        self.weight_decay = 1e-12  # 1e-6 base Adam optimizer
+        self.weight_decay = 1e-12
 
-        # self.num_past = 20  # number of past time series to predict future
+        self.features = self._create_features(dataset_type)
+        self.outputs = self._create_outputs(dataset_type)
         self.input_dim = len(self.features)
         self.output_dim = len(self.outputs)  # 3 position parameter + 4 rotation parameter
         self.hidden_dim = 32  # number of features in hidden state
         self.batch_size = 512
         self.n_epochs = 12
         self.seq_length_input = 20  # input length of timeseries from the past
-        self.seq_length_output = self.pred_step  # output length of timeseries in the future
 
         # -----  CREATE PYTORCH MODEL ----------#
         # prepare paths for environment
-        self.prepare_paths()
+        self._prepare_paths()
         # sets hyperparameters if they are in os.environ
-        self.set_model_hyperparams()
+        self._set_model_hyperparams()
         # create a RNN model with hyperparameters
-        self.create_model(model_name)
+        self._create_model(model_name)
 
-    def prepare_paths(self):
+    def _prepare_paths(self):
         self.dists_path = os.path.join(self.results_path, 'distances')
         if not os.path.exists(self.dists_path) and not self.cuda:
             os.makedirs(self.dists_path, exist_ok=True)
@@ -163,7 +152,7 @@ class RNNRunner:
             self.dists_path = os.path.join(self.results_path, 'distances')
             # logging.info(f"Cuda true. dists_path {self.dists_path}")
 
-    def set_model_hyperparams(self):
+    def _set_model_hyperparams(self):
         if 'RNN_PARAMETERS' in os.environ:
             logging.info("Using hyperparameters from os.environ")
             if 'HIDDEN_DIM' in os.environ:
@@ -185,7 +174,7 @@ class RNNRunner:
             if 'LR_MULTIPLICATOR' in os.environ:
                 self.lr_multiplicator = float(os.getenv('LR_MULTIPLICATOR'))
 
-    def create_model(self, model_name):
+    def _create_model(self, model_name):
         # SELECTS MODEL
         known_models = {
             'lstm1': LSTMModel1,
@@ -217,7 +206,37 @@ class RNNRunner:
                        'lr': self.learning_rate, 'lr_reducing': self.reducing_learning_rate, 'lr_epochs': self.lr_epochs,
                        'lr_multiplicator': self.lr_multiplicator, 'weight_decay': self.weight_decay}
 
-    def print_model_info(self):
+    def _create_features(self, dataset):
+        cfg = toml.load(config_path)
+        if dataset is None:
+            logging.info(f'No dataset type for model {self.model_name} is provided!')
+        elif dataset == 'full':
+            return cfg['pos_coords'] + cfg['quat_coords'] + self.cfg['velocity']
+        elif dataset == 'position':
+            return cfg['pos_coords']
+        elif dataset == 'position_velocity':
+            return cfg['pos_coords'] + cfg['velocity']
+        elif dataset == 'rotation':
+            return cfg['quat_coords']
+        elif dataset == 'rotation_velocity':
+            return cfg['quat_coords'] + cfg['velocity']
+        else:
+            logging.info(f'Unknown dataset type {dataset} for model {self.model_name}!')
+
+    def _create_outputs(self, dataset):
+        cfg = toml.load(config_path)
+        if dataset is None:
+            logging.info(f'No dataset type for model {self.model_name} is provided!')
+        elif dataset == 'full':
+            return cfg['pos_coords'] + cfg['quat_coords']
+        elif dataset == 'position' or dataset == 'position_velocity':
+            return cfg['pos_coords']
+        elif dataset == 'rotation' or dataset == 'rotation_velocity':
+            return cfg['quat_coords']
+        else:
+            logging.info(f'Unknown dataset type {dataset} for model {self.model_name}!')
+
+    def _print_model_info(self):
         logging.info("----------------- Runing RNN Predictor ---------------------")
         logging.info(f"RNN model is {self.model.name}.")
         logging.info("Using VCA GPU Cluster ") if self.cuda else logging.info("Using hardware CPU")
@@ -260,30 +279,33 @@ class RNNRunner:
         utils.save_numpy_array(self.dataset_path, 'y_w', self.y_w)
 
     def _load_before_split_with_sliding(self):
-            self.X_w = utils.load_numpy_array(self.dataset_path, 'X_w')
-            self.y_w = utils.load_numpy_array(self.dataset_path, 'y_w')
+        self.X_w = utils.load_numpy_array(self.dataset_path, 'X_w')
+        self.y_w = utils.load_numpy_array(self.dataset_path, 'y_w')
 
-            # Splitting the data into train, validation, and test sets
-            self.X_train, self.X_val, self.X_test, \
-                self.y_train, self.y_val, self.y_test = dataset_tools.train_val_test_split(self.X_w, self.y_w, 0.2)
+    def _split_dataset_with_sliding(self, load=False, path='train_val_test'):
+        if load:
+            self._load_before_split_with_sliding()
+        # Splitting the data into train, validation, and test sets
+        self.X_train, self.X_val, self.X_test, \
+        self.y_train, self.y_val, self.y_test = dataset_tools.train_val_test_split(self.X_w, self.y_w, 0.2)
 
-            logging.info(f"X_train {self.X_train.shape}, X_val {self.X_val.shape}, "
-                         f"X_test{self.X_test.shape}, y_train {self.y_train.shape}, "
-                         f"y_val {self.y_val.shape}, y_test {self.y_test.shape}")
+        logging.info(f"X_train {self.X_train.shape}, X_val {self.X_val.shape}, "
+                     f"X_test{self.X_test.shape}, y_train {self.y_train.shape}, "
+                     f"y_val {self.y_val.shape}, y_test {self.y_test.shape}")
 
-            path = os.path.join(self.dataset_path, 'train_val_test')
-            if not os.path.exists(path):
-                os.makedirs(path, exist_ok=True)
+        path = os.path.join(self.dataset_path, path)
+        if not os.path.exists(path):
+            os.makedirs(path, exist_ok=True)
 
-            utils.save_numpy_array(path, 'X_train', self.X_train)
-            utils.save_numpy_array(path, 'X_val', self.X_val)
-            utils.save_numpy_array(path, 'X_test', self.X_test)
-            utils.save_numpy_array(path, 'y_train', self.y_train)
-            utils.save_numpy_array(path, 'y_val', self.y_val)
-            utils.save_numpy_array(path, 'y_test', self.y_test)
+        utils.save_numpy_array(path, 'X_train', self.X_train)
+        utils.save_numpy_array(path, 'X_val', self.X_val)
+        utils.save_numpy_array(path, 'X_test', self.X_test)
+        utils.save_numpy_array(path, 'y_train', self.y_train)
+        utils.save_numpy_array(path, 'y_val', self.y_val)
+        utils.save_numpy_array(path, 'y_test', self.y_test)
 
-    def _load_test_val_train_split_with_sliding(self):
-            path = os.path.join(self.dataset_path, 'train_val_test')
+    def _load_test_val_train_split_with_sliding(self, path='train_val_test'):
+            path = os.path.join(self.dataset_path, path)
             self.X_train = utils.load_numpy_array(path, 'X_train')
             self.X_val = utils.load_numpy_array(path, 'X_val')
             self.X_test = utils.load_numpy_array(path, 'X_test')
@@ -315,7 +337,7 @@ class RNNRunner:
 
     # --------------- RUN RNN PREDICTOR --------------------- #
     def run(self):
-        self.print_model_info()
+        self._print_model_info()
 
         # preparing arrays for future initialization
         self._load_test_val_train_split_with_sliding()
