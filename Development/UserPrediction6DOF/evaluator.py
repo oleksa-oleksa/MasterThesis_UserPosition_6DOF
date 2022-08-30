@@ -178,19 +178,44 @@ class DeepLearnEvaluator():
             self.euc_dists = np.linalg.norm(preds_pos - actual_pos, axis=1)
             self.angular_dist = self.calc_angular_dist(preds_rot, actual_rot)
             self.geodesic_dist = np.array([Quaternion.distance(q1, q2) for q1, q2 in zip(preds_rot, actual_rot)])
+        elif self.dataset_type == 'position' or self.dataset_type == 'position_velocity':
+            self.euc_dists = np.linalg.norm(preds_pos - actual_pos, axis=1)
+        elif self.dataset_type == 'rotation' or self.dataset_type == 'rotation_velocity':
+            self.angular_dist = self.calc_angular_dist(preds_rot, actual_rot)
+            self.geodesic_dist = np.array([Quaternion.distance(q1, q2) for q1, q2 in zip(preds_rot, actual_rot)])
 
         # Mean Absolute Error (MAE)
-        self.metrics['mae_euc'] = np.sum(self.euc_dists) / self.euc_dists.shape[0]
+        if self.euc_dists is not None:
+            self.metrics['mae_euc'] = np.sum(self.euc_dists) / self.euc_dists.shape[0]
+        else:
+            self.metrics['mae_euc'] = 'n/a'
+        if self.angular_dist is not None:
+            self.metrics['mae_ang'] = np.rad2deg(np.sum(self.angular_dist) / self.angular_dist.shape[0])
+        else:
+            self.metrics['mae_ang'] = 'n/a'
+        if self.geodesic_dist is not None:
+            self.metrics['mae_geo'] = np.rad2deg(np.sum(self.geodesic_dist) / self.geodesic_dist.shape[0])
+        else:
+            self.metrics['mae_geo'] = 'n/a'
+
         logging.info("MAE position = %s", self.metrics['mae_euc'])
-        self.metrics['mae_ang'] = np.rad2deg(np.sum(self.angular_dist) / self.angular_dist.shape[0])
         logging.info("MAE rotation angular = %s", self.metrics['mae_ang'])
-        self.metrics['mae_geo'] = np.rad2deg(np.sum(self.geodesic_dist) / self.geodesic_dist.shape[0])
         logging.info("MAE rotation geodesic = %s", self.metrics['mae_geo'])
 
         # Root Mean Squared Error (RMSE)
-        self.metrics['rmse_euc'] = np.sqrt((self.euc_dists ** 2).mean())
+        if self.euc_dists is not None:
+            self.metrics['rmse_euc'] = np.sqrt((self.euc_dists ** 2).mean())
+        else:
+            self.metrics['rmse_euc'] = 'n/a'
+        if self.angular_dist is not None:
+            self.metrics['rmse_ang'] = np.rad2deg(np.sqrt((self.angular_dist ** 2).mean()))
+        else:
+            self.metrics['rmse_ang'] = 'n/a'
+        if self.geodesic_dist is not None:
+            self.metrics['rmse_geo'] = np.rad2deg(np.sqrt((self.geodesic_dist ** 2).mean()))
+        else:
+            self.metrics['rmse_geo'] = 'n/a'
+
         logging.info("RMSE position = %s", self.metrics['rmse_euc'])
-        self.metrics['rmse_ang'] = np.rad2deg(np.sqrt((self.angular_dist ** 2).mean()))
         logging.info("RMSE rotation angular = %s", self.metrics['rmse_ang'])
-        self.metrics['rmse_geo'] = np.rad2deg(np.sqrt((self.geodesic_dist ** 2).mean()))
         logging.info("RMSE rotation geodesic = %s", self.metrics['rmse_geo'])

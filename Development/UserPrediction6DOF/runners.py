@@ -130,7 +130,7 @@ class RNNRunner:
         self.output_dim = len(self.outputs)  # 3 position parameter + 4 rotation parameter
         self.hidden_dim = 32  # number of features in hidden state
         self.batch_size = 512
-        self.n_epochs = 12
+        self.n_epochs = 3
         self.seq_length_input = 20  # input length of timeseries from the past
 
         # -----  CREATE PYTORCH MODEL ----------#
@@ -335,6 +335,40 @@ class RNNRunner:
             self.y_train = utils.load_numpy_array(self.dataset_path, 'y_train')
             self.y_test = utils.load_numpy_array(self.dataset_path, 'y_test')
 
+    def _log_metrics(self, deep_eval):
+        if self.dataset_type == "full" or self.dataset_type == 'position' or self.dataset_type == 'position_velocity':
+            np.save(os.path.join(self.dists_path,
+                                 'euc_dists_{}_{}ms.npy'.format(self.model.name,
+                                                                int(self.pred_window * 1e3))), deep_eval.euc_dists)
+            if self.dataset_type == "full":
+                ang_dists = np.rad2deg(deep_eval.angular_dist)
+                geo_dists = np.rad2deg(deep_eval.geodesic_dist)
+                np.save(os.path.join(self.dists_path,
+                                     'ang_dists_{}_{}ms.npy'.format(self.model.name,
+                                                                    int(self.pred_window * 1e3))), ang_dists)
+                np.save(os.path.join(self.dists_path,
+                                     'geo_dists_{}_{}ms.npy'.format(self.model.name,
+                                                                    int(self.pred_window * 1e3))), geo_dists)
+
+        elif self.dataset_type == 'rotation' or self.dataset_type == 'rotation_velocity':
+            ang_dists = np.rad2deg(deep_eval.angular_dist)
+            geo_dists = np.rad2deg(deep_eval.geodesic_dist)
+            np.save(os.path.join(self.dists_path,
+                                 'ang_dists_{}_{}ms.npy'.format(self.model.name,
+                                                                int(self.pred_window * 1e3))), ang_dists)
+            np.save(os.path.join(self.dists_path,
+                                 'geo_dists_{}_{}ms.npy'.format(self.model.name,
+                                                                int(self.pred_window * 1e3))), geo_dists)
+
+    def _create_log_name_title(self, deep_eval):
+        pred_dic = {}
+        if self.dataset_type == "full" or self.dataset_type == 'position' or self.dataset_type == 'position_velocity':
+            pred_dic = {'MAE_pos': deep_eval.metrics['mae_euc']}
+
+        elif self.dataset_type == 'rotation' or self.dataset_type == 'rotation_velocity':
+            pred_dic = {'MAE_rot': deep_eval.metrics['mae_ang']}
+        return pred_dic
+
     # --------------- RUN RNN PREDICTOR --------------------- #
     def run(self):
         self._print_model_info()
@@ -365,16 +399,6 @@ class RNNRunner:
         # Compute evaluation metrics
         deep_eval = DeepLearnEvaluator(predictions, targets, self.dataset_type)
         deep_eval.eval_model()
-        euc_dists = deep_eval.euc_dists
-        ang_dists = np.rad2deg(deep_eval.angular_dist)
-        geo_dists = np.rad2deg(deep_eval.geodesic_dist)
-
-        np.save(os.path.join(self.dists_path,
-                             'euc_dists_{}_{}ms.npy'.format(self.model.name, int(self.pred_window * 1e3))), euc_dists)
-        np.save(os.path.join(self.dists_path,
-                             'ang_dists_{}_{}ms.npy'.format(self.model.name, int(self.pred_window * 1e3))), ang_dists)
-        np.save(os.path.join(self.dists_path,
-                             'geo_dists_{}_{}ms.npy'.format(self.model.name, int(self.pred_window * 1e3))), geo_dists)
 
         logging.info("--------------------------------------------------------------")
         df_results = pd.DataFrame({'Trace': "dataset", 'LAT' : self.pred_window,
@@ -387,7 +411,8 @@ class RNNRunner:
         df_results.to_csv(os.path.join(self.results_path, 'res_{}.csv'.format(self.model.name)))
 
         # LOGGING AND PLOTTING
-        pred_dic = {'MAE_pos': deep_eval.metrics['mae_euc']}
+        self._log_metrics(deep_eval)
+        pred_dic = self._create_log_name_title(deep_eval)
 
         # Plot train and validation losses
         # self.plotter.plot_losses(nn_train.train_losses, nn_train.val_losses, self.params, pred_dic, self.results_path)

@@ -52,6 +52,7 @@ from .plotter import DataPlotter
 
 config_path = "UserPrediction6DOF/tools/config.toml"
 
+
 class Application:
     """Command line interface for the pred6dof application"""
 
