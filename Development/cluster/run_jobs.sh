@@ -4,7 +4,7 @@ while IFS="," read -r hidden_dim batch_size lr_adam lr_epochs lr_multiplicator n
 
 
 do
-  echo "$hidden_dim $batch_size $lr_adam $lr_epochs $lr_multiplicator"
+  echo "$hidden_dim $batch_size $lr_adam $lr_epochs $lr_multiplicator $n_epochs"
   export HIDDEN_DIM=$hidden_dim
   export BATCH_SIZE=$batch_size
   export LR_ADAM=$lr_adam

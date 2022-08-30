@@ -5,7 +5,7 @@ out=experiment_parameters.csv
 echo "hidden_dim,batch_size,lr_adam,lr_epochs,lr_multiplicator,n_epochs" > $out
 lr_adam=0.0001
 lr_multiplicator=0.5
-lr_epochs=0.5
+lr_epochs=50
 n_epochs=500
 
 for hidden_dim in $(seq 4 1 11)
