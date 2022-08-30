@@ -107,6 +107,7 @@ class RNNRunner:
         self.pred_step = int(self.pred_window / self.dt)
         self.dataset_path = dataset_path
         self.results_path = results_path
+        self.dataset_type = dataset_type
         self.dists_path = None  # set by prepare_environment()
         self.model = None  # set by select_model()
         self.params = None  # set by select_model()
@@ -208,7 +209,6 @@ class RNNRunner:
                        'lr_multiplicator': self.lr_multiplicator, 'weight_decay': self.weight_decay}
 
     def _create_features(self, dataset):
-        cfg = toml.load(config_path)
         if dataset is None:
             logging.info(f'No dataset type for model {self.model_name} is provided!')
         elif dataset == 'full':
@@ -225,15 +225,14 @@ class RNNRunner:
             logging.info(f'Unknown dataset type {dataset} for model {self.model_name}!')
 
     def _create_outputs(self, dataset):
-        cfg = toml.load(config_path)
         if dataset is None:
             logging.info(f'No dataset type for model {self.model_name} is provided!')
         elif dataset == 'full':
-            return cfg['pos_coords'] + cfg['quat_coords']
+            return ['x', 'y', 'z', 'qx', 'qy', 'qz', 'qw']
         elif dataset == 'position' or dataset == 'position_velocity':
-            return cfg['pos_coords']
+            return ['x', 'y', 'z']
         elif dataset == 'rotation' or dataset == 'rotation_velocity':
-            return cfg['quat_coords']
+            return ['qx', 'qy', 'qz', 'qw']
         else:
             logging.info(f'Unknown dataset type {dataset} for model {self.model_name}!')
 
@@ -351,8 +350,8 @@ class RNNRunner:
 
         # load data with dataloaders
         train_loader, val_loader, test_loader, _ = dataset_tools.load_data(self.X_train, self.X_val, self.X_test,
-                                                                                   self.y_train, self.y_val, self.y_test,
-                                                                                   self.batch_size)
+                                                                           self.y_train, self.y_val, self.y_test,
+                                                                           self.batch_size)
         # TRAIN WITH VALIDATION
         nn_train = NNTrainer(self.model, criterion, optimizer, self.params)
 
@@ -360,11 +359,11 @@ class RNNRunner:
 
         # PREDICTION ON TEST DATA
         logging.info('Training finished. Starting prediction on test data!')
-        predictions, targets = nn_train.predict(test_loader, self.batch_size)
+        predictions, targets = nn_train.predict(test_loader, self.batch_size, self.output_dim)
         # print(predictions.shape, targets.shape)
 
         # Compute evaluation metrics
-        deep_eval = DeepLearnEvaluator(predictions, targets)
+        deep_eval = DeepLearnEvaluator(predictions, targets, self.dataset_type)
         deep_eval.eval_model()
         euc_dists = deep_eval.euc_dists
         ang_dists = np.rad2deg(deep_eval.angular_dist)

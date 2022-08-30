@@ -119,11 +119,11 @@ class NNTrainer:
         end = time.time()
         logging.info(f'\nTRAINING took {end - start}s')
 
-    def predict(self, test_loader, batch_size):
+    def predict(self, test_loader, batch_size, outputs_dim):
 
         self.model.eval()  # prep model for evaluation
-        predictions = np.empty((0, 7), float)
-        targets = np.empty((0, 7), float)
+        predictions = np.empty((0, outputs_dim), float)
+        targets = np.empty((0, outputs_dim), float)
 
         with torch.no_grad():
             batch_test_losses = []

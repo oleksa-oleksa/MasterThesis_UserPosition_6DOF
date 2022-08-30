@@ -117,9 +117,10 @@ class Evaluator():
 
 class DeepLearnEvaluator():
     """Compute evaluation metrics MAE and RMSE for different predictors"""
-    def __init__(self, predictions, actual_values):
+    def __init__(self, predictions, actual_values, dataset_type):
         self.predictions = predictions
         self.actual_values = actual_values
+        self.dataset_type = dataset_type
         self.euc_dists = None
         self.angular_dist = None
         self.geodesic_dist = None
@@ -132,15 +133,28 @@ class DeepLearnEvaluator():
         [qw, qx, qy, qz] => [:, 3:7] next 4 columns
         the rest of vector is velocity + speed data that will not (!) be predicted and evaluated
         """
+        preds_pos, preds_rot, actual_pos, actual_rot = [], [], [], []
 
-        # split predictions array into position and rotations
-        preds_pos = self.predictions[:, :3] # x, y, z
-        preds_rot = self.predictions[:, 3:7] # qx, qy, qz, qw
-        preds_rot = np.array([Quaternion(q) for q in preds_rot])
+        if self.dataset_type is None:
+            logging.info(f'No dataset type!')
 
-        actual_pos = self.actual_values[:, :3]
-        actual_rot = self.actual_values[:, 3:7]
-        actual_rot = np.array([Quaternion(q) for q in actual_rot])
+        elif self.dataset_type == 'full':
+            # split predictions array into position and rotations
+            preds_pos = self.predictions[:, :3] # x, y, z
+            preds_rot = self.predictions[:, 3:7] # qx, qy, qz, qw
+            preds_rot = np.array([Quaternion(q) for q in preds_rot])
+
+            actual_pos = self.actual_values[:, :3]
+            actual_rot = self.actual_values[:, 3:7]
+            actual_rot = np.array([Quaternion(q) for q in actual_rot])
+
+        elif self.dataset_type == 'position' or self.dataset_type == 'position_velocity':
+            preds_pos = self.predictions  # x, y, z
+            actual_pos = self.actual_values  # x, y, z
+
+        elif self.dataset_type == 'rotation' or self.dataset_type == 'rotation_velocity':
+            preds_rot = np.array([Quaternion(q) for q in self.predictions])  # qx, qy, qz, qw
+            actual_rot = np.array([Quaternion(q) for q in self.actual_values])   # qx, qy, qz, qw
 
         self.compute_metrics(preds_pos, preds_rot, actual_pos, actual_rot)
 
@@ -159,10 +173,11 @@ class DeepLearnEvaluator():
         Based on a rule of thumb, RMSE values between 0.2 and 0.5
         show that the model can relatively predict the data accurately.
         """
-        # Compute Eucliden and angular distances
-        self.euc_dists = np.linalg.norm(preds_pos - actual_pos, axis=1)
-        self.angular_dist = self.calc_angular_dist(preds_rot, actual_rot)
-        self.geodesic_dist = np.array([Quaternion.distance(q1, q2) for q1, q2 in zip(preds_rot, actual_rot)])
+        if self.dataset_type == 'full':
+            # Compute Eucliden and angular distances
+            self.euc_dists = np.linalg.norm(preds_pos - actual_pos, axis=1)
+            self.angular_dist = self.calc_angular_dist(preds_rot, actual_rot)
+            self.geodesic_dist = np.array([Quaternion.distance(q1, q2) for q1, q2 in zip(preds_rot, actual_rot)])
 
         # Mean Absolute Error (MAE)
         self.metrics['mae_euc'] = np.sum(self.euc_dists) / self.euc_dists.shape[0]
