@@ -414,13 +414,13 @@ class RNNRunner:
             now use true min and max to standardize to the true range, 
             most commonly: Xi = (Xi - Xmin)/(Xmax-Xmin)
             """
-            predictions[:, 0] = (predictions[:, 0] - self.pos_x_min) / (self.pos_x_max - self.pos_x_min)
-            predictions[:, 1] = (predictions[:, 1] - self.pos_y_min) / (self.pos_y_max - self.pos_y_min)
-            predictions[:, 2] = (predictions[:, 2] - self.pos_z_min) / (self.pos_z_max - self.pos_z_min)
+            predictions[:, 0] = ((predictions[:, 0] * (self.pos_x_max - self.pos_x_min)) + self.pos_x_min)
+            predictions[:, 1] = ((predictions[:, 1] * (self.pos_y_max - self.pos_y_min)) + self.pos_y_min)
+            predictions[:, 2] = ((predictions[:, 2] * (self.pos_z_max - self.pos_z_min)) + self.pos_z_min)
 
-            targets[:, 0] = (targets[:, 0] - self.pos_x_min) / (self.pos_x_max - self.pos_x_min)
-            targets[:, 1] = (targets[:, 1] - self.pos_y_min) / (self.pos_y_max - self.pos_y_min)
-            targets[:, 2] = (targets[:, 2] - self.pos_z_min) / (self.pos_z_max - self.pos_z_min)
+            targets[:, 0] = ((targets[:, 0] * (self.pos_x_max - self.pos_x_min)) + self.pos_x_min)
+            targets[:, 1] = ((targets[:, 1] * (self.pos_y_max - self.pos_y_min)) + self.pos_y_min)
+            targets[:, 2] = ((targets[:, 2] * (self.pos_z_max - self.pos_z_min)) + self.pos_z_min)
 
             logging.info(f"INVERSE: Predictions and targets are inversed using: "
                          f"x_min={self.pos_x_min}, x_max={self.pos_x_max},"
@@ -498,7 +498,7 @@ class RNNRunner:
 
         # log predicted values and targets
         utils.log_predictions(predictions, self.model_name, self.params, pred_dic)
-        utils.log_targets(targets, self.model_name)
+        # utils.log_targets(targets, self.model_name)
 
 
 class BaselineRunner:
