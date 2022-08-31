@@ -149,7 +149,7 @@ class RNNRunner:
         self.output_dim = len(self.outputs)  # 3 position parameter + 4 rotation parameter
         self.hidden_dim = 32  # number of features in hidden state
         self.batch_size = 512
-        self.n_epochs = 25
+        self.n_epochs = 5
         self.seq_length_input = 20  # input length of timeseries from the past
 
         # -----  CREATE PYTORCH MODEL ----------#
@@ -422,12 +422,15 @@ class RNNRunner:
             targets[:, 1] = (targets[:, 1] - self.pos_y_min) / (self.pos_y_max - self.pos_y_min)
             targets[:, 2] = (targets[:, 2] - self.pos_z_min) / (self.pos_z_max - self.pos_z_min)
 
+            logging.info(f"INVERSE: Predictions and targets are inversed using: "
+                         f"x_min={self.pos_x_min}, x_max={self.pos_x_max},"
+                         f"y_min={self.pos_y_min}, y_max={self.pos_y_max},  "
+                         f"z_min={self.pos_z_min}, z_max={self.pos_z_max}")
+
             return predictions, targets
 
         if self.norm_type == 'mean':
             pass
-
-        return predictions, targets
 
     # --------------- RUN RNN PREDICTOR --------------------- #
     def run(self):
@@ -454,13 +457,17 @@ class RNNRunner:
         # PREDICTION ON TEST DATA
         logging.info('Training finished. Starting prediction on test data!')
         predictions, targets = nn_train.predict(test_loader, self.batch_size, self.output_dim)
-        # print(predictions.shape, targets.shape)
+        print(f'predictions out: {predictions}')
+        print(f'targets out: {targets}')
 
         # if normalized dataset is used, the inverse scaling must be applied
         # before calculation of the metrics to prove that normalization makes sense
-        # and that we are predicting the same values as original data
+        # and that
+        # we are predicting the same values as original data
         if self.norm_type != 'no-norm':
             predictions, targets = self._inverse_normalized_dataset(predictions, targets)
+            print(f'predictions inversed: {predictions}')
+            print(f'targets inversed: {targets}')
 
         # Compute evaluation metrics
         deep_eval = DeepLearnEvaluator(predictions, targets, self.dataset_type)
@@ -491,7 +498,7 @@ class RNNRunner:
 
         # log predicted values and targets
         utils.log_predictions(predictions, self.model_name, self.params, pred_dic)
-        # log_targets(targets, self.model_name)
+        utils.log_targets(targets, self.model_name)
 
 
 class BaselineRunner:
