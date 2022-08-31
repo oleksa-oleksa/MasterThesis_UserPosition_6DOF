@@ -21,4 +21,4 @@ From: pytorch/pytorch:1.9.1-cuda11.1-cudnn8-runtime
     cd /opt
 
     # run with dataset with flipped quaternions
-    python -m UserPrediction6DOF run -a rnn -m gru1 -t position -w 100 -d data/flipped/position
+    python -m UserPrediction6DOF run -a rnn -m gru1 -t position -n min-max -w 100 -d data/flipped/position_normalized
