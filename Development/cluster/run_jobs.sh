@@ -1,6 +1,6 @@
 #!/bin/bash
 
-while IFS="," read -r hidden_dim batch_size lr_adam lr_epochs lr_multiplicator n_epochs
+while IFS="," read -r hidden_dim batch_size lr_adam lr_epochs lr_multiplicator weight_decay_adam n_epochs
 
 
 do
@@ -11,6 +11,7 @@ do
   export LR_EPOCHS=$lr_epochs
   export LR_MULTIPLICATOR=$lr_multiplicator
   export N_EPOCHS=$n_epochs
+  export WEIGHT_DECAY_ADAM=$weight_decay_adam
   export RNN_PARAMETERS=1
   nohup sbatch UserPrediction6DOF.sh &
 done < <(tail -n +2 $1)

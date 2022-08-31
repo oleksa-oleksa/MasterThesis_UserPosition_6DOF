@@ -58,7 +58,6 @@ class Normalization:
             self.y[:, 1] = (self.y[:, 1] - mean(self.y[:, 1])) / stdev(self.y[:, 1])
             self.y[:, 2] = (self.y[:, 2] - mean(self.y[:, 2])) / stdev(self.y[:, 2])
 
-
         elif norm_type == 'min-max':
             self.X[:, 0] = (self.X[:, 0] - min(self.X[:, 0])) / (max(self.X[:, 0]) - min(self.X[:, 0]))
             self.X[:, 1] = (self.X[:, 1] - min(self.X[:, 1])) / (max(self.X[:, 1]) - min(self.X[:, 1]))
