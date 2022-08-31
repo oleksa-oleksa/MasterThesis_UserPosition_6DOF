@@ -60,6 +60,8 @@ from torchinfo import summary
 
 cuda_path = "/mnt/output"
 config_path = "UserPrediction6DOF/tools/config.toml"
+config_path_reverse = "reverse_parameters.toml"
+path_train_val_test_dataset = "train_val_test"
 job_id = os.path.basename(os.path.normpath(cuda_path))
 
 # For more readable printing
@@ -98,24 +100,41 @@ class RNNRunner:
 
     """
 
-    def __init__(self, model_name, pred_window, dataset_path, results_path, dataset_type):
+    def __init__(self, model_name, pred_window, dataset_path, results_path, dataset_type, norm_type):
         # -----  PRESET ----------#
+        self.plotter = DataPlotter()
+        self.cfg = toml.load(config_path)
         self.cuda = torch.cuda.is_available()
         self.model_name = model_name
+        self.norm_type = norm_type
+        self.dt = self.cfg['dt']
         self.pred_window = pred_window * 1e-3  # convert to seconds
-        self.dt = 0.005
         self.pred_step = int(self.pred_window / self.dt)
         self.dataset_path = dataset_path
         self.results_path = results_path
         self.dataset_type = dataset_type
+
         self.dists_path = None  # set by prepare_environment()
         self.model = None  # set by select_model()
         self.params = None  # set by select_model()
+
+        # ----- PRESET OF ARRAYS BEFORE LOADING AND SPLITTING ----------#
         self.X, self.y = [], []
         self.X_w, self.y_w = [], []
         self.X_train, self.X_val, self.X_test = [], [], []
         self.y_train, self.y_val, self.y_test = [], [], []
-        self.plotter = DataPlotter()
+
+        # parameters for reverse scaling if normalazing dataset is used
+        self.norm_cfg = None
+        self.pos_x_min = None
+        self.pos_x_max = None
+        self.pos_y_min = None
+        self.pos_y_max = None
+        self.pos_z_min = None
+        self.pos_z_max = None
+        self.pos_x_mean = None
+        self.pos_y_mean = None
+        self.pos_z_mean = None
 
         # ---------  MODEL HYPERPARAMETERS ----------#
         self.reducing_learning_rate = True  # decreases LR every ls_epochs for lr_multiplicator
@@ -130,7 +149,7 @@ class RNNRunner:
         self.output_dim = len(self.outputs)  # 3 position parameter + 4 rotation parameter
         self.hidden_dim = 32  # number of features in hidden state
         self.batch_size = 512
-        self.n_epochs = 10
+        self.n_epochs = 25
         self.seq_length_input = 20  # input length of timeseries from the past
 
         # -----  CREATE PYTORCH MODEL ----------#
@@ -140,6 +159,8 @@ class RNNRunner:
         self._set_model_hyperparams()
         # create a RNN model with hyperparameters
         self._create_model(model_name)
+        # load normalization inverse parameeter if a normalized position dataset is used
+        self._load_inverse_normalization_parameters()
 
     def _prepare_paths(self):
         self.dists_path = os.path.join(self.results_path, 'distances')
@@ -369,6 +390,45 @@ class RNNRunner:
             pred_dic = {'MAE_rot': deep_eval.metrics['mae_ang']}
         return pred_dic
 
+    def _load_inverse_normalization_parameters(self):
+        if self.norm_type != 'no-norm':
+            self.norm_cfg = toml.load(os.path.join(self.dataset_path, path_train_val_test_dataset, config_path_reverse))
+            self.pos_x_min = float(self.norm_cfg['x_min'])
+            self.pos_x_max = float(self.norm_cfg['x_max'])
+            self.pos_y_min = float(self.norm_cfg['y_min'])
+            self.pos_y_max = float(self.norm_cfg['y_max'])
+            self.pos_z_min = float(self.norm_cfg['z_min'])
+            self.pos_z_max = float(self.norm_cfg['z_max'])
+            self.pos_x_mean = float(self.norm_cfg['x_mean'])
+            self.pos_y_mean = float(self.norm_cfg['y_mean'])
+            self.pos_z_mean = float(self.norm_cfg['z_mean'])
+
+    def _inverse_normalized_dataset(self, predictions, targets):
+        if self.norm_type == 'no-norm' or self.norm_type is None:
+            return predictions, targets
+
+        # Min-Max[0..1] and Min-Max[-1..1]
+        if self.norm_type == 'min-max' or self.norm_type == 'min-max-double':
+            """
+            Using the same formula as you used to standardize from 0 to 1, 
+            now use true min and max to standardize to the true range, 
+            most commonly: Xi = (Xi - Xmin)/(Xmax-Xmin)
+            """
+            predictions[:, 0] = (predictions[:, 0] - self.pos_x_min) / (self.pos_x_max - self.pos_x_min)
+            predictions[:, 1] = (predictions[:, 1] - self.pos_y_min) / (self.pos_y_max - self.pos_y_min)
+            predictions[:, 2] = (predictions[:, 2] - self.pos_z_min) / (self.pos_z_max - self.pos_z_min)
+
+            targets[:, 0] = (targets[:, 0] - self.pos_x_min) / (self.pos_x_max - self.pos_x_min)
+            targets[:, 1] = (targets[:, 1] - self.pos_y_min) / (self.pos_y_max - self.pos_y_min)
+            targets[:, 2] = (targets[:, 2] - self.pos_z_min) / (self.pos_z_max - self.pos_z_min)
+
+            return predictions, targets
+
+        if self.norm_type == 'mean':
+            pass
+
+        return predictions, targets
+
     # --------------- RUN RNN PREDICTOR --------------------- #
     def run(self):
         self._print_model_info()
@@ -395,6 +455,12 @@ class RNNRunner:
         logging.info('Training finished. Starting prediction on test data!')
         predictions, targets = nn_train.predict(test_loader, self.batch_size, self.output_dim)
         # print(predictions.shape, targets.shape)
+
+        # if normalized dataset is used, the inverse scaling must be applied
+        # before calculation of the metrics to prove that normalization makes sense
+        # and that we are predicting the same values as original data
+        if self.norm_type != 'no-norm':
+            predictions, targets = self._inverse_normalized_dataset(predictions, targets)
 
         # Compute evaluation metrics
         deep_eval = DeepLearnEvaluator(predictions, targets, self.dataset_type)

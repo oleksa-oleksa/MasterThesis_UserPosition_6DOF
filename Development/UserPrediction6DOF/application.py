@@ -76,6 +76,7 @@ class Application:
         self.column = None
         self.model = None
         self.dataset_type = None
+        self.norm_type = None
         self.norm_dataset_path = None
         self.norm_type = None
 
@@ -146,7 +147,7 @@ class Application:
 
     def run_rnn(self, model):
         """Runs baseline (no-prediction) on all traces and evaluates the results"""
-        runner = RNNRunner(model, self.pred_window, self.dataset_path, self.results_path, self.dataset_type)
+        runner = RNNRunner(model, self.pred_window, self.dataset_path, self.results_path, self.dataset_type, self.norm_type)
         runner.run()
 
     def plot_datasets(self):
@@ -284,6 +285,7 @@ class Application:
             self.results_path = args.results_path
             self.model = args.model
             self.dataset_type = args.dataset_type
+            self.norm_type = args.norm_type
             if not os.path.exists(self.results_path):
                 os.makedirs(self.results_path)
             self.pred_window = np.asarray(args.pred_window)
@@ -488,6 +490,16 @@ class Application:
             choices=['full', 'position', 'position_velocity', 'rotation', 'rotation_velocity'],
             default='full',
             help='Selects dataset variant'
+        )
+
+        run_command_parser.add_argument(
+            '-n',
+            '--norm',
+            dest='norm_type',
+            type=str,
+            choices=['no-norm', 'mean', 'min-max', 'min-max-double'],
+            default='no-norm',
+            help='Selects normalization variant'
         )
 
         run_command_parser.add_argument(

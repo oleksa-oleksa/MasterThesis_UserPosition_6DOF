@@ -2,7 +2,7 @@ import toml
 from UserPrediction6DOF.tools import dataset_tools, utils
 import logging
 import os
-from statistics import mean
+from statistics import mean, stdev
 
 config_path = "UserPrediction6DOF/tools/config.toml"
 
