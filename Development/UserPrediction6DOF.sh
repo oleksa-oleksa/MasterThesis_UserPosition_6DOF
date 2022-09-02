@@ -21,7 +21,7 @@
 # to build container write from ssh terminal
 # singularity build --force --fakeroot UserPrediction6DOF.sif UserPrediction6DOF.def
 
-OUT_DIR=gru1_full_normalized
+OUT_DIR=gru1_interpolated
 
 source "/etc/slurm/local_job_dir.sh"
 mkdir -p "${LOCAL_JOB_DIR}/job_results"
