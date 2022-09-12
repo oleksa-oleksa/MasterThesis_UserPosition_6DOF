@@ -166,17 +166,45 @@ Thus after normalization step, the two representations of quaternions are blende
 %''##################################
 
 \subsection{Architecture}
-\label{sec:impl:model:architecture}
 
-\subsubsection{LSTM}
-\label{sec:impl:model:architecture:lstm}
+\subsubsection{LSTM Model}
+\label{sec:impl:model:arch:lstm}
 
-\subsubsection{GRU}
-\label{sec:impl:model:architecture:gru}
+\subsubsection{GRU Model}
+\label{sec:impl:model:arch:gru}
+
+\subsubsection{Bidirectional GRU Model}
+\label{sec:impl:model:arch:bi-gru}
 
 %''##################################
 
 \subsection{Development}
 \label{sec:impl:model:dev}
+This section presents the developments of the Unity application for obtaining the dataset and development of LSTM and GRU models with Python and PyTorch. 
+
+\subsubsection{Unity application}
+\label{sec:impl:model:dev:unity}
+An application was developed in Unity with the Mixed Reality Toolkit and deployed on HoloLens 2. The goal of the application is to obtain the user position and orientation during the time a user wears a HMD. As this research aims to find an approach to reduce the M2P latency during rendering and delivering the volumetric content to end-user device, the volumetric animated object was placed three meters ahead of the user in Unity application. Users wearing HMD thus were asked to look on animated volumetric object and to move freely inside the laboratory space.\\
+In Unity, the Main Camera is always the primary stereo rendering component attached to HMD and it is rendering everything the user sees \footnote{https://docs.microsoft.com/en-us/windows/mixed-reality/develop/unity/camera-in-unity}. The starting position of the user is set to $(0, 0, 0)$ during the application launch and the Main Camera tracks movement of the user's head. Although HoloLens allows to build a world-scale application, the room-scale experience was selected for spatial coordinate system. This lets users to walk around within the 10-meter boundary what is quite enough for user's movements inside the laboratory space and simultaneously watching the volumetric video object. 
+
+User position and rotation data were logged in csv-file. This raw data has been converted into datasets on the preprocessing step and thus original interpolated dataset, the transformed with flipped negative quaternions and several normalised datasets were used in experiments during model development and hyperparameters search.
 
 
+\subsubsection{Programming}
+\label{sec:impl:model:dev:programming}
+The LSTM and GRU models development and implementation are done using Python and PyTorch. The hyperparameters search is done using VCA GPU cluster which is installed with the SLURM resource manager/scheduler and Singularity container is used to containerize the application. The Python application $UserPrediction6DOF$ is a result of this work and can be used for future preprocessing of the new obtained datasets, training routine and prediction of user position and rotation in 6-DoF virtual environment. 
+
+\paragraph{PyTorch ML Framework}
+\label{sec:impl:model:dev:programming:pytorch}
+Bla
+
+\subsubsection{Singularity}
+\label{sec:impl:model:dev:programming:gpu}
+
+The helper-scripts for automatically creating the files for hyperparameters search and processing the results are created with Bash. The Singularity alike docker container system was used to containerize the application with the required environments variables needed for model initialization. 
+
+
+
+\subsection{Early experiments}
+\label{sec:impl:model:dev:batch}
+A high impact on the performance e.g. the prediction accuracy has a batch size used in LSTM or GRU Model. The batch-size helps to learn the common patterns as important features by providing a fixed number of samples at one time. So that the model thus can distinguish the common features by looking at all the introduced samples of the batch. In most cases, an optimal batch size is set to 64. When this batch size was initially used with LSTM model, it gave significant high MSE, RMSE, train and validation errors. Based on the performance observation during experiments with LSTM parameters, batch size fine-tuning was done. The experiments done by \textit{Aykut et al} in their works \cite{delay_compensation_360} and \cite{telepresence} proved that appropriate batch size can be found in range $2^{9}$ - $2^{11}$ (512 - 2048). Notice that a power of 2 is used as a batch size. The overall idea is to fit a batch of samples entirely in the the CPU/GPU. Since, all the CPU/GPU comes with a storage capacity in power of two, it is advised to keep a batch size a power of two. Using a number different from a power of 2 could lead to poor performance.
