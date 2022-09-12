@@ -83,6 +83,8 @@ All traces were recorded over 10 minutes long on average 12 minutes. All traces 
 	\end{center}
 \end{figure}
 
+%################################################
+
 \subsection{Data preprocessing}
 \label{sec:impl:dataset:preprocessing}
 As was mentioned in section \ref*{sec:design:dataset:HL}, the raw sensor data obtained from the HoloLens was unevenly sampled at 60 Hz and had different temporal distances between consecutive samples. \textit{Gül et al., 2020} obtained the similar raw dataset from same HMD and interpolated it to obtain temporally equidistant samples. Same as it was done in work \cite{serhan_kalman}, the position and velocity data were upsampled using linear interpolation and for quaternions SLEP was used. During preprocessing step Euler angles (yaw, pitch, roll) were calculated from quaternions and these parameters are used for visualization purposes. Although the interpolated $csv$-file contains additional Euler angles columns, only described in section \ref{sec:design:dataset:HL} parameters were used for training and prediction. The table \ref{tab:inter_data} lists first 20 rows for columns $timestamp$ and position $(x, y, z)$ from interpolated dataset. This interpolated dataset is created with linear interpolation and SLEP mathematical methods from raw dataset shown in table \ref{tab:raw_data}. 
@@ -155,7 +157,7 @@ Thus after normalization step, the two representations of quaternions are blende
 	\end{center}
 \end{figure}
 
-%''##################################
+%''########################################
 
 \section{Model}
 \label{sec:impl:model}
@@ -163,7 +165,7 @@ Thus after normalization step, the two representations of quaternions are blende
 \subsection{Model inputs}
 \label{sec:impl:model:inputs}
 
-%''##################################
+%''#######################################
 
 \subsection{Architecture}
 
@@ -176,7 +178,7 @@ Thus after normalization step, the two representations of quaternions are blende
 \subsubsection{Bidirectional GRU Model}
 \label{sec:impl:model:arch:bi-gru}
 
-%''##################################
+%''######################################
 
 \subsection{Development}
 \label{sec:impl:model:dev}
@@ -189,6 +191,7 @@ In Unity, the Main Camera is always the primary stereo rendering component attac
 
 User position and rotation data were logged in csv-file. This raw data has been converted into datasets on the preprocessing step and thus original interpolated dataset, the transformed with flipped negative quaternions and several normalised datasets were used in experiments during model development and hyperparameters search.
 
+%#######################################
 
 \subsubsection{Programming}
 \label{sec:impl:model:dev:programming}
@@ -198,13 +201,9 @@ The LSTM and GRU models development and implementation are done using Python and
 \label{sec:impl:model:dev:programming:pytorch}
 Bla
 
+%#########################################
+
 \subsubsection{Singularity}
 \label{sec:impl:model:dev:programming:gpu}
 
 The helper-scripts for automatically creating the files for hyperparameters search and processing the results are created with Bash. The Singularity alike docker container system was used to containerize the application with the required environments variables needed for model initialization. 
-
-
-
-\subsection{Early experiments}
-\label{sec:impl:model:dev:batch}
-A high impact on the performance e.g. the prediction accuracy has a batch size used in LSTM or GRU Model. The batch-size helps to learn the common patterns as important features by providing a fixed number of samples at one time. So that the model thus can distinguish the common features by looking at all the introduced samples of the batch. In most cases, an optimal batch size is set to 64. When this batch size was initially used with LSTM model, it gave significant high MSE, RMSE, train and validation errors. Based on the performance observation during experiments with LSTM parameters, batch size fine-tuning was done. The experiments done by \textit{Aykut et al} in their works \cite{delay_compensation_360} and \cite{telepresence} proved that appropriate batch size can be found in range $2^{9}$ - $2^{11}$ (512 - 2048). Notice that a power of 2 is used as a batch size. The overall idea is to fit a batch of samples entirely in the the CPU/GPU. Since, all the CPU/GPU comes with a storage capacity in power of two, it is advised to keep a batch size a power of two. Using a number different from a power of 2 could lead to poor performance.

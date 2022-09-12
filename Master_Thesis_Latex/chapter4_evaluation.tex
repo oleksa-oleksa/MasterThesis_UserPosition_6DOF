@@ -1,0 +1,39 @@
+% !TeX spellcheck = en
+
+\chapter{Evaluation}
+\label{sec:eval}
+
+\section{Baseline model}
+\label{sec:eval:baseline}
+
+\section{Goal of evaluation}
+\label{sec:eval:goal}
+
+\section{Evaluation metrics}
+\label{sec:eval:metrics}
+
+\section{Experiments}
+\label{sec:eval:experiments}
+
+\subsection{First experiments}
+\label{sec:eval:experiments:early}
+
+\subsubsection{Datasets}
+\label{sec:eval:experiments:early:ds}
+As already stated in section \ref{sec:design:dataset:preprocessing}
+
+\subsubsection{Batch size}
+\label{sec:eval:experiments:early:batch}
+A high impact on the performance e.g. the prediction accuracy has a batch size used in LSTM or GRU Model. The batch-size helps to learn the common patterns as important features by providing a fixed number of samples at one time. So that the model thus can distinguish the common features by looking at all the introduced samples of the batch. In most cases, an optimal batch size is set to 64. When this batch size was initially used with LSTM model, it gave significant high MSE, RMSE, train and validation errors. Based on the performance observation during experiments with LSTM parameters, batch size fine-tuning was done. The experiments done by \textit{Aykut et al} in their works \cite{delay_compensation_360} and \cite{telepresence} proved that appropriate batch size can be found in range $2^{9}$ - $2^{11}$ (512 - 2048). Notice that a power of 2 is used as a batch size. The overall idea is to fit a batch of samples entirely in the the CPU/GPU. Since, all the CPU/GPU comes with a storage capacity in power of two, it is advised to keep a batch size a power of two. Using a number different from a power of 2 could lead to poor performance.
+
+\subsubsection{Learning rate}
+\label{sec:eval:experiments:early:lr}
+
+\subsection{Prediction with LSTM}
+\label{sec:eval:experiments:lstm}
+
+\subsection{Prediction with GRU}
+\label{sec:eval:experiments:gru}
+
+\subsection{Prediction with Bidirectional GRU}
+\label{sec:eval:experiments:bi-gru}
