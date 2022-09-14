@@ -193,17 +193,12 @@ User position and rotation data were logged in csv-file. This raw data has been 
 
 %#######################################
 
-\subsubsection{Programming}
+\subsubsection{Training and evaluation}
 \label{sec:impl:model:dev:programming}
-The LSTM and GRU models development and implementation are done using Python and PyTorch. The hyperparameters search is done using VCA GPU cluster which is installed with the SLURM resource manager/scheduler and Singularity container is used to containerize the application. The Python application $UserPrediction6DOF$ is a result of this work and can be used for future preprocessing of the new obtained datasets, training routine and prediction of user position and rotation in 6-DoF virtual environment. 
+The LSTM and GRU models development and implementation are done using Python and PyTorch. 
 
-\paragraph{PyTorch ML Framework}
-\label{sec:impl:model:dev:programming:pytorch}
-Bla
 
-%#########################################
+\subsubsection{Hyperparameter search}
+\label{sec:impl:model:dev:search}
 
-\subsubsection{Singularity}
-\label{sec:impl:model:dev:programming:gpu}
-
-The helper-scripts for automatically creating the files for hyperparameters search and processing the results are created with Bash. The Singularity alike docker container system was used to containerize the application with the required environments variables needed for model initialization. 
+The hyperparameters search is done using VCA GPU cluster which is installed with the SLURM resource manager/scheduler and Singularity container is used to containerize the application. 
