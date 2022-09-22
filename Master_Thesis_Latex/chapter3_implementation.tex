@@ -84,6 +84,8 @@ All traces were recorded over 10 minutes long on average 12 minutes. All traces 
 	\end{center}
 \end{figure}
 
+Spatial coordinate systems of HoloLens expresses coordinate values in meters. Spatial coordinate systems on Windows (HoloLens runs on the Windows Holographic OS) must be right-handed according to the Microsoft documentation. However Unity documentation points that Unity uses a left-handed convention for its coordinate system and experiments performed in Unity with HoloLens 2 during implementation step proved that spacial coordinates in dataset recorded from left-handed system. In both kinds of coordinate systems, the positive X-axis points to the right and the positive Y-axis points up (aligned to gravity). In recorded dataset positive Z-axis points away from a user.
+
 %################################################
 
 \subsection{Data preprocessing}
