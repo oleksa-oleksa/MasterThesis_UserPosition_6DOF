@@ -167,13 +167,16 @@ Thus the two representations of quaternions were blended into one data set, omit
 
 \section{Model}
 \label{sec:impl:model}
-
+The section describes the inputs and architecture of evaluated LSTM, GRU and Bidirectional GRU models. A model itself is a mathematical representation that produces expected output based on a given input. 
 \subsection{Model inputs}
 \label{sec:impl:model:inputs}
+The correct chosen model can discover and learn the patterns in the input dataset while being trained in order to predict a new data after training. The sections \ref{sec:impl:dataset:explor} and \ref{sec:impl:dataset:preprocessing} describes how the dataset, used as input, was obtained and 
 
-%''#######################################
+
 
 \subsection{Architecture}
+Implemented model learns after training how to map inputs to the outputs of the given dataset and afterwards can be applied to a new data to make predictions and obtain results.
+
 Analysis done by \textit{Qian et al., 2016} indicates that at least in the short term, viewers’ head movement can be predicted with accuracy > 90\% by even using simple methods such as linear regression \cite{cellular_opt}. However in the longer term it is more difficult to achieve the good result and the average accuracy drops to about 70\% \cite{cellular_opt}.\
 !!!!!
 
