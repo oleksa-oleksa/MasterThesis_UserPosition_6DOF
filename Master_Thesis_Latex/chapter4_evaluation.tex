@@ -33,6 +33,8 @@ A high impact on the performance e.g. the prediction accuracy has a batch size u
 
 \subsection{Prediction with LSTM}
 \label{sec:eval:experiments:lstm}
+!!!
+During preprocessing step Euler angles (yaw, pitch, roll) were calculated from quaternions and these parameters are used for visualization purposes. Although the interpolated $csv$-file contains additional Euler angles columns, only described in section \ref{sec:design:dataset:HL} parameters were used for training and prediction.
 
 \subsection{Prediction with GRU}
 \label{sec:eval:experiments:gru}

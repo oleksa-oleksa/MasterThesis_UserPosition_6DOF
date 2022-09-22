@@ -9,7 +9,8 @@ This section describes how the dataset was obtained, analysed and presents the v
 
 \subsection{Data collection from HMD}
 \label{sec:impl:dataset:HL}
-The real 6-DoF dataset must be used as training data from which the model can learn the spacial and time dependences. In this master thesis HoloLens 2, the second iteration of Microsoft's head-mounted mixed reality device, was used for data collection. The user position and orientation were obtained with Unity application developed for this purpose. Main Camera in Unity is automatically configured to track head movements. More details about Unity application can be found in section \ref{sec:impl:model:dev:unity}. Using the Main Camera, a user position $(x, y, z)$ and orientation in quaternion $(qx, qy, qz, qw)$ were logged in a $csv$-file. Quaternions obtained from HMD will be used to define a rotation by four numbers. Quaternions representations are very convenient for operations such as composition or rotations and coordinate transformation \cite{principles_robot_motion_book}. For these reasons quaternions are chosen for the representation of user head's rotation in three dimensions. Comparing to dataset in \cite{serhan_kalman}, the additional parameters were recorded from the Main Camera in order to add more information during training processes. Thus the world-space speed of the camera in meters per second was recorded. Unity velocity has the speed in $(x, y, z)$ defining the direction. The obtained 6-DoF dataset has 10 features used in training process: position $(x, y, z)$, orientation $(qx, qy, qz, qw)$ and velocity $(x, y, z)$.\\
+The real 6-DoF dataset must be used as training data from which the model can learn the spacial and time dependences. In this master thesis HoloLens 2, the second iteration of Microsoft's head-mounted mixed reality device, was used for data collection. The user position and orientation were obtained with Unity application developed for this purpose. Main Camera in Unity is automatically configured to track head movements. More details about Unity application can be found in section \ref{sec:impl:model:dev:unity}. Using the Main Camera, a user position $(x, y, z)$ and orientation in quaternion $(qx, qy, qz, qw)$ were logged in a $csv$-file. Quaternions obtained from HMD will be used to define a rotation by four numbers. Quaternions representations are very convenient for operations such as composition or rotations and coordinate transformation \cite{principles_robot_motion_book}. For these reasons quaternions are chosen for the representation of user head's rotation in three dimensions. Comparing to dataset in \cite{serhan_kalman}, the additional parameters were recorded from the Main Camera in order to add more information during training processes. Thus the world-space speed of the camera in meters per second was recorded. Unity velocity has the speed in $(x, y, z)$ defining the direction. The obtained 6-DoF dataset has 10 features used in training process: position $(x, y, z)$, orientation $(qx, qy, qz, qw)$ and velocity $(x, y, z)$.
+
 The datasets were recorded in the laboratory space. HMD was presented to users and the basic functions were explained. During data recording, users freely walked wearing HMD in laboratory space. The Unity application, running on HMD, not only recorded the mentioned before parameters but also had a volumetric animated object placed 3 meters ahead of the user in the Mixed Reality environment. No personal data was recorded during these sessions and all traces are obtained anonymously. Thus, after an Unity application was launched, user could immediately see the animated object. The several traces were recorded at least for 10 minutes each. It allows to have enough data after splitting the dataset into training, test and validation partitions. Table \ref{tab:raw_data} show the first 20 rows from raw dataset obtained from HoloLens 2 and used in training. Although dataset has 10 columns, the table \ref{tab:raw_data} presents only $timestamp$ and position $(x, y, z)$ columns. 
 
 \begin{table}[!ht]
@@ -40,7 +41,7 @@ The datasets were recorded in the laboratory space. HMD was presented to users a
 		2.97978 & 0.001838901 & 0.004487753 & 0.01747578 \\ \hline
 		2.997117 & 0.002005509 & 0.005007531 & 0.01782864 \\ \hline
 	\end{tabular}
-\caption{\label{tab:raw_data}Raw data from HoloLens 2}
+\caption{\label{tab:raw_data}Raw data from HoloLens 2.}
 \end{table}
 
 The first column in dataset is $timestamp$. It is obviously, that timestamp appears in row dataset not linearly and comes with different pauses. Even the high-cost HMD, like used in this research HoloLens 2, is sometimes unstable in frame rate during collecting data. Due to signal processing and propagation delays, distance in time between two consecutive samples was either increased or decreased.
@@ -71,16 +72,17 @@ The next step after looking at raw data, gathered for machine learning, is a dat
 		\caption{Dataset 1703}
 		\label{fig:pos3}
 	\end{subfigure}
-	\caption{User position plots from obtained datasets (a, b, c)}
+	\caption{User position plots from obtained datasets (a, b, c).}
 	\label{fig:datasets}
 \end{figure}
-First, let's start with the analysis of user position data. The figures \ref{fig:pos1}, \ref{fig:pos2}, \ref{fig:pos3} show dataset named $1556, 1623$ and $1703$ correspondently. As a matter of fact, plotted dataset were already interpolated on the preprocessing step. Although interpolation was done before data exploration, the details about interpolation can be found in section \ref*{sec:impl:dataset:preprocessing}. The names of datasets means only a $timestamp$ in form $HH:MM$ when a dataset was obtained from HMD in laboratory space. Thus the unique name of $csv$-files on HMD system was guaranteed for the day of experiment. In this thesis the names will be used to identify each of all three datasets. Fig. \ref{fig:datasets} shows only 3 chosen datasets from those obtained in laboratory space. All datasets indicates the same behaviour of VR users with HMD looking on the VV projected in VR space as was found out in works \cite{serhan_kalman, user_behav_volumetric}. The MAE and RMSE metric results are tend to be similar for every dataset during training and testing.\\
+First, let's start with the analysis of user position data. The figures \ref{fig:pos1}, \ref{fig:pos2}, \ref{fig:pos3} show dataset named $1556, 1623$ and $1703$ correspondently. As a matter of fact, plotted dataset were already interpolated on the preprocessing step. Although interpolation was done before data exploration, the details about interpolation can be found in section \ref*{sec:impl:dataset:preprocessing}. The names of datasets means only a $timestamp$ in form $HH:MM$ when a dataset was obtained from HMD in laboratory space. Thus the unique name of $csv$-files on HMD system was guaranteed for the day of experiment. In this thesis the names will be used to identify each of all three datasets. Fig. \ref{fig:datasets} shows only 3 chosen datasets from those obtained in laboratory space. All datasets indicates the same behaviour of VR users with HMD looking on the VV projected in VR space as was found out in works \cite{serhan_kalman, user_behav_volumetric}. The MAE and RMSE metric results are tend to be similar for every dataset during training and testing.
+
 All traces were recorded over 10 minutes long on average 12 minutes. All traces were then shortened to a precise length of 10 minutes to ensure equal data length for the purpose of visualization and analysis. The observations based on the sample traces can be made similar as it done by \textit{Gül et al., 2020} in their work \cite{serhan_kalman}. The user rarely moves along the y-axis. The y-axis shows the vertical movement that the users could make if they sit down or stand up. Based on the data obtained, users walked around a volumetric object in virtual reality and did not make particularly noticeable and prolonged attempts to examine the object at the lower point of the projection on a laboratory's floor since vertical movement requires more effort to crouch down and stand up. The laboratory space where the dataset was obtained was not cluttered with furniture thus users could walk around the volumetric object projected into their HMD. The figure \ref{fig:y_pos} shows an enlarged y-axis in the range from 400ms to 500ms and thus proves there is no significant change in the vertical position of the user.
 
 \begin{figure}[htb]
 	\begin{center}
 		\includegraphics[width=1\textwidth, keepaspectratio]{gfx/Fig-1556-y_position.pdf}
-		\caption{\label{fig:y_pos} Changes in the user's position along the Y axis in the range from 400ms to 500ms}
+		\caption{\label{fig:y_pos} Changes in the user's position along the Y axis in the range from 400ms to 500ms.}
 	\end{center}
 \end{figure}
 
@@ -90,8 +92,7 @@ Spatial coordinate systems on Windows (HoloLens runs on the Windows Holographic 
 
 \subsection{Data preprocessing}
 \label{sec:impl:dataset:preprocessing}
-As was mentioned in section \ref*{sec:design:dataset:HL}, the raw sensor data obtained from the HoloLens was unevenly sampled at 60 Hz and had different temporal distances between consecutive samples. \textit{Gül et al., 2020} obtained the similar raw dataset from same HMD and interpolated it to obtain temporally equidistant samples. Same as it was done in work \cite{serhan_kalman}, the position and velocity data were upsampled using linear interpolation and for quaternions SLEP was used. During preprocessing step Euler angles (yaw, pitch, roll) were calculated from quaternions and these parameters are used for visualization purposes. Although the interpolated $csv$-file contains additional Euler angles columns, only described in section \ref{sec:design:dataset:HL} parameters were used for training and prediction. The table \ref{tab:inter_data} lists first 20 rows for columns $timestamp$ and position $(x, y, z)$ from interpolated dataset. This interpolated dataset is created with linear interpolation and SLEP mathematical methods from raw dataset shown in table \ref{tab:raw_data}. 
-
+As was mentioned in section \ref*{sec:impl:dataset:HL}, the raw sensor data obtained from the HoloLens was unevenly sampled at 60 Hz and had different temporal distances between consecutive samples. 
 \begin{table}[!ht]
 	\footnotesize
 	\centering
@@ -120,10 +121,12 @@ As was mentioned in section \ref*{sec:design:dataset:HL}, the raw sensor data ob
 		90000000.0 & 0.0033323631666666667 & 0.0034137996666666667 & 0.01357876 \\ \hline
 		95000000.0 & 0.003252693 & 0.003489003 & 0.01368421 \\ \hline
 	\end{tabular}
-	\caption{\label{tab:inter_data}Interpolated data from HoloLens 2}
+	\caption{\label{tab:inter_data}Interpolated data from HoloLens 2.}
 \end{table}
 
-After the interpolated dataset was plotted as figure \ref{fig:inter_data}, the important observations based on the sample trace could be done. While the user position data plots look appropriate for machine learning algorithms, the two graphs with orientation show data that is not the perfect case for usage with machine learning technologies and could decrease the prediction rate. The real part $qw$ and the component $qy$ of quaternion and $yaw$ of Euler angles have obviously discontinuous (sharp change of sign) making it hard for a predictor to learn. A orientation on quaternions is used in training, thus this data requires a few additionally preprocessing steps. Usually, when doing calculation with quaternions, quaternions must be normalized to a unit length in order to represent valid rotations \cite{principles_robot_motion_book}. The normalized quaternion can be calculated using formula:
+\textit{Gül et al., 2020} obtained the similar raw dataset from same HMD and interpolated it to obtain temporally equidistant samples. Same as it was done in work \cite{serhan_kalman}, the position and velocity data were upsampled using linear interpolation. Spherical linear interpolation was used to interpolate between rotations represented by quaternions.The table \ref{tab:inter_data} lists first 20 rows for columns $timestamp$ and position $(x, y, z)$ from interpolated dataset created from raw dataset (listed in table \ref{tab:raw_data}). 
+
+After the interpolated dataset was plotted as figure \ref{fig:inter_data}, the important observations based on the sample trace could be done. While the user position data plots look appropriate for machine learning algorithms, the graph with orientation shows data that is not the perfect case for usage with machine learning technologies and could decrease the prediction rate. The real part $qw$ and the component $qy$ of quaternion have obviously discontinuous (sharp change of sign) making it hard for a predictor to learn. A orientation on quaternions is used in training, thus this data requires a few additionally preprocessing steps. Usually, when doing calculation with quaternions, quaternions must be normalized to a unit length in order to represent valid rotations \cite{principles_robot_motion_book}. The normalized quaternion can be calculated using formula:
 \begin{equation}
 U_g = \frac{q}{|| q ||} = \frac{w}{|| q ||} + i \cdot \frac{x}{|| q ||} + j \cdot \frac{y}{|| q ||} + k \cdot \frac{z}{|| q ||}
 \end{equation}
@@ -133,33 +136,33 @@ where $|| q || $ is a magnitude and can be found with formula:
 || q || = \sqrt{w^2 + x^2 + y^2 + z^2 }
 \end{equation}
 
-During experiments with quaternions in dataset obtained from HoloLens was found that quaternion magnitudes $|| q ||$ in HoloLens dataset are equal to 1. Thus data came from HMD already normalized, so that a quaternion in dataset kept the same orientation as it was during user's movement but its magnitude is 1.0.
-
 \begin{figure}[htb]
 	\begin{center}
-		\includegraphics[width=1\textwidth, keepaspectratio]{gfx/Fig-1556-interpolated.pdf}
-		\caption{\label{fig:inter_data}Interpolated 6-DoF dataset's user position and orientation in quaternions and Euler angles.}
+		\includegraphics[width=1\textwidth, keepaspectratio]{gfx/Fig-1556-interpolated_2.pdf}
+		\caption{\label{fig:inter_data}Interpolated 6-DoF dataset's user position and orientation in quaternions.}
 	\end{center}
 \end{figure}
 
-Next, quaternions between neighboring points in obtained dataset represent the very similar orientation made by user wearing HMD step by step. The middle plot on figure \ref{fig:norm_data} has discontinuities that can be seen on $qw$ line. As a consequence of the discontinuity (sharp change of line from negative to positive area with the same amplitude) the two neighboring quaternions with similar rotation have significant 4D vector space between them. It makes prediction worse what can be proved by RMSE and MSE rotation metrics. Flipping the sign will not affect the rotation, but it will ensure that there are no large jumps in 4D vector space when the rotation difference in rotation space (SO(3)) is small. If negative component of quaternions will be flipped into positive then the dataset representing same rotation without creating an artificial discontinuity in the space will be available for model training. 
+During experiments with quaternions in dataset obtained from HoloLens 2, was detected that quaternion magnitudes $|| q ||$ in HoloLens dataset are equal to 1. Thus data came from HMD already normalized, so that a quaternion in dataset kept the orientation as it was during user's movement with a magnitude equal to 1.0.
+
+Next, quaternions between neighboring points in obtained dataset represent the very similar orientation made by user wearing HMD step by step. The orientation plot on figure \ref{fig:norm_data} has discontinuities that can be seen on $qw$ line. As a consequence of the discontinuity (sharp change of line from negative to positive area with the same amplitude) the two neighboring quaternions with similar rotation have significant 4D vector space between them. It makes prediction worse what can be proved by RMSE and MSE rotation metrics. Flipping the sign will not affect the rotation, but it will ensure that there are no large jumps in 4D vector space when the rotation difference in rotation space (SO(3)) is small. If negative component of quaternions will be flipped into positive then the dataset, representing same rotation without creating an artificial discontinuity in the space, will be available for model training. 
 
 \begin{figure}[htb]
 	\begin{center}
 		\includegraphics[width=1\textwidth, keepaspectratio]{gfx/Fig-1556-quaternions_flipped.pdf}
-		\caption{\label{fig:norm_data} Quaternions from 6-DoF dataset's flipped if their real part is negative}
+		\caption{\label{fig:norm_data} Quaternions from 6-DoF dataset's flipped if their real part is negative.}
 	\end{center}
 \end{figure}
 
-Thus after normalization step, the two representations of quaternions are blended into one data set, omitting to discontinuities in the time series as can be seen presented on Figure \ref{fig:norm_data}. Indeed, the RMSE and MSE rotation metrics were improved when model was trained with dataset with quaternions without sharp sign changes. More information can be found in sections \ref{sec:imp:experiments} and \ref{sec:imp:results}. The figure \ref{fig:compare} represents quaternions of the original interpolated dataset on the upper part of the plot and the normalized flipped quaternions on the lower part of the plot. The quaternion's components were flipped only if the if their real part became negative. Different to figure \ref{fig:norm_data} the limit of y-axis is set to [-1, 1] on figure \ref{fig:compare} so that the result of inverting of quaternion is easy co compare to original data. Figure \ref{fig:norm_data} shows plotted data with length of 20 seconds in range 162 - 182 s from both datasets.
-
+ The figure \ref{fig:compare} represents quaternions of the original interpolated dataset on the upper part of the plot and the normalized flipped quaternions on the lower part of the plot. The quaternion's components were flipped only if the if their real part became negative. Different to figure \ref{fig:norm_data} the limit of y-axis is set to [-1, 1] on figure \ref{fig:compare} so that the result of inverting of quaternion is easy co compare to original data. Figure \ref{fig:norm_data} shows plotted data with length of 20 seconds in range 162 - 182 s from both datasets.
 \begin{figure}[htb]
 	\begin{center}
 		\includegraphics[width=1\textwidth, keepaspectratio]{gfx/Fig-1556-compare.pdf}
-		\caption{\label{fig:compare} Quaternions from 6-DoF dataset's flipped if their real part is negative}
+		\caption{\label{fig:compare} Enlarged quaternion plot with breaks omitted.}
 	\end{center}
 \end{figure}
 
+Thus the two representations of quaternions were blended into one data set, omitting to discontinuities in the time series as can be seen presented on Figure \ref{fig:norm_data}. Indeed, the RMSE and MSE rotation metrics were improved when model was trained with dataset with quaternions without sharp sign changes. More information can be found in section \ref{sec:eval:experiments}.
 %''########################################
 
 \section{Model}
