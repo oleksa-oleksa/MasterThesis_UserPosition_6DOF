@@ -203,13 +203,13 @@ With $i_t$ cell state $c_t$ will be updated. First, the previous hidden state an
 \begin{equation}
 i_t = \sigma (W_{ii}x_t + b_{ii} + W_{hi}h_{t-1} + b_{hi})
 \end{equation}
-The transformed values between 0 and 1 meaning 0 means not important, and 1 means important will be multiplied on cell gate $g_t$ with the tanh output of the hidden state and current input:
+The transformed values between 0 and 1 meaning 0 means not important, and 1 means important will be multiplied on cell gate $\tilde{c}_t$ with the tanh output of the hidden state and current input:
 \begin{equation}
-g_t = tahn (W_{ig}x_t + b_{ig} + W_{hg}h_{t-1} + b_{hg})
+\tilde{c}_t = tahn (W_{ig}x_t + b_{ig} + W_{hg}h_{t-1} + b_{hg})
 \end{equation}
 New cell state first gets pointwise multiplied by the forget vector anf if these values near 0 they will be dropped from the cell state. The result from the input gate is pointwise added und thus new cell state is created with values that the neural network finds relevant.
 \begin{equation}
-c_t = f_t \odot c_{t-1} + i_t \odot g_t
+c_t = f_t \odot c_{t-1} + i_t \odot \tilde{c}_t
 \end{equation}
 The output gate is the last in LSTM calculations and decides what the next hidden state should be. Hidden state is also used to make a prediction because it contains information of previous inputs and thus helps to learn long term dependencies. The sigmoid function gets previous hidden state and the current input and tanh function gets the newly calculated cell state. And similar to previous step tanh output with the sigmoid output are multiplied to decide what information the hidden state should carry. The new cell state and the new hidden is then carried over to the next time step.
 \begin{equation}
@@ -219,8 +219,53 @@ o_t = \sigma (W_{io}x_t + b_{io} + W_{ho}h_{t-1} + b_{ho})
 h_t = o_t \odot tahn(c_t)
 \end{equation}
 
+Model implementation, training loop and evaluation are done in Python using PyTorch. Model has input $[batch, sequence, features]$ with sequence equal to 20 last values what corresponds to 100 ms of historical data and 10 features that contain 3 positional, 4 rotation and 3 velocity columns. The batch size  was set to $2^{7}$. The hidden dimension set experimentally after parameters grid search on GPU Cluster to be equal 512. Adam optimization algorithm is used, the maximum number of epochs was set to 500, early stopping technique (patience = 7, min. delta = 0,05) was used to avoid overfitting. Additionally, the learning rate was decreased by 50\% from initial value of 0.0001 every 30 epochs. The learning rate is a parameter that determines how much an updating step influences the current value of the weights. Adjustable learning rate was proposed in works \cite{delay_compensation_360, telepresence} and implementing this option had improved prediction and allowed model to learn patterns correctly without overfitting. Weight decay of Adam optimiser experimentally is set to a small value of $1e-12$ . Thus this additional term in the weight update rule less causes the weights to exponentially decay to zero, large weights were less penalizes and model could successfully learn the long term dependencies and thus constantly decrease both training loss and validation loss  and stabilize them at a specific point. 
 
+The best performance was achieved without additional activation functions with simple one-layered architecture represented below:
+\begin{lstlisting}[caption={One-layered LSTM with sliding window},captionpos=b]
+LSTMModel1(
+(lstm): LSTM(10, 512, batch_first=True)
+(fc): Linear(in_features=512, out_features=7, bias=True)
+==================================================================
+Layer (type:depth-idx)          Output Shape         Param #
+==================================================================
+LSTMModel1                       [128, 20, 7]              --
+	--- LSTM: 1-1            [128, 20, 512]     1,073,152
+	--- Linear: 1-2          [128, 20, 7]           3,591
+==================================================================
+Total params: 1,076,743
+Trainable params: 1,076,743
+Non-trainable params: 0
+==================================================================
+\end{lstlisting}
 
+Since only position and rotation data of similar range is used in 6-DoF dataset, no scaler for the features is applied.  Experiments showed that normalization of values between [0..1] and between [-1..1] results to higher MSE and RMSE. Already preprocessed interpolated datasets with flipped negative quaternions is loaded in with respect to sequential order as training, validation and test dataset from $npy$-files. Additional extended LSTM architectures were implemented and tried with HoloLens 2 6-DoF dataset. For example, the non-linear activation functions $ReLU$ and $Mish$ were tried in hope to get more sensitivity to the activation sum input and avoid easy saturation. Thus the nodes in model should be only deactivated if the output of is less than 0. Model variant with $ReLU$ is listed below and experemtally resulted to produce higher MSE and RMSE compared to LSTM1. 
+
+\begin{lstlisting}[caption={LSTM2 with ReLU activation function},captionpos=b]
+LSTMModel2(
+(lstm): LSTM(10, 512, batch_first=True)
+(relu_1): ReLU()
+(fc_1): Linear(in_features=512, out_features=1024, bias=True)
+(relu_2): ReLU()
+(fc_2): Linear(in_features=1024, out_features=7, bias=True)
+
+==================================================================
+Layer (type:depth-idx)                   Output Shape              Param #
+==================================================================
+LSTMModel2                   [128, 20, 7]              --
+	--- LSTM: 1-1        [128, 20, 512]            1,073,152
+	--- ReLU: 1-2        [128, 20, 512]            --
+	--- Linear: 1-3      [128, 20, 1024]           525,312
+	--- ReLU: 1-4        [128, 20, 1024]           --
+	--- Linear: 1-5      [128, 20, 7]              7,175
+==================================================================
+Total params: 1,605,639
+Trainable params: 1,605,639
+Non-trainable params: 0
+==================================================================
+\end{lstlisting}
+
+LSTM3 uses $Mish$ and has the similar architecture as LSTM2 Model and thus not listed separately. 
 
 \subsection{GRU Model}
 \label{sec:impl:model:arch:gru}

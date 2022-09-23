@@ -147,9 +147,9 @@ class RNNRunner:
         self.outputs = self._create_outputs(dataset_type)
         self.input_dim = len(self.features)
         self.output_dim = len(self.outputs)  # 3 position parameter + 4 rotation parameter
-        self.hidden_dim = 32  # number of features in hidden state
-        self.batch_size = 512
-        self.n_epochs = 5
+        self.hidden_dim = 512  # number of features in hidden state
+        self.batch_size = 128
+        self.n_epochs = 500
         self.seq_length_input = 20  # input length of timeseries from the past
 
         # -----  CREATE PYTORCH MODEL ----------#
