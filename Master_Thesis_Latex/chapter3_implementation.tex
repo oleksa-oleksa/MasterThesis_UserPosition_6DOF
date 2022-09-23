@@ -179,26 +179,40 @@ Usually in machine learning dataset will be split randomly, as there’s no depe
 The last step to prepare 6-DoF dataset to be used as model input is using time steps as features. Having a historical data of user position and orientation, the next value, $X(t+n)$ must be predicted by a model from the previous n observations $Xt, X+1$, ..., and $X(t+n-1)$. Since the future values that must be predicted already recorded in the dataset, a sliding-window approach can use prior time steps to predict the next time step and thus turn a time series dataset into a supervised learning problem. With a simple for-loop lagged observations can be created from input by shifting the values in a column by n times and removing the first n columns. The original dataset was interpolated using linear interpolation for position data and SLERP is used for quaternions. Thus, interpolated dataset is an evenly-sampled dataset with a sampling rate of 200 Hz (5 ms). The LAT of 100 ms is used for evaluation. Thus 20 future values correspond the $LAT = 100 ms$ must be predicted by LSTM and compared with real data to evaluate the prediction. 
 
 Finally, the spit datasets with added sliding window were exported in standard binary $npy$-files format of NumPy. The format stores all of the shape and dtype information necessary to reconstruct the array correctly even on another machine with a different architecture. Thus the spitting of dataset is not required every time when model trains with different hyperparametes on GPU cluster.
-
-
-%%%%%%%%%%%%%%%%%%%%%%
-!!!!!!
-Implemented model learns after training how to map inputs to the outputs of the given dataset and afterwards can be applied to a new data to make predictions and obtain results.
-
-Analysis done by \textit{Qian et al., 2016} indicates that at least in the short term, viewers’ head movement can be predicted with accuracy > 90\% by even using simple methods such as linear regression \cite{cellular_opt}. However in the longer term it is more difficult to achieve the good result and the average accuracy drops to about 70\% \cite{cellular_opt}.\
-!!!!!
-
-Researchers used Adam optimization algorithm, the maximum number of epochs was set to 1000, early stopping technique (patience = 2, min. delta = 0) was used to avoid overfitting. Additionally, the learning rate was decreased by 70\% from initial value of 0.001 every 30 epochs. The batch size B was set to $2^{11}$. Rectified Linear Unit (ReLU) as activation function for the FFN layers used with LSTM
-
-!!! 
  
 \subsection{LSTM Model}
 \label{sec:impl:model:arch:lstm}
 Recurrent neural networks have recently shown promising results in many machine learning tasks, especially when input and/or output are of variable length and are coming as time series with a sequential order. Unfortunately, the known problem of RNN that was observed many years ago by e.g., \textit{Bengio et al., 1994} that it is difficult to train RNNs to capture long-term dependencies because the gradients tend to either vanish (most of the time) or explode (rarely, but with severe effects) \cite{rnn_difficults}. New approaches are needed to be implemented to reduce the negative impacts of this issue. Since traditional recurrent unit overwrites its content at each time-step, a LSTM unit is able to decide whether to keep the existing memory via the introduced gates. The Long Short-Term Memory (LSTM) has a number of minor modifications \cite{empirical_evaluation} since it was initially proposed in work \cite{lstm_orig}.
+Analysis done by \textit{Qian et al., 2016} indicates that in the short term users’ head movement can be predicted with accuracy > 90\% by even using simple methods such as linear regression \cite{cellular_opt}. However in the longer term it is more difficult to achieve the good result and the average accuracy drops to about 70\% \cite{cellular_opt}. Thus LSTM model was chosen to evaluate with the 6-DoF dataset based on long term dependencies of the data. 
+
+The RNN block consist of single computation layer with $tanh$ activation function. Compared to the Feedforward Neural Network, RNN does not take decisions based on only the current input. RNN finds the pattern dependencies based on current and previous inputs. RNN has $h_{t}$ function of the previous cell state $h_{t-1}$ and current input$ X_{t}$. LSTM is compexer and consists of several computational blocks that control information flow of information through the cell. The key building block behind LSTM is a structure known as $gates$. They allow LSTM to avoid the weight conflict when making decision which information from the past and current timestamp is important for correct mapping inputs to outputs. In other words, network can decide using gates when to keep or override the information in memory cell and how to access the current memory cell \cite{lstm_orig}.
+
+\begin{figure}[htb]
+	\begin{center}
+		\includegraphics[width=1\textwidth, keepaspectratio]{gfx/lstm.png}
+		\caption{\label{fig:lstm}Long Short-Term Memory.}
+	\end{center}
+\end{figure}
+The LSTM architecture is illustrated\footnote{Source: Prof. Dr. Tim Landgraf, Lecture 13: Recurrent Neural Networks, WS 20/21: Machine Learning} on Fig. \ref{fig:lstm}.
+
+%%%%%%#
+!!!!!
+
+Researchers used Adam optimization algorithm, the maximum number of epochs was set to 1000, early stopping technique (patience = 2, min. delta = 0) was used to avoid overfitting. Additionally, the learning rate was decreased by 70\% from initial value of 0.001 every 30 epochs. The batch size B was set to $2^{11}$. Rectified Linear Unit (ReLU) as activation function for the FFN layers used with LSTM
+
 
 \subsection{GRU Model}
 \label{sec:impl:model:arch:gru}
 Another approach called a gated recurrent unit (GRU) can adaptively capture dependencies of different time scales without having a separate memory cells \cite{empirical_evaluation}. GRU Model can catch the long-term dependencies in the data obtained from HMD that are otherwise are hidden by the effect of short-term dependencies from the standard RNN models.\\
+
+\begin{figure}[htb]
+	\begin{center}
+		\includegraphics[width=1\textwidth, keepaspectratio]{gfx/gru.png}
+		\caption{\label{fig:gru}Gated Recurrent Unit.}
+	\end{center}
+\end{figure}
+
+The GRU architecture is illustrated\footnote{Source: Prof. Dr. Tim Landgraf, Lecture 13: Recurrent Neural Networks, WS 20/21: Machine Learning} on Fig. \ref{fig:gru}.
 
 \subsection{Bidirectional GRU Model}
 \label{sec:impl:model:arch:bi-gru}
