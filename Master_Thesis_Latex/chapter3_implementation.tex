@@ -185,7 +185,7 @@ Finally, the spit datasets with added sliding window were exported in standard b
 Recurrent neural networks have recently shown promising results in many machine learning tasks, especially when input and/or output are of variable length and are coming as time series with a sequential order. Unfortunately, the known problem of RNN that was observed many years ago by e.g., \textit{Bengio et al., 1994} that it is difficult to train RNNs to capture long-term dependencies because the gradients tend to either vanish (most of the time) or explode (rarely, but with severe effects) \cite{rnn_difficults}. New approaches are needed to be implemented to reduce the negative impacts of this issue. Since traditional recurrent unit overwrites its content at each time-step, a LSTM unit is able to decide whether to keep the existing memory via the introduced gates. The Long Short-Term Memory (LSTM) has a number of minor modifications \cite{empirical_evaluation} since it was initially proposed in work \cite{lstm_orig}.
 Analysis done by \textit{Qian et al., 2016} indicates that in the short term users’ head movement can be predicted with accuracy > 90\% by even using simple methods such as linear regression \cite{cellular_opt}. However in the longer term it is more difficult to achieve the good result and the average accuracy drops to about 70\% \cite{cellular_opt}. Thus LSTM model was chosen to evaluate with the 6-DoF dataset based on long term dependencies of the data. 
 
-The RNN block consist of single computation layer with $tanh$ activation function. Compared to the Feedforward Neural Network, RNN does not take decisions based on only the current input. RNN finds the pattern dependencies based on current and previous inputs. RNN has $h_{t}$ function of the previous cell state $h_{t-1}$ and current input$ X_{t}$. LSTM is compexer and consists of several computational blocks that control information flow of information through the cell. The key building block behind LSTM is a structure known as $gates$. They allow LSTM to avoid the weight conflict when making decision which information from the past and current timestamp is important for correct mapping inputs to outputs. In other words, network can decide using gates when to keep or override the information in memory cell and how to access the current memory cell \cite{lstm_orig}.
+Since LSTM is a special kind of RNN, the RNN architecture will be briefly introduced first. RNN block consist of single computation layer with $tanh$ activation function that is used to help regulate the values flowing through the network. The tanh function squishes values to always be between -1 and 1. RNN has $h_{t}$ function of the previous cell state $h_{t-1}$ and current input$ X_{t}$. The architecture of LSTM is complexer and consists of several computational blocks that control information flow of information through the cell. The key building block behind LSTM is a structure known as $gates$. They allow LSTM to avoid the weight conflict when making decision which information from the past and current timestamp is important for correct mapping inputs to outputs. In other words, network can decide how to use gates when it is needed to keep or override the information in memory cell or access the current memory cell \cite{lstm_orig}. 
 
 \begin{figure}[htb]
 	\begin{center}
@@ -193,12 +193,33 @@ The RNN block consist of single computation layer with $tanh$ activation functio
 		\caption{\label{fig:lstm}Long Short-Term Memory.}
 	\end{center}
 \end{figure}
-The LSTM architecture is illustrated\footnote{Source: Prof. Dr. Tim Landgraf, Lecture 13: Recurrent Neural Networks, WS 20/21: Machine Learning} on Fig. \ref{fig:lstm}.
+The LSTM architecture is illustrated\footnote{Source: Prof. Dr. Tim Landgraf, Lecture 13: Recurrent Neural Networks, WS 20/21: Machine Learning} on Fig. \ref{fig:lstm}. Using first gate $f_t$ model decides which information should be omitted from the cell in that particular time step. The sigmoid function uses the previous state (ht-1) along with the current input xt and computes the cell state using formula:
+\begin{equation}
+f_t = \sigma (W_{if}x_t + b_{if} + W_{hf}h_{t-1} + b_{hf})
+\end{equation}
+where $f_t$ is the forger gate, $h_{t}$  is the hidden state at time t, $h_{t-1}$ is the hidden state of the layer at time $t-1$ or the initial hidden state at time $0$, $\sigma$ is the sigmoid function. All LSTM gates have $sigmoid$ activations that  is similar to the $tanh$ activation but squishes values between 0 and 1. This function is useful for forgetting the information since any number getting multiplied by 0 is 0 and thus disappears from cell state. 
 
-%%%%%%#
-!!!!!
+With $i_t$ cell state $c_t$ will be updated. First, the previous hidden state and current input are passed into a sigmoid function on input gate:
+\begin{equation}
+i_t = \sigma (W_{ii}x_t + b_{ii} + W_{hi}h_{t-1} + b_{hi})
+\end{equation}
+The transformed values between 0 and 1 meaning 0 means not important, and 1 means important will be multiplied on cell gate $g_t$ with the tanh output of the hidden state and current input:
+\begin{equation}
+g_t = tahn (W_{ig}x_t + b_{ig} + W_{hg}h_{t-1} + b_{hg})
+\end{equation}
+New cell state first gets pointwise multiplied by the forget vector anf if these values near 0 they will be dropped from the cell state. The result from the input gate is pointwise added und thus new cell state is created with values that the neural network finds relevant.
+\begin{equation}
+c_t = f_t \odot c_{t-1} + i_t \odot g_t
+\end{equation}
+The output gate is the last in LSTM calculations and decides what the next hidden state should be. Hidden state is also used to make a prediction because it contains information of previous inputs and thus helps to learn long term dependencies. The sigmoid function gets previous hidden state and the current input and tanh function gets the newly calculated cell state. And similar to previous step tanh output with the sigmoid output are multiplied to decide what information the hidden state should carry. The new cell state and the new hidden is then carried over to the next time step.
+\begin{equation}
+o_t = \sigma (W_{io}x_t + b_{io} + W_{ho}h_{t-1} + b_{ho})
+\end{equation}
+\begin{equation}
+h_t = o_t \odot tahn(c_t)
+\end{equation}
 
-Researchers used Adam optimization algorithm, the maximum number of epochs was set to 1000, early stopping technique (patience = 2, min. delta = 0) was used to avoid overfitting. Additionally, the learning rate was decreased by 70\% from initial value of 0.001 every 30 epochs. The batch size B was set to $2^{11}$. Rectified Linear Unit (ReLU) as activation function for the FFN layers used with LSTM
+
 
 
 \subsection{GRU Model}
