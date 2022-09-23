@@ -265,7 +265,8 @@ Non-trainable params: 0
 ==================================================================
 \end{lstlisting}
 
-LSTM3 uses $Mish$ and has the similar architecture as LSTM2 Model and thus not listed separately. 
+LSTM3 uses $Mish$ and has the similar architecture as LSTM2 Model and thus not listed separately. $Mish$ is a new activation function presented in machine learning scene in 2019 in work \cite{mish} and is a self-regularized non-monotonic activation function which can be mathematically defined as $f(x)=xtanh(softplus(x))$. Mish is a smooth, continuous activation function and allows to have better gradient flow compared to ReLU woth lot of sharp transitions \cite{mish}. The LSTM3 model indeed can improve MSE and RMSE mertics. 
+
 
 \subsection{GRU Model}
 \label{sec:impl:model:arch:gru}
