@@ -257,10 +257,9 @@ class LSTMModel4(nn.Module):
     (via hidden_size), you have defined the 2 Fully Connected layers, the ReLU layer, and some helper variables. Next,
     you are going to define the forward pass of the LSTM
     """
-    def __init__(self, input_dim, hidden_dim, output_dim, dropout, layer_dim):
+    def __init__(self, input_dim, hidden_dim, output_dim):
         super(LSTMModel4, self).__init__()
         self.name = "LSTM4 with Dropout and 3 FC and 2 MISH"
-        self.dropout = dropout
         self.input_size = input_dim  # input size
         self.hidden_size = hidden_dim  # hidden state
         self.output_dim = output_dim  # outputs
@@ -272,11 +271,11 @@ class LSTMModel4(nn.Module):
         # The initial memory states (h_init and c_init) are still reported with batch second.
         
         self.lstm_1 = nn.LSTM(input_size=input_dim, hidden_size=hidden_dim,
-                              num_layers=layer_dim, batch_first=True, dropout=0)  # lstm
+                              num_layers=self.layer_dim, batch_first=True, dropout=0)  # lstm
         self.drop_1 = nn.Dropout3d(p=self.lstm_dropout)
         self.mish_1 = nn.Mish()
         self.lstm_2 = nn.LSTM(input_size=hidden_dim, hidden_size=self.inner_size,
-                              num_layers=layer_dim, batch_first=True, dropout=0)
+                              num_layers=self.layer_dim, batch_first=True, dropout=0)
         self.drop_2 = nn.Dropout3d(p=self.lstm_dropout)
         self.mish_2 = nn.Mish()
         self.fc_2 = nn.Linear(self.inner_size, hidden_dim)

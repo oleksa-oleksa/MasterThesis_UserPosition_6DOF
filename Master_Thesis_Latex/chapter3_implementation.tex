@@ -92,7 +92,7 @@ Spatial coordinate systems on Windows (HoloLens runs on the Windows Holographic 
 
 \subsection{Data preprocessing}
 \label{sec:impl:dataset:preprocessing}
-As was mentioned in section \ref*{sec:impl:dataset:HL}, the raw sensor data obtained from the HoloLens was unevenly sampled at 60 Hz and had different temporal distances between consecutive samples. 
+As was mentioned in section \ref*{sec:impl:dataset:HL}, the raw sensor data obtained from the HoloLens was unevenly sampled at 60 Hz and had different temporal distances between consecutive samples. The data preprocessing step transforms the data into a format that is more easily and effectively can be processed and visualised. Table \ref{tab:inter_data_pos} shows 20 first rows from the resulting dataset after upsampling the positional data with linear interpolation.
 \begin{table}[!ht]
 	\footnotesize
 	\centering
@@ -101,30 +101,67 @@ As was mentioned in section \ref*{sec:impl:dataset:HL}, the raw sensor data obta
 		timestamp & x & y & z \\ [0.5ex] 
 		\hline\hline
 		0.0 & 0.004954389 & 0.003402365 & 0.01010712 \\ \hline
-		5000000.0 & 0.004833102666666667 & 0.0033084996666666667 & 0.010506206666666667 \\ \hline
-		10000000.0 & 0.004711816333333333 & 0.0032146343333333332 & 0.010905293333333333 \\ \hline
+		5000000.0 & 0.0048331026667 & 0.003308667 & 0.0105062067 \\ \hline
+		10000000.0 & 0.00471181633333 & 0.003214633332 & 0.01090523 \\ \hline
 		15000000.0 & 0.00459053 & 0.003120769 & 0.01130438 \\ \hline
-		20000000.0 & 0.004485576166666666 & 0.003099052833333333 & 0.011548609999999999 \\ \hline
-		25000000.0 & 0.004380622333333333 & 0.0030773366666666667 & 0.011792839999999999 \\ \hline
+		20000000.0 & 0.004485576166 & 0.00309903333 & 0.0115486078 \\ \hline
+		25000000.0 & 0.00438062233 & 0.00307733667 & 0.011792899 \\ \hline
 		30000000.0 & 0.0042756685 & 0.0030556205 & 0.01203707 \\ \hline
-		35000000.0 & 0.004170714666666667 & 0.003033904333333333 & 0.0122813 \\ \hline
-		40000000.0 & 0.004065760833333334 & 0.003012188166666667 & 0.01252553 \\ \hline
+		35000000.0 & 0.004170714667 & 0.0030339033 & 0.0122813 \\ \hline
+		40000000.0 & 0.00406576084 & 0.00301218867 & 0.01252553 \\ \hline
 		45000000.0 & 0.003960807 & 0.002990472 & 0.01276976 \\ \hline
 		50000000.0 & 0.00390328375 & 0.00300229975 & 0.0128401975 \\ \hline
 		55000000.0 & 0.0038457605 & 0.0030141275 & 0.012910635 \\ \hline
 		60000000.0 & 0.00378823725 & 0.00302595525 & 0.0129810725 \\ \hline
 		65000000.0 & 0.003730714 & 0.003037783 & 0.01305151 \\ \hline
-		70000000.0 & 0.0036510438333333334 & 0.0031129863333333335 & 0.01315696 \\ \hline
-		75000000.0 & 0.003571373666666667 & 0.003188189666666667 & 0.01326241 \\ \hline
-		80000000.0 & 0.0034917035000000003 & 0.003263393 & 0.01336786 \\ \hline
-		85000000.0 & 0.0034120333333333332 & 0.0033385963333333333 & 0.01347331 \\ \hline
-		90000000.0 & 0.0033323631666666667 & 0.0034137996666666667 & 0.01357876 \\ \hline
+		70000000.0 & 0.003651043834 & 0.00311298635 & 0.01315696 \\ \hline
+		75000000.0 & 0.003571373667 & 0.00318818967 & 0.01326241 \\ \hline
+		80000000.0 & 0.003491703003 & 0.003263393 & 0.01336786 \\ \hline
+		85000000.0 & 0.003412033332 & 0.0033385963 & 0.01347331 \\ \hline
+		90000000.0 & 0.003332363167 & 0.003413799667 & 0.01357876 \\ \hline
 		95000000.0 & 0.003252693 & 0.003489003 & 0.01368421 \\ \hline
 	\end{tabular}
-	\caption{\label{tab:inter_data}Interpolated data from HoloLens 2.}
+	\caption{\label{tab:inter_data_pos}Interpolated positional data from HoloLens 2.}
 \end{table}
 
-\textit{Gül et al., 2020} obtained the similar raw dataset from same HMD and interpolated it to obtain temporally equidistant samples. Same as it was done in work \cite{serhan_kalman}, the position and velocity data were upsampled using linear interpolation. Spherical linear interpolation was used to interpolate between rotations represented by quaternions.The table \ref{tab:inter_data} lists first 20 rows for columns $timestamp$ and position $(x, y, z)$ from interpolated dataset created from raw dataset (listed in table \ref{tab:raw_data}). 
+\textit{Gül et al., 2020} obtained the similar raw dataset from same HMD and interpolated it to obtain temporally equidistant samples. Same as it was done in work \cite{serhan_kalman}, the position and velocity data were upsampled using linear interpolation. Spherical linear interpolation was used to interpolate between rotations represented by quaternions and  table \ref{tab:inter_data_rot} lists 20 first rows from the resulting dataset after upsampling the rotational data.
+
+\begin{table}[!ht]
+	\footnotesize
+	\centering
+	\begin{tabular}{|l|l|l|l|}
+		\hline
+		qx & qy & qz  & qw \\ [0.5ex] 
+		\hline\hline
+		0.05225104 & -0.0092471 & -0.01470939 & 0.998482825\\ \hline
+		0.052829134 & -0.0094018 & -0.01476541 & 0.9984501\\ \hline
+		0.053407194	& -0.0095559 & -0.0148214108 & 0.99841708 \\ \hline
+		0.053985240 & -0.00971031 & -0.0148774088 & 0.9983836 \\ \hline
+		0.054563231 & -0.0098646 & -0.0149333515 & 0.99834990 \\ \hline
+		0.054967034 & -0.0099280 & -0.0147404755 & 0.99832999 \\ \hline
+		0.055370826 & -0.0099914 & -0.014547596 & 0.998309876 \\ \hline
+		0.055774607 & -0.0100548 & -0.0143547143 & 0.998289554 \\ \hline
+		0.056178376 & -0.0101182 & -0.0141618293 & 0.9982690 \\ \hline
+		0.0565821344 & 0.0101816 & -0.01396894 & 0.998248298 \\ \hline
+		0.0568467445 & -0.0102414 & -0.01378002 & 0.99823527 \\ \hline
+		0.0567612581 & -0.01029217 & -0.01360108 & 0.998242075 \\ \hline
+		0.0566757694 & -0.01034289 & -0.013422148 & 0.998248830 \\ \hline
+		0.0565902782 & -0.01039361 & -0.013243212 & 0.9982555436 \\ \hline
+		0.0565037268 & -0.01044992 & -0.0130706110 & 0.998262133 \\ \hline
+		0.0563820024 & -0.010691806 & -0.01310865 & 0.998265955 \\ \hline
+		0.0562602738 & -0.010933688 & -0.01314669 & 0.998269703 \\ \hline
+		0.0561385409 & -0.011175569 & -0.013184732 & 0.9982733762 \\ \hline
+		0.0560168039 & -0.011417450 & -0.013222770 & 0.99827697 \\ \hline
+	\end{tabular}
+	\caption{\label{tab:inter_data_rot}Interpolated rotational data from HoloLens 2.}
+\end{table}
+
+\begin{figure}[htb]
+	\begin{center}
+		\includegraphics[width=1\textwidth, keepaspectratio]{gfx/Fig-1556-interpolated_2.pdf}
+		\caption{\label{fig:inter_data}Interpolated 6-DoF dataset's user position and orientation in quaternions.}
+	\end{center}
+\end{figure}
 
 After the interpolated dataset was plotted as figure \ref{fig:inter_data}, the important observations based on the sample trace could be done. While the user position data plots look appropriate for machine learning algorithms, the graph with orientation shows data that is not the perfect case for usage with machine learning technologies and could decrease the prediction rate. The real part $qw$ and the component $qy$ of quaternion have obviously discontinuous (sharp change of sign) making it hard for a predictor to learn. A orientation on quaternions is used in training, thus this data requires a few additionally preprocessing steps. Usually, when doing calculation with quaternions, quaternions must be normalized to a unit length in order to represent valid rotations \cite{principles_robot_motion_book}. The normalized quaternion can be calculated using formula:
 \begin{equation}
@@ -135,13 +172,6 @@ where $|| q || $ is a magnitude and can be found with formula:
 \begin{equation}
 || q || = \sqrt{w^2 + x^2 + y^2 + z^2 }
 \end{equation}
-
-\begin{figure}[htb]
-	\begin{center}
-		\includegraphics[width=1\textwidth, keepaspectratio]{gfx/Fig-1556-interpolated_2.pdf}
-		\caption{\label{fig:inter_data}Interpolated 6-DoF dataset's user position and orientation in quaternions.}
-	\end{center}
-\end{figure}
 
 During experiments with quaternions in dataset obtained from HoloLens 2, was detected that quaternion magnitudes $|| q ||$ in HoloLens dataset are equal to 1. Thus data came from HMD already normalized, so that a quaternion in dataset kept the orientation as it was during user's movement with a magnitude equal to 1.0.
 
@@ -165,6 +195,7 @@ Next, quaternions between neighboring points in obtained dataset represent the v
 Thus the two representations of quaternions were blended into one data set, omitting to discontinuities in the time series as can be seen presented on Figure \ref{fig:norm_data}. Indeed, the RMSE and MSE rotation metrics were improved when model was trained with dataset with quaternions without sharp sign changes. More information can be found in section \ref{sec:eval:experiments}.
 %''########################################
 
+\newpage
 \section{Model}
 \label{sec:impl:model}
 The section describes the inputs and architecture of evaluated LSTM, GRU and Bidirectional GRU models. A model itself is a mathematical representation that produces expected output based on a given input. 
@@ -219,7 +250,7 @@ o_t = \sigma (W_{io}x_t + b_{io} + W_{ho}h_{t-1} + b_{ho})
 h_t = o_t \odot tahn(c_t)
 \end{equation}
 
-Model implementation, training loop and evaluation are done in Python using PyTorch. Model has input $[batch, sequence, features]$ with sequence equal to 20 last values what corresponds to 100 ms of historical data and 10 features that contain 3 positional, 4 rotation and 3 velocity columns. The batch size  was set to $2^{7}$. The hidden dimension set experimentally after parameters grid search on GPU Cluster to be equal 512. Adam optimization algorithm is used, the maximum number of epochs was set to 500, early stopping technique (patience = 7, min. delta = 0,05) was used to avoid overfitting. Additionally, the learning rate was decreased by 50\% from initial value of 0.0001 every 30 epochs. The learning rate is a parameter that determines how much an updating step influences the current value of the weights. Adjustable learning rate was proposed in works \cite{delay_compensation_360, telepresence} and implementing this option had improved prediction and allowed model to learn patterns correctly without overfitting. Weight decay of Adam optimiser experimentally is set to a small value of $1e-12$ . Thus this additional term in the weight update rule less causes the weights to exponentially decay to zero, large weights were less penalizes and model could successfully learn the long term dependencies and thus constantly decrease both training loss and validation loss  and stabilize them at a specific point. 
+Model implementation, training loop and evaluation are done in Python using PyTorch. Model has input $[batch, sequence, features]$ with sequence equal to 20 last values what corresponds to 100 ms of historical data and 10 features that contain 3 positional, 4 rotation and 3 velocity columns. The batch size was set to $2^{7}$. The hidden dimension set experimentally after parameters grid search on GPU Cluster to be equal 512. Adam optimization algorithm is used, the maximum number of epochs was set to 500, early stopping technique (patience = 7, min. delta = 0,05) was used to avoid overfitting. Additionally, the learning rate was decreased by 50\% from initial value of 0.0001 every 30 epochs. The learning rate is a parameter that determines how much an updating step influences the current value of the weights. Adjustable learning rate was proposed in works \cite{delay_compensation_360, telepresence} and implementing this option had improved prediction and allowed model to learn patterns correctly without overfitting. Weight decay of Adam optimiser experimentally is set to a small value of $1e-12$ . Thus this additional term in the weight update rule less causes the weights to exponentially decay to zero, large weights were less penalizes and model could successfully learn the long term dependencies and thus constantly decrease both training loss and validation loss  and stabilize them at a specific point. 
 
 The best performance was achieved without additional activation functions with simple one-layered architecture represented below:
 \begin{lstlisting}[caption={One-layered LSTM with sliding window},captionpos=b]
@@ -239,14 +270,16 @@ Non-trainable params: 0
 ==================================================================
 \end{lstlisting}
 
-Since only position and rotation data of similar range is used in 6-DoF dataset, no scaler for the features is applied.  Experiments showed that normalization of values between [0..1] and between [-1..1] results to higher MSE and RMSE. Already preprocessed interpolated datasets with flipped negative quaternions is loaded in with respect to sequential order as training, validation and test dataset from $npy$-files. Additional extended LSTM architectures were implemented and tried with HoloLens 2 6-DoF dataset. For example, the non-linear activation functions $ReLU$ and $Mish$ were tried in hope to get more sensitivity to the activation sum input and avoid easy saturation. Thus the nodes in model should be only deactivated if the output of is less than 0. Model variant with $ReLU$ is listed below and experemtally resulted to produce higher MSE and RMSE compared to LSTM1. 
+Since only position and rotation data of similar range is used in 6-DoF dataset, no scaler for the features is applied.  Experiments showed that normalization of values between [0..1] and between [-1..1] results to higher MSE and RMSE. Already preprocessed interpolated datasets with flipped negative quaternions is loaded in with respect to sequential order as training, validation and test dataset from $npy$-files. Additional extended LSTM architectures were implemented and tried with HoloLens 2 6-DoF dataset. For example, the non-linear activation functions $ReLU$ and $Mish$ were tried in order to get more sensitivity to the activation sum input and avoid easy saturation. Thus the nodes in model should be only deactivated if the output of is less than 0. Model variant with $ReLU$ experimentally resulted to produce higher MSE and RMSE compared to LSTM1 and therefore was rejected for a final deployment 
 
-\begin{lstlisting}[caption={LSTM2 with ReLU activation function},captionpos=b]
-LSTMModel2(
+LSTM3 uses $Mish$ and has the similar architecture as LSTM2 Model and thus pnot listed separately. $Mish$ is a new activation function presented in machine learning scene in 2019 in work \cite{mish} and is a self-regularized non-monotonic activation function which can be mathematically defined as $f(x)=xtanh(softplus(x))$. Mish is a smooth, continuous activation function and allows to have better gradient flow compared to ReLU with lot of sharp transitions \cite{mish}. The LSTM3 model indeed insignificantly improved MSE and RMSE mertics but requires hidden dimension to be increased to 2048 nodes and batch size changed to $2^{10}$. Weight decay of Adam optimiser is set to $3e-14$ with LSTM3 model.
+ 
+\begin{lstlisting}[caption={LSTM3 with Mish activation function},captionpos=b]
+LSTMModel3(
 (lstm): LSTM(10, 512, batch_first=True)
-(relu_1): ReLU()
+(mish_1): Mish()
 (fc_1): Linear(in_features=512, out_features=1024, bias=True)
-(relu_2): ReLU()
+(mish_2): Mish()
 (fc_2): Linear(in_features=1024, out_features=7, bias=True)
 
 ==================================================================
@@ -254,9 +287,9 @@ Layer (type:depth-idx)                   Output Shape              Param #
 ==================================================================
 LSTMModel2                   [128, 20, 7]              --
 	--- LSTM: 1-1        [128, 20, 512]            1,073,152
-	--- ReLU: 1-2        [128, 20, 512]            --
+	--- Mish: 1-2        [128, 20, 512]            --
 	--- Linear: 1-3      [128, 20, 1024]           525,312
-	--- ReLU: 1-4        [128, 20, 1024]           --
+	--- Mish: 1-4        [128, 20, 1024]           --
 	--- Linear: 1-5      [128, 20, 7]              7,175
 ==================================================================
 Total params: 1,605,639
@@ -265,8 +298,9 @@ Non-trainable params: 0
 ==================================================================
 \end{lstlisting}
 
-LSTM3 uses $Mish$ and has the similar architecture as LSTM2 Model and thus not listed separately. $Mish$ is a new activation function presented in machine learning scene in 2019 in work \cite{mish} and is a self-regularized non-monotonic activation function which can be mathematically defined as $f(x)=xtanh(softplus(x))$. Mish is a smooth, continuous activation function and allows to have better gradient flow compared to ReLU woth lot of sharp transitions \cite{mish}. The LSTM3 model indeed can improve MSE and RMSE mertics. 
+LSTM4 Model is a three-layered stacked LSTM with introduced additional dropout  added after all but last recurrent layer and Mish activation function. This design decision is made in order to try whether adding more components to the neural network could mean the improvement upon simpler model on 6-DoF dataset. By adding more LSTM layers the model parameters that have to be trained were increased in 5 times from 1,605,639 to 7,901,191 trainable parameters. When the model parameters are getting large in count, the model gets more complex, having hard time fitting on the training instances as it needs to optimize parameters in a way that can optimally fit the training instances. The time need for training increased noticeable even with usage GPU Cluster. Finally, LSTM4 resulted in significant higher MSE and RMSE metrics. 
 
+This models LSTM1 and LSTM3 are considered to be the best evaluated LSTM models that can predict the future data based on past 20 values (100 ms) in 6-DoF VR environment using sensor data from HMD for LAT of 100 ms. Although sufficient results for prediction and low MSE and RMSE metrics are already obtained with LSTM model, the GRU and bidirectional models will be implemented in order to evaluate their performance and potentially to find the better model architecture. 
 
 \subsection{GRU Model}
 \label{sec:impl:model:arch:gru}
