@@ -314,10 +314,13 @@ Another approach called a gated recurrent unit (GRU) can adaptively capture depe
 \end{figure}
 
 The GRU architecture is illustrated\footnote{Source: Prof. Dr. Tim Landgraf, Lecture 13: Recurrent Neural Networks, WS 20/21: Machine Learning} on Fig. \ref{fig:gru}. GRU avoids the vanishing gradient problem of a standard RNN with only two gates that decide what information should be passed to the final output. The update gate plugs $x_t$ into the network unit and multiplied with its own weight $W_{iz}$. The same multiplication is done with previous hidden state $h_(t-1)$ that has its own weight $W_{hz}$. Both results are added together and a sigmoid activation function is applied to squash the result between 0 and 1. The mathematical expression of this calculation is as following:
-
 \begin{equation}
 z_t = \sigma (W_{iz}x_t + b_{iz} + W_{hz}h_{t-1} + b_{hz})
 \end{equation}
+where  $z_t$ is an update gate, $h_{t}$  is the hidden state at time t, $h_{t-1}$ is the hidden state of the layer at time $t-1$ or the initial hidden state at time $0$, $\sigma$ is the sigmoid function. With these matrix multiplications model can determine how much of the past information from previous time steps needs to be passed to the next to predict future values. 
+
+The reset gates does what its name means - gate can reset the state of the model and thus model decides how much of the past information to forget. With powerful update gate the model can decide to copy all the information from the past and eliminate the risk of vanishing gradient. With reset 
+
 
 \subsection{Bidirectional GRU Model}
 \label{sec:impl:model:arch:bi-gru}
