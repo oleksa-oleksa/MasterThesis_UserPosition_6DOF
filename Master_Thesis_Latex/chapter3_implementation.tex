@@ -270,9 +270,9 @@ Non-trainable params: 0
 ==================================================================
 \end{lstlisting}
 
-Since only position and rotation data of similar range is used in 6-DoF dataset, no scaler for the features is applied.  Experiments showed that normalization of values between [0..1] and between [-1..1] results to higher MSE and RMSE. Already preprocessed interpolated datasets with flipped negative quaternions is loaded in with respect to sequential order as training, validation and test dataset from $npy$-files. Additional extended LSTM architectures were implemented and tried with HoloLens 2 6-DoF dataset. For example, the non-linear activation functions $ReLU$ and $Mish$ were tried in order to get more sensitivity to the activation sum input and avoid easy saturation. Thus the nodes in model should be only deactivated if the output of is less than 0. Model variant with $ReLU$ experimentally resulted to produce higher MSE and RMSE compared to LSTM1 and therefore was rejected for a final deployment 
+Since only position and rotation data of similar range is used in 6-DoF dataset, no scaler for the features is applied.  Experiments showed that normalization of values between [0..1] and between [-1..1] results to higher MSE and RMSE. Already preprocessed interpolated datasets with flipped negative quaternions is loaded in with respect to sequential order as training, validation and test dataset from $npy$-files. Additional extended LSTM architectures were implemented and tried with HoloLens 2 6-DoF dataset. For example, the non-linear activation functions $ReLU$ and $Mish$ were tried in order to get more sensitivity to the activation sum input and avoid easy saturation. Thus the nodes in model should be only deactivated if the output of is less than 0. Model variant with $ReLU$ experimentally resulted to produce higher MSE and RMSE compared to LSTM1 and therefore was rejected for a final deployment. Since LSTM2 Model has the similar architecture as following afterwards LSTM3, it is not listed separately 
 
-LSTM3 uses $Mish$ and has the similar architecture as LSTM2 Model and thus pnot listed separately. $Mish$ is a new activation function presented in machine learning scene in 2019 in work \cite{mish} and is a self-regularized non-monotonic activation function which can be mathematically defined as $f(x)=xtanh(softplus(x))$. Mish is a smooth, continuous activation function and allows to have better gradient flow compared to ReLU with lot of sharp transitions \cite{mish}. The LSTM3 model indeed insignificantly improved MSE and RMSE mertics but requires hidden dimension to be increased to 2048 nodes and batch size changed to $2^{10}$. Weight decay of Adam optimiser is set to $3e-14$ with LSTM3 model.
+LSTM3 uses a new activation function $Mish$ that was presented in machine learning scene in 2019 in work \cite{mish} and is a self-regularized non-monotonic activation function which can be mathematically defined as $f(x)=xtanh(softplus(x))$. Mish is a smooth, continuous activation function and allows to have better gradient flow compared to ReLU that tends to have a lot of sharp transitions \cite{mish}. The LSTM3 model indeed insignificantly improved MSE and RMSE mertics but requires hidden dimension to be increased to 2048 nodes and batch size changed to $2^{10}$. Weight decay of Adam optimiser is set to $3e-14$ with LSTM3 model.
  
 \begin{lstlisting}[caption={LSTM3 with Mish activation function},captionpos=b]
 LSTMModel3(
@@ -298,13 +298,13 @@ Non-trainable params: 0
 ==================================================================
 \end{lstlisting}
 
-LSTM4 Model is a three-layered stacked LSTM with introduced additional dropout  added after all but last recurrent layer and Mish activation function. This design decision is made in order to try whether adding more components to the neural network could mean the improvement upon simpler model on 6-DoF dataset. By adding more LSTM layers the model parameters that have to be trained were increased in 5 times from 1,605,639 to 7,901,191 trainable parameters. When the model parameters are getting large in count, the model gets more complex, having hard time fitting on the training instances as it needs to optimize parameters in a way that can optimally fit the training instances. The time need for training increased noticeable even with usage GPU Cluster. Finally, LSTM4 resulted in significant higher MSE and RMSE metrics. 
+LSTM4 Model is a three-layered stacked LSTM with introduced additional dropout  added after all but last recurrent layer and Mish activation function. This design decision is made in order to try whether adding more components to the neural network could mean the improvement upon simpler model on 6-DoF dataset. By adding more LSTM layers the model parameters that have to be trained were increased in 5 times from 1,605,639 to 7,901,191 trainable parameters. When the model parameters are getting large in count, the model gets more complex, having hard time fitting on the training instances as it needs to optimize parameters in a way that can optimally fit the training instances. The time need for training increased noticeable even on GPU Cluster. Finally, LSTM4 resulted in significant higher MSE and RMSE metrics and thus this architecture is rejected.  
 
 This models LSTM1 and LSTM3 are considered to be the best evaluated LSTM models that can predict the future data based on past 20 values (100 ms) in 6-DoF VR environment using sensor data from HMD for LAT of 100 ms. Although sufficient results for prediction and low MSE and RMSE metrics are already obtained with LSTM model, the GRU and bidirectional models will be implemented in order to evaluate their performance and potentially to find the better model architecture. 
 
 \subsection{GRU Model}
 \label{sec:impl:model:arch:gru}
-Another approach called a gated recurrent unit (GRU) can adaptively capture dependencies of different time scales without having a separate memory cells \cite{empirical_evaluation}. GRU Model can catch the long-term dependencies in the data obtained from HMD that are otherwise are hidden by the effect of short-term dependencies from the standard RNN models.\\
+Another approach called a gated recurrent unit (GRU) can adaptively capture dependencies of different time scales without having a separate memory cells \cite{empirical_evaluation}. It is similar to an LSTM, but only has two gates - a reset gate and an update gate. Although architecture does not provide an output gate, with fewer parameters it can generally easier and faster be trained than LSTM.  GRU Model can catch the long-term dependencies in the data obtained from HMD that are otherwise are hidden by the effect of short-term dependencies from the standard RNN models. This chapter decribes GRU model that implemented to predict future values with 6-DoF dataset obtained from HoloLens 2. \\
 
 \begin{figure}[htb]
 	\begin{center}
@@ -313,7 +313,11 @@ Another approach called a gated recurrent unit (GRU) can adaptively capture depe
 	\end{center}
 \end{figure}
 
-The GRU architecture is illustrated\footnote{Source: Prof. Dr. Tim Landgraf, Lecture 13: Recurrent Neural Networks, WS 20/21: Machine Learning} on Fig. \ref{fig:gru}.
+The GRU architecture is illustrated\footnote{Source: Prof. Dr. Tim Landgraf, Lecture 13: Recurrent Neural Networks, WS 20/21: Machine Learning} on Fig. \ref{fig:gru}. GRU avoids the vanishing gradient problem of a standard RNN with only two gates that decide what information should be passed to the final output. The update gate plugs $x_t$ into the network unit and multiplied with its own weight $W_{iz}$. The same multiplication is done with previous hidden state $h_(t-1)$ that has its own weight $W_{hz}$. Both results are added together and a sigmoid activation function is applied to squash the result between 0 and 1. The mathematical expression of this calculation is as following:
+
+\begin{equation}
+z_t = \sigma (W_{iz}x_t + b_{iz} + W_{hz}h_{t-1} + b_{hz})
+\end{equation}
 
 \subsection{Bidirectional GRU Model}
 \label{sec:impl:model:arch:bi-gru}
