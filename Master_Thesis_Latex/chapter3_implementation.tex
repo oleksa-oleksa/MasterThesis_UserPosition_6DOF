@@ -319,7 +319,22 @@ z_t = \sigma (W_{iz}x_t + b_{iz} + W_{hz}h_{t-1} + b_{hz})
 \end{equation}
 where  $z_t$ is an update gate, $h_{t}$  is the hidden state at time t, $h_{t-1}$ is the hidden state of the layer at time $t-1$ or the initial hidden state at time $0$, $\sigma$ is the sigmoid function. With these matrix multiplications model can determine how much of the past information from previous time steps needs to be passed to the next to predict future values. 
 
-The reset gates does what its name means - gate can reset the state of the model and thus model decides how much of the past information to forget. With powerful update gate the model can decide to copy all the information from the past and eliminate the risk of vanishing gradient. With reset 
+The reset gates does what its name means - gate can reset the state of the model and thus model decides how much of the past information to forget. It is an useful option when context changes in the historical data and previous values are not more relevant to produce future values. With powerful update gate the model can decide to copy all the information from the past and eliminate the risk of vanishing gradient. The formula of the reset gate is:
+\begin{equation}
+r_t = \sigma (W_{ir}x_t + b_{ir} + W_{hr}h_{t-1} + b_{hr})
+\end{equation}
+Both gates will affect the final output. A new memory content will use the reset gate to store the relevant information from the past. It is calculated as follows:
+\begin{equation}
+n_t = tahn (W_{in}x_t + b_{in} + r_t * W_{hn}h_{t-1} + b_{hn})
+\end{equation}
+As the last step, the network calculates vector which holds information for the current unit and passes $h_t$ to the network. The formula shows that update gates is used to determine what information from previous steps will be passed into the memory. Additionally, calculated recently new memory gate $n_t$ controls the amount from current data to be added into long memory.  That is done as follows:
+\begin{equation}
+h_t = (1 - z_t) * n_t + z_t * h_{t-1}
+\end{equation}
+
+GRU model implementation, training loop and evaluation are done similar to LSTM in Python using PyTorch. Model has same input $[batch, sequence, features]$ with sequence equal to 20 last values and 10 features (3 positional, 4 rotation and 3 velocity columns). The batch size was increased to $2^{9}$. The hidden dimension  is 512 nodes. Adam optimization algorithm is used, the learning rate was decreased by 60\% from initial value of 0.0001 every 50 epochs. Thus parameters of adjustable learning rate are modified. Weight decay of Adam optimiser set to a same value of $1e-12$ . 
+
+The maximum number of epochs was set to 500, early stopping technique with same patience and delta as in LSTM was used to avoid overfitting. Model requires less epochs to learn and can predict better than LSTM. Although the error decreases very slowly after 150-200 epochs, the model converged to a smallest achievable error after 500 epochs. The model is overtrained with 1000 epochs if trained without early stopping technique.
 
 
 \subsection{Bidirectional GRU Model}
