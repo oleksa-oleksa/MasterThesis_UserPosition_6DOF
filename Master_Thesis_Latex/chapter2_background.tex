@@ -37,10 +37,10 @@ VR Application are deployed to the end-user with a goal to create an immersion o
 \begin{wrapfigure}{L}{0.48\textwidth}
 	\centering
 	\includegraphics[width=0.46\textwidth]{gfx/m2p.png}
-	\caption{\label{fig:m2p}M2P latency for a remote rendering system. Source: \cite{serhan_cloud_streaming}}
+	\caption{\label{fig:m2p}M2P latency for a remote rendering system.}
 \end{wrapfigure}
 
-As this thesis evaluates the reducing the M2P latency for VV streaming from remote cloud server, the Fig. \ref{fig:m2p} illustrates the different components of the M2P latency for a remote rendering system. Total M2P latency is equal to sum of the time taken by a bit of data to travel across the network from HMD to a server, server delay involved in computing the future user position and render a 2D view and a HMD delay during sensor measurements. If the user’s future head pose for a look-ahead time (LAT) equal to or larger than the M2P latency of the system could be predicted, it can eliminate M2P latency and improve the quality of the VR Applications. Studies showed that display lags of greater than 40 ms cause errors in tracking and following a target with the head \cite{delay_sickness}. This thesis evaluates the performance of RNN Models for LAT 100 ms that is higher than the measured M2P latency of a cloud-based volumetric streaming system described in the next section. 
+As this thesis evaluates the reducing the M2P latency for VV streaming from remote cloud server, the Fig. \ref{fig:m2p} from \cite{serhan_cloud_streaming} illustrates the different components of the M2P latency for a remote rendering system. Total M2P latency is equal to sum of the time taken by a bit of data to travel across the network from HMD to a server, server delay involved in computing the future user position and render a 2D view and a HMD delay during sensor measurements. If the user’s future head pose for a look-ahead time (LAT) equal to or larger than the M2P latency of the system could be predicted, it can eliminate M2P latency and improve the quality of the VR Applications. Studies showed that display lags of greater than 40 ms cause errors in tracking and following a target with the head \cite{delay_sickness}. This thesis evaluates the performance of RNN Models for LAT 100 ms that is higher than the measured M2P latency of a cloud-based volumetric streaming system described in the next section. 
 
 \section{Cloud-based volumetric video streaming}
 \label{sec:theorie:cloud}
@@ -48,7 +48,7 @@ Volumetric video (VV) is a young technology and is used to build a content for A
 \begin{wrapfigure}{L}{0.58\textwidth}
 	\centering
 	\includegraphics[width=0.56\textwidth]{gfx/cloud.png}
-	\caption{\label{fig:cloud}High level operation of a cloud-based volumetric streaming system. Source \cite{serhan_kalman}}
+	\caption{\label{fig:cloud}High level operation of a cloud-based volumetric streaming system.}
 \end{wrapfigure}
 
 A remote rendering system takes complex graphics computational and rendering tasks and delivers the result over a network to a less-powerful client device. Fig. \ref{fig:cloud}  shows an overview of a cloud-based volumetric streaming system proposed by \textit{Gül et al., 2020}. This thesis evaluates RNN Models and the trained model with the best performance is intended to be used as a part of prediction system of a remote system. A detailed software architecture of a system is described in \cite{serhan_cloud_streaming}. In this system a compressed volumetric video is stored as a single MP4 file containing video and mesh tracks \cite{serhan_kalman}. The game engine (Unity) runs at a server and decodes the compressed mesh and texture data. The tracking system of the HMD measures the user position and orientation and sends over a network to the cloud server. Based on the actual user's spatial attributes, cloud server calculates the future position and orientation and renders the corresponding view from the volumetric content. The rendered view is encoded as a video stream and sent to the client over the network. The time period between the head movement and display of the decoded video frame to the viewer is the M2P latency of the system which can be compensated by applying prediction algorithm \cite{serhan_kalman}.
