@@ -421,10 +421,16 @@ This section presents as well the development of the Unity application for obtai
 
 \subsubsection{Unity application}
 \label{sec:impl:model:dev:unity}
-An application was developed in Unity with the Mixed Reality Toolkit and deployed on HoloLens 2. The goal of the application is to obtain the user position and orientation during the time a user wears a HMD. As this research aims to find an approach to reduce the M2P latency during rendering and delivering the volumetric content to end-user device, the volumetric animated object was placed three meters ahead of the user in Unity application. Users wearing HMD thus were asked to look on animated volumetric object and to move freely inside the laboratory space.\\
+An application was developed in Unity with the Mixed Reality Toolkit and deployed on HoloLens 2. The goal of the application is to obtain the user position and orientation during the time when a user wears a HMD. As this research aims to find an approach to reduce the M2P latency during rendering and delivering the volumetric content to end-user device, the volumetric animated object was placed three meters ahead of the user in Unity application. Users wearing HMD thus were asked to look on animated volumetric object and to move freely inside the laboratory space.\\
 In Unity, the Main Camera is always the primary stereo rendering component attached to HMD and it is rendering everything the user sees \footnote{https://docs.microsoft.com/en-us/windows/mixed-reality/develop/unity/camera-in-unity}. The starting position of the user is set to $(0, 0, 0)$ during the application launch and the Main Camera tracks movement of the user's head. Although HoloLens allows to build a world-scale application, the room-scale experience was selected for spatial coordinate system. This lets users to walk around within the 10-meter boundary what is quite enough for user's movements inside the laboratory space and simultaneously watching the volumetric video object. 
 
-User position and rotation data were logged in csv-file. This raw data has been converted into datasets on the preprocessing step and thus original interpolated dataset, the transformed with flipped negative quaternions and several normalised datasets were used in experiments during model development and hyperparameters search.
+\begin{figure}[htb]
+	\begin{center}
+		\includegraphics[width=1\textwidth, keepaspectratio]{gfx/unity.jpeg}
+		\caption{\label{fig:unity} Unity 3D UserPrediction6DOF Project with placed obj-animation, underlying code and scene.}
+	\end{center}
+\end{figure}
+User position and rotation data are logged in csv-file. This raw data has been converted into datasets on the preprocessing step described in section \ref{sec:impl:dataset:preprocessing} and thus original interpolated dataset, the transformed with flipped negative quaternions and several normalised datasets were used in experiments during model development and hyperparameters search.
 
 %#######################################
 
