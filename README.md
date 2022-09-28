@@ -55,13 +55,13 @@ The best resuls are achieved with fully normalized dataset.
 
 Application works with environment variables. If ``RNN_PARAMETERS`` is set (is equal to 1 or something else) then the following parameter must be set as environment variables: ``HIDDEN_DIM, BATCH_SIZE, N_EPOCHS, DROPOUT, LAYERS``.
 
-To run LSTM for LAT 100ms (-w 100) use command: 
+There are several model implementation. Best are LSTM1 and LSTM3. To run LSTM1 on full interpolated dataset with flipped negative quaternions for LAT 100ms (-w 100) use command: 
 
-``python -m UserPrediction6DOF run -a rnn -m lstm -w 100 -d 'data/normalized_full'``
+``python -m UserPrediction6DOF run -a rnn -m lstm1 -t full -w 100 -d data/flipped '``
 
-To run GRU for LAT 100ms use command: 
+Best GRU is GRU1. To run GRU for LAT 100ms use command: 
 
-``python -m UserPrediction6DOF run -a rnn -m gru -w 100 -d 'data/normalized_full'``
+``python -m UserPrediction6DOF run -a rnn -m gru1 -t full -w 100 -d data/flipped '``
 
 You can check all options with ``python -m UserPrediction6DOF run -h``
 
