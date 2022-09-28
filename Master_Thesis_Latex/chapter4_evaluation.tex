@@ -2,14 +2,18 @@
 
 \chapter{Evaluation}
 \label{sec:eval}
+Chapter describes the evaluation metrics and performed experiments, visualises prediction results.
+
+\section{Goal of evaluation}
+\label{sec:eval:goal}
+The goal of model evaluation is am estimation of the generalization accuracy of a model on future unseen data. This master thesis aims to evaluate whether RNN neural networks modification as LSTM, GRU and bidirectional variant are able to reduce the positional and rotation error for given look ahead time of 100 ms. This LAT is higher than normal acceptable latency in VR application and even higher that measured M2P latency in cloud streaming platform presented in work \cite{serhan_cloud_streaming}. Since the successfully trained best evaluated model is intended to be build in the server infrastructure, the goal of evaluation is to find out how using of RNN model can improve the quality of delivered from cloud server VV content. 
+
+To evaluate all described above models, a Python-based application used for training and processing of the recorded via HoloLens 6-DoF datasets.  Below, first Baseline model, the experimental setup and the evaluation metrics are discussed, before presenting the obtained results and discussing the limitations of evaluated models.
 
 \section{Baseline model}
 \label{sec:eval:baseline}
 
-\section{Goal of evaluation}
-\label{sec:eval:goal}
 
-The paper of \textit{Chung et al., 2014}  also provides an interesting comparison and evaluation of the performance of recurrent units LSTM and GRU on sequence modeling. Authors mentioned the ability of LSTM to keep the existing memory via the introduced gates and thus to detect an important feature from an input sequence at early stage, to easily carry this information (the existence of the feature) over a long distance, hence, capturing potential long-distance dependencies \cite{empirical_evaluation}. The GRU takes linear sum between the existing state and the newly computed state similar to the LSTM but does not have any mechanism to control the degree to which its state is exposed, but exposes the whole state each time \cite{empirical_evaluation}. \textit{Chung et al., 2014} emphasize the fact that any important feature, decided by either the forget gate of the LSTM unit or the update gate of the GRU, will not be overwritten but be maintained as it is \cite{empirical_evaluation}. LSTM unit controls the amount of the new memory content and does not have any separate control of the amount of information flowing from the previous time step. The GRU differs and controls the information flow from the previous activation when computing the new and does not independently control the amount of the candidate activation being added via update gate \cite{empirical_evaluation}.
 
 \section{Evaluation metrics}
 \label{sec:eval:metrics}
