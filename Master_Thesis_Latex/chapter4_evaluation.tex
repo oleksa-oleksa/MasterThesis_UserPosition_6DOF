@@ -57,7 +57,7 @@ The Fig. \ref{fig:base_xyz} shows the 500 real values and the corresponding outp
 
 It is worth to mention that in the case if real data is neither increasing nor decreasing in the given interval and fluctuates near the constant value, as it seen at $y$-axis, than the delay of the Baseline output is more not obvious when visualized due the overlapping of two graphs. In fact, the Baseline outputs have the same delay as those one with good visualized delay as, for example, $x$-axis.
 
-Fig. \ref{fig:base_quat_xyzw} shows the Baseline outputs for quaternions components $qx, qy, qz$ and $qw$. Same as with positional data, the same delay of 20 samples is present on rotational data. For all four quaternion components calculated metrics  are: $MAE = 3.12^{\circ}$ and $RMSE =3.24^{\circ}$ .  
+Fig. \ref{fig:base_quat_xyzw} shows the Baseline outputs for quaternions components $qx, qy, qz$ and $qw$. Same as with positional data, the same delay of 20 samples is present on rotational data. For all four quaternion components calculated metrics  are: $MAE = 10.41^{\circ}$ and $RMSE =19.24^{\circ}$.  
 
 \begin{figure}[htb]
 	\begin{center}
@@ -90,10 +90,31 @@ In the experiments implemented models were trained with different hyperparameter
 This section describes the difference of prediction results done by a model LSTM1 on different types of 6-DoF datasets. As already stated in section \ref{sec:design:dataset:preprocessing}, original row dataset is not used in model training and was preprocessed before training was started. The following dataset were created and tried:
 
 \begin{itemize}
-	\item \textbf{Interpolated dataset:} this dataset was interpolated so that missing values were inserted with linear interpolation for positional data and spherical linear interpolation for rotational data. 
-	
+	\item \textbf{Interpolated dataset:} Row dataset was interpolated so that missing values were inserted with linear interpolation for positional data and spherical linear interpolation for rotational data. 
+	\item \textbf{Flipped dataset:} Interpolated dataset with flipped negative quaternions so that neighboring quaternions representing same rotation without significant 4D vector space between them
 	\item \textbf{Normalized dataset:} Feature scaling (Min-max normalization) is applied on dataset's values to scale data in the range [0..1]. 
+	\item \textbf{Position:} Only positional data $(x, y, z)$ as separate dataset to predict future position. 
+	\item \textbf{Rotation:} Only rotational data $(qx, qy, qz, qw)$ as separate dataset to predict future rotation. 
+	
 \end{itemize}
+
+Figures \ref{fig:interp1} and \ref{fig:interp2} shows the predictions of LSTM1 model on interpolated dataset. The mean square error for the all three positional axes $MAE = 0.019$m and root mean square error  $RMSE = 0.028$m meaning the average distance between predicted position and the real position reduced from 7 cm to 2 cm if LSTM1 on interpolated dataset is used instead of Baseline. For all four quaternion components calculated metrics  are: $MAE = 15.92^{\circ}$ and $RMSE =20.28^{\circ}$ .LSTM1 predicts the position on interpolated dataset worse than the Baseline model. The goal of the next experiment is to evaluate whether the flipping of negative quaternions can improve rotational prediction as it was expected on the preprocessing step.
+
+\begin{figure}[htb]
+	\begin{center}
+		\includegraphics[width=1\textwidth, keepaspectratio]{gfx/lstm1_interpolated-xyz_position.pdf}
+		\caption{\label{fig:interp1} Outputs of LSTM1 Model on interpolated dataset for x, y and z axes.}
+	\end{center}
+\end{figure}
+
+\begin{figure}[htb]
+	\begin{center}
+		\includegraphics[width=1\textwidth, keepaspectratio]{gfx/lstm1_interpolated-roll_pitch_yaw.pdf}
+		\caption{\label{fig:interp2} Outputs of LSTM1 Model on interpolated dataset for qx, qy, qz and qw axes.}
+	\end{center}
+\end{figure}
+
+
 
 \subsubsection{Batch size}
 \label{sec:eval:experiments:early:batch}
@@ -108,7 +129,7 @@ If learning rate is large then a correspondingly large modification of the weigh
 The small learning rate does not allow model to neither successfully learn patterns in the data nor generalize them on the validation data. The prediction on the test data done by a model trained with a small value of learning rate results in significant high error. Fig. \ref{fig:lr} shows the training and validation loss of the 150 epochs of training that finished with $MAE = 3.70$
 \begin{figure}[htb]
 	\begin{center}
-		\includegraphics[width=0.85\textwidth, keepaspectratio]{gfx/lstm1_lr_low.pdf}
+		\includegraphics[width=1\textwidth, keepaspectratio]{gfx/lstm1_lr_low.pdf}
 		\caption{\label{fig:lr} Plot of training and validation loss with small learning rate of Adam optimizer.}
 	\end{center}
 \end{figure}
@@ -119,7 +140,7 @@ In works \cite{delay_compensation_360, telepresence} by \textit{Aykut et al} the
 Adam optimizer has an additional term in the weight update rule that causes the weights to exponentially decay to zero, if no other update is scheduled. With weight decay after each update, the weights are multiplied by a factor less than 1. This prevents the weights from growing too large, and can be seen as gradient descent on a quadratic regularization term. Thus weight decay ss a regularisation technique used to avoid over-fitting. Indeed experiments showed, that relatively large weight decay equal to $1^{-4} .. 1^{-8}$ make it possible for a model to overtrain so that training loss permanently decreases but validation loss fluctuates on the hight level. Model can not generalize the learned patter and predict successfully future values on  never seen before data. 
 \begin{figure}[htb]
 	\begin{center}
-		\includegraphics[width=0.85\textwidth, keepaspectratio]{gfx/lstm1_weight_decay_high.pdf}
+		\includegraphics[width=1\textwidth, keepaspectratio]{gfx/lstm1_weight_decay_high.pdf}
 		\caption{\label{fig:wd} Plot of training and validation loss with large weigh decay of Adam optimizer.}
 	\end{center}
 \end{figure}
