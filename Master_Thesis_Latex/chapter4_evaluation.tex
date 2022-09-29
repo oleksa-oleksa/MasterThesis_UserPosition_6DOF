@@ -95,9 +95,30 @@ A significant impact on the performance e.g. the prediction accuracy has a batch
 
 \subsubsection{Learning rate}
 \label{sec:eval:experiments:early:lr}
-Learning rate is a parameter of extended version of stochastic gradient Adam optimizer. The learning rate determines how much an updating step influences the current value of the weights. Adam optimizer has an additional term in the weight update rule that causes the weights to exponentially decay to zero, if no other update is scheduled.
+Learning rate is a parameter of extended version of stochastic gradient Adam optimizer. The learning rate determines how much an updating step influences the current value of the weights. 
 
 If learning rate is large then a correspondingly large modification of the weights $w_i$ happens on each epoch. In general too large learning rate overshoots the local minimum in a cost function.
+
+The small learning rate does not allow model to neither successfully learn patterns in the data nor generalize them on the validation data. The prediction on the test data done by a model trained with a small value of learning rate results in significant high error. Fig. \ref{fig:lr} shows the training and validation loss of the 150 epochs of training that finished with $MAE = 3.70$
+\begin{figure}[htb]
+	\begin{center}
+		\includegraphics[width=0.85\textwidth, keepaspectratio]{gfx/lstm1_lr_low.pdf}
+		\caption{\label{fig:lr} Plot of training and validation loss with small learning rate of Adam optimizer.}
+	\end{center}
+\end{figure}
+
+\subsubsection{Weight decay}
+Adam optimizer has an additional term in the weight update rule that causes the weights to exponentially decay to zero, if no other update is scheduled. With weight decay after each update, the weights are multiplied by a factor less than 1. This prevents the weights from growing too large, and can be seen as gradient descent on a quadratic regularization term. Thus weight decay ss a regularisation technique used to avoid over-fitting. Indeed experiments showed, that relatively large weight decay equal to $1^{-4} .. 1^{-8}$ make it possible for a model to overtrain so that training loss permanently decreases but validation loss fluctuates on the hight level. Model can not generalize the learned patter and predict successfully future values on  never seen before data. 
+\begin{figure}[htb]
+	\begin{center}
+		\includegraphics[width=0.85\textwidth, keepaspectratio]{gfx/lstm1_weight_decay_high.pdf}
+		\caption{\label{fig:wd} Plot of training and validation loss with large weigh decay of Adam optimizer.}
+	\end{center}
+\end{figure}
+
+Fig. \ref{fig:wd} illustrates the both training and validation loss with large weigh decay set to $1^{-6}$ of Adam optimizer. For the illustrative goal to avoid an elimination the feeling of distance difference due to scale and to emphasize it, plot shows only 100 first epochs. It is to seen than validation loss remain on high lever and starts to increase.  
+
+Best values for weigh decay parameter of Adam optimizer set to  $1^{-12}$ for LSTM and GRU model after parameter grid search on GPU cluster. 
 
 \subsection{Prediction with LSTM}
 \label{sec:eval:experiments:lstm}
