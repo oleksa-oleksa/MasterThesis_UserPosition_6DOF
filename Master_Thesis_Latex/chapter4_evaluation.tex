@@ -87,7 +87,13 @@ In the experiments implemented models were trained with different hyperparameter
 
 \subsubsection{Datasets}
 \label{sec:eval:experiments:early:ds}
-As already stated in section \ref{sec:design:dataset:preprocessing}
+This section describes the difference of prediction results done by a model LSTM1 on different types of 6-DoF datasets. As already stated in section \ref{sec:design:dataset:preprocessing}, original row dataset is not used in model training and was preprocessed before training was started. The following dataset were created and tried:
+
+\begin{itemize}
+	\item \textbf{Interpolated dataset:} this dataset was interpolated so that missing values were inserted with linear interpolation for positional data and spherical linear interpolation for rotational data. 
+	
+	\item \textbf{Normalized dataset:} Feature scaling (Min-max normalization) is applied on dataset's values to scale data in the range [0..1]. 
+\end{itemize}
 
 \subsubsection{Batch size}
 \label{sec:eval:experiments:early:batch}
@@ -107,6 +113,8 @@ The small learning rate does not allow model to neither successfully learn patte
 	\end{center}
 \end{figure}
 
+In works \cite{delay_compensation_360, telepresence} by \textit{Aykut et al} the adaptively reducing learning rate is used. So that in master thesis a learning rate decay scheduler was used to decrease the initial learning rate of $0.001$ every $50$ epochs by $50\%$. The initial value for learning rate, the amount of epochs to keep the value the same and the multiplier were found out during experiments with grid parameters search. 
+
 \subsubsection{Weight decay}
 Adam optimizer has an additional term in the weight update rule that causes the weights to exponentially decay to zero, if no other update is scheduled. With weight decay after each update, the weights are multiplied by a factor less than 1. This prevents the weights from growing too large, and can be seen as gradient descent on a quadratic regularization term. Thus weight decay ss a regularisation technique used to avoid over-fitting. Indeed experiments showed, that relatively large weight decay equal to $1^{-4} .. 1^{-8}$ make it possible for a model to overtrain so that training loss permanently decreases but validation loss fluctuates on the hight level. Model can not generalize the learned patter and predict successfully future values on  never seen before data. 
 \begin{figure}[htb]
@@ -122,12 +130,8 @@ Best values for weigh decay parameter of Adam optimizer set to  $1^{-12}$ for LS
 
 \subsection{Prediction with LSTM}
 \label{sec:eval:experiments:lstm}
-!!!
-During preprocessing step Euler angles (yaw, pitch, roll) were calculated from quaternions and these parameters are used for visualization purposes. Although the interpolated $csv$-file contains additional Euler angles columns, only described in section \ref{sec:design:dataset:HL} parameters were used for training and prediction.
-%%%%%%#
-!!!!!
 
-
+During preprocessing step Euler angles (yaw, pitch, roll) were calculated from quaternions and these parameters are used for visualization purposes. The quaternions of model's predictions are also converted to Euler angles so that $MAE$ and $RMSE$ units in degrees are similar to plotted information. 
 
 \subsection{Prediction with GRU}
 \label{sec:eval:experiments:gru}
