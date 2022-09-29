@@ -27,7 +27,7 @@ The Baseline in this thesis is similar to the reference model used in the work \
 
 The Fig. \ref{fig:base_x} shows the first 500 real values and the corresponding output of the baseline for positional axis $x$. From the plot of the Baseline model outputs, it is clear that the model is 20-step behind reality. It copies with a given delay the falling trend and all fluctuations of the given axis.
 
-The Fig. \ref{fig:base_xyz} shows the 500 real values and the corresponding output of the baseline for all three positional axes $x, y, z$. The plot samples 500 elements starting from the 2500 row and thus no missing data is seen on Baseline output for the first 20 elements as it plotted in Fig. \ref{fig:base_x}. However, the Fig. \ref{fig:base_xyz} highlights the limitations of the usage of naive predictor that will deliver 2D image created from volumetric video content with a delay of 100 ms that is unappropriated delay for a human to experience in VR Application without physical consequences like motion sickness \cite{delay_sickness}. The mean square error for the all three positional axes $MAE = 0.067$m and root mean square error  $RMSE = 0.068$m meaning in average the distance between predicted by Baseline position to the real position is almost 7 cm. It is not crucial when an user looks on the big VV object, like a volumetric humans hologram, from the distance of 3-4 meters. But if an user want to interact with small VV objects presented in the VR environment, then this distance became a significant difference between what user will see (predicted position with a delay) and where the object was placed or user moved a head with a HMD on it. 
+The Fig. \ref{fig:base_xyz} shows the 500 real values and the corresponding output of the baseline for all three positional axes $x, y, z$. The plot samples 500 elements starting from the 2500 row and thus no missing data is seen on Baseline output for the first 20 elements as it plotted in Fig. \ref{fig:base_x}. However, the Fig. \ref{fig:base_xyz} highlights the limitations of the usage of naive predictor that will deliver 2D image created from volumetric video content with a delay of 100 ms that is unappropriated delay for a human to experience in VR application without physical consequences like motion sickness \cite{delay_sickness}. The mean square error for the all three positional axes $MAE = 0.067$m and root mean square error  $RMSE = 0.068$m meaning the average distance between predicted position and the real position is equal to almost 7 cm. It is not crucial when an user looks on the big VV object, like a volumetric humans hologram, from the distance of 3-4 meters. But if an user interacts with the small VV objects presented in the VR environment, then this distance became a significant difference between what user will see with a delay and where the VR object would be placed for delayed position. 
 
 \begin{figure}[htb]
 	\begin{center}
@@ -36,9 +36,9 @@ The Fig. \ref{fig:base_xyz} shows the 500 real values and the corresponding outp
 	\end{center}
 \end{figure}
 
-It is worth to mention that in the case real data is neither increasing nor decreasing in the given interval and fluctuates near the constant value, as it seen at $y$-axis, than the delay of the Baseline output is more not obvious when visualized due the overlapping of two graphs. In fact, the Baseline outputs have the same delay as those one with good visualized delay as, for example, $x$-axis.
+It is worth to mention that in the case if real data is neither increasing nor decreasing in the given interval and fluctuates near the constant value, as it seen at $y$-axis, than the delay of the Baseline output is more not obvious when visualized due the overlapping of two graphs. In fact, the Baseline outputs have the same delay as those one with good visualized delay as, for example, $x$-axis.
 
-Fig. \ref{fig:base_quat_xyzw} shows the Baseline outputs for for quaternions components qx, qy. qz and qw. The same behavior is to see as with positional data the same delay of 20 samples is present on rotational data. Metrics $MAE = 2.13{\circ}$ and $RMSE =2.13^{\circ}$ for all four quaternion components.  
+Fig. \ref{fig:base_quat_xyzw} shows the Baseline outputs for quaternions components $qx, qy, qz$ and $qw$. Same as with positional data, the same delay of 20 samples is present on rotational data. For all four quaternion components calculated metrics  are: $MAE = 3.12^{\circ}$ and $RMSE =3.24^{\circ}$ .  
 
 \begin{figure}[htb]
 	\begin{center}
@@ -47,7 +47,16 @@ Fig. \ref{fig:base_quat_xyzw} shows the Baseline outputs for for quaternions com
 	\end{center}
 \end{figure}
 
-Because rotational data is measured in degrees, for visualization purposes, orientations are given in the Fig. \ref{fig:base_quat_xyzw_euler} as Euler angles (yaw, pitch, roll), although prediction is performed in the quaternion domain.
+Because metrics of rotational data is measured in degrees, for visualization purposes, orientations are given in the Fig. \ref{fig:base_euler} as Euler angles (yaw, pitch, roll), although prediction is performed in the quaternion domain.
+
+\begin{figure}[htb]
+	\begin{center}
+		\includegraphics[width=0.85\textwidth, keepaspectratio]{gfx/base_euler-roll_pitch_yaw.png}
+		\caption{\label{fig:base_euler} Outputs of Baseline Model for rotation data represented as Euler angles.}
+	\end{center}
+\end{figure}
+
+The evaluated RNN model is considered to be successfully trained if the $MAE$ and $RMSE$ metrics at least for positional or rotational data can show significant improvement comparing to a Baseline output. 
 
 \section{Experiments}
 \label{sec:eval:experiments}
