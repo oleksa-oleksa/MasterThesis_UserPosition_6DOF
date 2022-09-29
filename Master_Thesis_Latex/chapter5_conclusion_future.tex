@@ -9,6 +9,9 @@ Same as in work of \textit{Chang et al., 2020}, the basic GRU performs the best 
 
 The paper of \textit{Chung et al., 2014}  also provides an interesting comparison and evaluation of the performance of recurrent units LSTM and GRU on sequence modeling. Authors mentioned the ability of LSTM to keep the existing memory via the introduced gates and thus to detect an important feature from an input sequence at early stage, to easily carry this information (the existence of the feature) over a long distance, hence, capturing potential long-distance dependencies \cite{empirical_evaluation}. The GRU takes linear sum between the existing state and the newly computed state similar to the LSTM but does not have any mechanism to control the degree to which its state is exposed, but exposes the whole state each time \cite{empirical_evaluation}. \textit{Chung et al., 2014} emphasize the fact that any important feature, decided by either the forget gate of the LSTM unit or the update gate of the GRU, will not be overwritten but be maintained as it is \cite{empirical_evaluation}. LSTM unit controls the amount of the new memory content and does not have any separate control of the amount of information flowing from the previous time step. The GRU differs and controls the information flow from the previous activation when computing the new and does not independently control the amount of the candidate activation being added via update gate \cite{empirical_evaluation}.
 
+
+It seems that for  prediction of rotational data the positional data can be eliminated from a dataset. The key to this phenomena can lay in the user behavior during 
+
 \section{Limitations}
 \label{sec:conclusion:limitations}
 

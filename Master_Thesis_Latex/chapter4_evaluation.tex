@@ -46,7 +46,7 @@ The Baseline in this thesis is similar to the reference model used in the work \
 
 The Fig. \ref{fig:base_x} shows the first 500 real values and the corresponding output of the baseline for positional axis $x$. From the plot of the Baseline model outputs, it is clear that the model is 20-step behind reality. It copies with a given delay the falling trend and all fluctuations of the given axis.
 
-The Fig. \ref{fig:base_xyz} shows the 500 real values and the corresponding output of the baseline for all three positional axes $x, y, z$. The plot samples 500 elements starting from the 2500 row and thus no missing data is seen on Baseline output for the first 20 elements as it plotted in Fig. \ref{fig:base_x}. However, the Fig. \ref{fig:base_xyz} highlights the limitations of the usage of naive predictor that will deliver 2D image created from volumetric video content with a delay of 100 ms that is unappropriated delay for a human to experience in VR application without physical consequences like motion sickness \cite{delay_sickness}. The mean square error for the all three positional axes $MAE = 0.067$m and root mean square error  $RMSE = 0.068$m meaning the average distance between predicted position and the real position is equal to almost 7 cm. It is not crucial when an user looks on the big VV object, like a volumetric humans hologram, from the distance of 3-4 meters. But if an user interacts with the small VV objects presented in the VR environment, then this distance became a significant difference between what user will see with a delay and where the VR object would be placed for delayed position. 
+The Fig. \ref{fig:base_xyz} shows the 500 real values and the corresponding output of the baseline for all three positional axes $x, y, z$. The plot samples 500 elements starting from the 2500 row and thus no missing data is seen on Baseline output for the first 20 elements as it plotted in Fig. \ref{fig:base_x}. However, the Fig. \ref{fig:base_xyz} highlights the limitations of the usage of naive predictor that will deliver 2D image created from volumetric video content with a delay of 100 ms that is unappropriated delay for a human to experience in VR application without physical consequences like motion sickness \cite{delay_sickness}. The mean square error for the all three positional axes $MAE_{pos} = 0.067$m and root mean square error  $RMSE_{pos} = 0.068$m meaning the average distance between predicted position and the real position is equal to almost 7 cm. It is not crucial when an user looks on the big VV object, like a volumetric humans hologram, from the distance of 3-4 meters. But if an user interacts with the small VV objects presented in the VR environment, then this distance became a significant difference between what user will see with a delay and where the VR object would be placed for delayed position. 
 
 \begin{figure}[htb]
 	\begin{center}
@@ -57,7 +57,7 @@ The Fig. \ref{fig:base_xyz} shows the 500 real values and the corresponding outp
 
 It is worth to mention that in the case if real data is neither increasing nor decreasing in the given interval and fluctuates near the constant value, as it seen at $y$-axis, than the delay of the Baseline output is more not obvious when visualized due the overlapping of two graphs. In fact, the Baseline outputs have the same delay as those one with good visualized delay as, for example, $x$-axis.
 
-Fig. \ref{fig:base_quat_xyzw} shows the Baseline outputs for quaternions components $qx, qy, qz$ and $qw$. Same as with positional data, the same delay of 20 samples is present on rotational data. For all four quaternion components calculated metrics  are: $MAE = 10.41^{\circ}$ and $RMSE =19.24^{\circ}$.  
+Fig. \ref{fig:base_quat_xyzw} shows the Baseline outputs for quaternions components $qx, qy, qz$ and $qw$. Same as with positional data, the same delay of 20 samples is present on rotational data. For all four quaternion components calculated metrics  are: $MAE_{rot} = 14.61^{\circ}$ and $RMSE_{rot} =21.24^{\circ}$.  
 
 \begin{figure}[htb]
 	\begin{center}
@@ -98,39 +98,15 @@ This section describes the difference of prediction results done by a model LSTM
 	
 \end{itemize}
 
-\input{datasets_plots}
+\input{dataset_plots}
 
-Figures \ref{fig:interp1} and \ref{fig:interp2} shows the predictions of LSTM1 model on interpolated dataset. The mean square error for the all three positional axes $MAE = 0.019$m and root mean square error  $RMSE = 0.028$m meaning the average distance between predicted position and the real position reduced from 7 cm to 2 cm if LSTM1 on interpolated dataset is used instead of Baseline. For all four quaternion components calculated metrics  are: $MAE = 15.92^{\circ}$ and $RMSE =20.28^{\circ}$. LSTM1 predicts the rotation on interpolated dataset worse than the Baseline model. The goal of the next experiment is to evaluate whether the flipping of negative quaternions can improve rotational prediction as it was expected on the preprocessing step.
+Figures \ref{fig:interp1} and \ref{fig:interp2} shows the predictions of LSTM1 model on interpolated dataset. The mean square error for the all three positional axes $MAE_{pos} = 0.019$m and root mean square error  $RMSE_{pos} = 0.028$m meaning the average distance between predicted position and the real position reduced from 7 cm to 2 cm if LSTM1 on interpolated dataset is used instead of Baseline. For all four quaternion components calculated metrics  are: $MAE_{rot} = 16.92^{\circ}$ and $RMSE_{rot}  =23.28^{\circ}$. LSTM1 predicts the rotation on interpolated dataset worse than the Baseline model. The goal of the next experiment is to evaluate whether the flipping of negative quaternions can improve rotational prediction as it was expected on the preprocessing step.
 
-\begin{figure}[htb]
-	\begin{center}
-		\includegraphics[width=1\textwidth, keepaspectratio]{gfx/lstm1_interpolated-xyz_position.pdf}
-		\caption{\label{fig:interp1} Outputs of LSTM1 Model on interpolated dataset for x, y and z axes.}
-	\end{center}
-\end{figure}
+Figures \ref{fig:flip1} and \ref{fig:flip2} shows the predictions of LSTM1 model n dataset with flipped negative quaternions. The mean square error for the all three positional axes $MAE_{pos} = 0.011$m and root mean square error  $RMSE_{pos} = 0.014$m meaning the average distance between predicted position and the real position reduced from 7 cm to 1.1 cm if LSTM1 on dataset with flipped negative quaternions is used instead of Baseline. For all four quaternion components calculated metrics are: $MAE_{rot} = 13.49^{\circ}$ and $RMSE_{rot}  =18.47^{\circ}$. Thus LSTM1 predicts the rotation on interpolated dataset slightly better than the Baseline model and there is also an improvement comparing to prediction with interpolated dataset. Next experiments aim to evaluate whether the normalization of positional data and dataset division can improve evaluation metrics. 
 
-\begin{figure}[htb]
-	\begin{center}
-		\includegraphics[width=1\textwidth, keepaspectratio]{gfx/lstm1_interpolated-roll_pitch_yaw.pdf}
-		\caption{\label{fig:interp2} Outputs of LSTM1 Model on interpolated dataset for qx, qy, qz and qw axes.}
-	\end{center}
-\end{figure}
+For the sake of place saving the plots of the rest datasets will not be added in the thesis. The division of dataset on pure positional dataset and pure rotational does not improve the prediction error. For positional dataset $MAE_{pos}$ increased to $0.078$m and root mean square error jumped to to $0.091$m what means that $MAE_{pos}$ error increased by $116.41\%$ and $RMSE_{pos}$ by $133,82\%$ compared to a Baseline. Surprisingly, opposed to the last experiment, in rotational dataset $MAE_{rot}$ decreased to $11.81^{\circ}$m and root mean square error reduced to $16.64^{\circ}$. It seems that for a prediction of the rotation the positional data can be eliminated from a dataset. The most interesting experiment done with a normalized dataset, Only position $(x, y, z)$ was scaled in range [0..1]. The $MAE_{pos}$ is slightly lower than Baseline's and is equal to $0.056$. This value must be considered as bad prediction because the better results are obtained with two previous datasets. Additionally, $RMSE_{pos}$ increased significantly to $0.197$ what is by $289\%$ worse than a Baseline prediction. However, it is surprising that rotational $MAE_{rot}$ decreased to $9.87^{\circ}$m and $RMSE_{rot}$ reduced to  $12.72^{\circ}$. 
 
-\begin{figure}[h]
-	\begin{center}
-		\includegraphics[width=1\textwidth, keepaspectratio]{gfx/lstm1_flipped-xyz_position.pdf}
-		\caption{\label{fig:flip1} Outputs of LSTM1 Model on dataset with flipped negative quaternions for x, y and z axes.}
-	\end{center}
-\end{figure}
-
-\begin{figure}
-	\begin{center}
-		\includegraphics[width=1\textwidth, keepaspectratio]{gfx/lstm1_flipped-roll_pitch_yaw.pdf}
-		\caption{\label{fig:flip2} Outputs of LSTM1 Model on dataset with flipped negative quaternions for qx, qy, qz and qw axes.}
-	\end{center}
-\end{figure}
-
-Figures \ref{fig:flip1} and \ref{fig:flip2} shows the predictions of LSTM1 model n dataset with flipped negative quaternions. The mean square error for the all three positional axes $MAE = 0.011$m and root mean square error  $RMSE = 0.014$m meaning the average distance between predicted position and the real position reduced from 7 cm to 1.1 cm if LSTM1 on dataset with flipped negative quaternions is used instead of Baseline. For all four quaternion components calculated metrics  are: $MAE = 13.49^{\circ}$ and $RMSE =18.47^{\circ}$. Thus LSTM1 predicts the rotation on interpolated dataset slightly better than the Baseline model and there is also a ´n improvement comparing to prediction with interpolated dataset. The goal of the next experiment is to evaluate whether the normalization of positional data can improve evaluation metrics. 
+For the LSTM1 model the best prediction is done for a future position using interpolated dataset with flipped negative quaternions and for rotation using a dataset with normalized position. The analysis of this phenomena is done in section \ref{sec:conclusion:analysis}.
 
 \subsubsection{Batch size}
 \label{sec:eval:experiments:early:batch}
