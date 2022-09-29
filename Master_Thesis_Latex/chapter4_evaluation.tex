@@ -12,6 +12,25 @@ To evaluate all described above models, a Python-based application used for trai
 
 \section{Evaluation metrics}
 \label{sec:eval:metrics}
+Evaluation metrics are used to measure the quality of the predictions made by machine learning model. This thesis similar to work \cite{serhan_kalman} uses two of the most common metrics Mean Absolute Error ($MAE$) and root mean squared error ($RMSE$).
+
+Mean Absolute Error ($MAE$): MAE measures the average error over the test sample of the absolute differences between prediction and actual observation without considering their direction. 
+\begin{equation}
+MAE= \frac{1}{n} \sum_{j=1}^{n} |y_j - y_{mean}|
+\end{equation}
+
+Root mean squared error ($RMSE$): RMSE measures the average magnitude of the error with square root of the average of squared differences between prediction and actual observation.
+
+\begin{equation}
+RMSE= \sqrt{ \frac{1}{n} \sum_{j=1}^{n} (y_j - y_{mean})^2}
+\end{equation}
+Both MAE and RMSE express average model prediction error in units of the variable of interest, both metrics can range from $0$ to $\inf$ and are indifferent to the direction of errors. They are negatively-oriented scores, which means lower values are better\footnote{https://medium.com/human-in-a-machine-world/mae-and-rmse-which-metric-is-better}. Since the errors in $RMSE$ are squared before they are averaged, the RMSE gives a relatively high weight to large errors. Normally, The $RMSE$ result will always be larger or equal to the $MAE$. 
+
+For calculation the metrics for positional data the Euclidean distance (L2 norm) is used.  Rotational metrics calculated with a distance between quaternions represented as an angle between their 3D orientations using a formula:
+\begin{equation}
+angularDistance = 2*arccos(real(p*conj(q)))
+\end{equation}
+where $p$ and $q$ are unit quaternions representing two rotations in the same basis and $q*$ denote the quaternion conjugate.
 
 \section{Baseline model}
 \label{sec:eval:baseline}
@@ -58,8 +77,10 @@ Because metrics of rotational data is measured in degrees, for visualization pur
 
 The evaluated RNN model is considered to be successfully trained if the $MAE$ and $RMSE$ metrics at least for positional or rotational data can show significant improvement comparing to a Baseline output. 
 
+\newpage
 \section{Experiments}
 \label{sec:eval:experiments}
+In the experiments implemented models were trained with different hyperparameters and evaluated using $MSE$ and $RMSE$ metrics. 
 
 \subsection{First experiments}
 \label{sec:eval:experiments:early}
@@ -70,10 +91,13 @@ As already stated in section \ref{sec:design:dataset:preprocessing}
 
 \subsubsection{Batch size}
 \label{sec:eval:experiments:early:batch}
-A high impact on the performance e.g. the prediction accuracy has a batch size used in LSTM or GRU Model. The batch-size helps to learn the common patterns as important features by providing a fixed number of samples at one time. So that the model thus can distinguish the common features by looking at all the introduced samples of the batch. In most cases, an optimal batch size is set to 64. When this batch size was initially used with LSTM model, it gave significant high MSE, RMSE, train and validation errors. Based on the performance observation during experiments with LSTM parameters, batch size fine-tuning was done. The experiments done by \textit{Aykut et al} in their works \cite{delay_compensation_360} and \cite{telepresence} proved that appropriate batch size can be found in range $2^{9}$ - $2^{11}$ (512 - 2048). Notice that a power of 2 is used as a batch size. The overall idea is to fit a batch of samples entirely in the the CPU/GPU. Since, all the CPU/GPU comes with a storage capacity in power of two, it is advised to keep a batch size a power of two. Using a number different from a power of 2 could lead to poor performance.
+A significant impact on the performance e.g. the prediction accuracy has a batch size used in LSTM or GRU models. The batch-size helps to learn the common patterns as important features by providing a fixed number of samples at one time. So that the model thus can distinguish the common features by looking at all the introduced samples of the batch. In most cases, an optimal batch size is set to 64. When this batch size was initially used with LSTM model, it gave significant high MSE, RMSE, train and validation errors. Based on the performance observation during experiments with LSTM parameters, batch size fine-tuning was done. The experiments done by \textit{Aykut et al} in their works \cite{delay_compensation_360} and \cite{telepresence} proved that appropriate batch size can be found in range $2^{9}$ - $2^{11}$ (512 - 2048). Notice that a power of 2 is used as a batch size. The overall idea is to fit a batch of samples entirely in the the CPU/GPU. Since, all the CPU/GPU comes with a storage capacity in power of two, it is advised to keep a batch size a power of two. Using a number different from a power of 2 could lead to poor performance. Experimentally is proved in this thesis that similar to works \cite{delay_compensation_360, telepresence}  batch size of $2^{8}$ - $2^{10}$ (256, 512 and sometimes 1024) produces the best prediction result on 6-DoF dataset if the other hyperparameters are set correctly. The smaller batch sizes (32, 64 and 128) resulted in the high values of evaluation metrics and it was obvious to notice during experiments the improving the metrics with increasing the batch size.
 
 \subsubsection{Learning rate}
 \label{sec:eval:experiments:early:lr}
+Learning rate is a parameter of extended version of stochastic gradient Adam optimizer. The learning rate determines how much an updating step influences the current value of the weights. Adam optimizer has an additional term in the weight update rule that causes the weights to exponentially decay to zero, if no other update is scheduled.
+
+If learning rate is large then a correspondingly large modification of the weights $w_i$ happens on each epoch. In general too large learning rate overshoots the local minimum in a cost function.
 
 \subsection{Prediction with LSTM}
 \label{sec:eval:experiments:lstm}
