@@ -542,8 +542,8 @@ class BaselineRunner:
                 results.append(result_one_experiment)
                 logging.info("--------------------------------------------------------------")
         
-        df_results = pd.DataFrame(results, columns=['Trace', 'LAT', 'mae_euc', 'mae_ang',
-                                                    'rmse_euc', 'rmse_ang'])
+        df_results = pd.DataFrame(results, columns=['Trace', 'LAT', 'mae_euc', 'mae_ang', 'mae_geo',
+                                                    'rmse_euc', 'rmse_ang', 'rmse_geo'])
         df_results.to_csv(os.path.join(self.results_path, 'res_baseline.csv'), index=False)
         
         
