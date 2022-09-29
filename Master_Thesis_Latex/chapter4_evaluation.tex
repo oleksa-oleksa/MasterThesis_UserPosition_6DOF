@@ -8,16 +8,36 @@ Chapter describes the evaluation metrics and performed experiments, visualises p
 \label{sec:eval:goal}
 The goal of model evaluation is am estimation of the generalization accuracy of a model on future unseen data. This master thesis aims to evaluate whether RNN neural networks modification as LSTM, GRU and bidirectional variant are able to reduce the positional and rotation error for given look ahead time of 100 ms. This LAT is higher than normal acceptable latency in VR application and even higher that measured M2P latency in cloud streaming platform presented in work \cite{serhan_cloud_streaming}. Since the successfully trained best evaluated model is intended to be build in the server infrastructure, the goal of evaluation is to find out how using of RNN model can reduce the positional and rotational error and thus improve the quality of delivered from cloud server VV content by calculating the proper future 2D image from volumetric data.  
 
-To evaluate all described above models, a Python-based application used for training and processing of the recorded via HoloLens 6-DoF datasets.  Below, first Baseline model, the experimental setup and the evaluation metrics are discussed, before presenting the obtained results and discussing the limitations of evaluated models.
-
-\section{Baseline model}
-\label{sec:eval:baseline}
-To understand, how actually good evaluated model predicts and helps to reduce the M2P latency, some essentially a simple model that acts as a reference in a machine learning project must be implemented first. Baseline model can lack complexity and may have little predictive power. The LSTM and GRU model should predict much better than a Baseline model and thus comparing the metrics it can be understood how reasonable is the implementing and using of chosen approach. It is intended to use a Baseline model as benchmarks for trained models. There is no rule for what is good or bad model's prediction. The criteria of model evaluation depends on the dataset and use case. A mean square error gives a values in units of the original dataset. For example, if model predicts the prices of apartments in Berlin, then MAE of 1000 is a very good result and market's players would desire to have a trained model to work on the real estate market. However, it is abysmal for a model that predicts the price of average lunch in Berlin's restaurant. 
-
-The Baseline in this thesis is similar to the reference model used in the work \cite{serhan_kalman} and represents the operation of the system without prediction. It is assumed that the prediction time is set equal to the M2P latency of 100 ms such that the prediction completely eliminates the latency. Implemented Baseline is a deterministic model, meaning that it produces an expected output given the same input. For LAT of 100 ms a prediction time N is equal to 20 samples. The position and rotation data $x_t$ is simply propagated N samples ahead in the Baseline prediction and set as the user position and rotation at time $x_t + N$, i.e. $Baseline(x_t) = x_{t+N}$.
+To evaluate all described above models, a Python-based application used for training and processing of the recorded via HoloLens 6-DoF datasets. Below, first Baseline model, the experimental setup and the evaluation metrics are discussed, before presenting the obtained results and discussing the limitations of evaluated models.
 
 \section{Evaluation metrics}
 \label{sec:eval:metrics}
+
+\section{Baseline model}
+\label{sec:eval:baseline}
+To understand, how actually good evaluated model predicts and helps to reduce the M2P latency, some essentially a simple model that acts as a reference in a machine learning project must be implemented first. Baseline model can lack complexity and may have little predictive power. The LSTM and GRU model should predict much better than a Baseline model and thus comparing the metrics it can be understood how reasonable is the implementing and using of chosen approach. It is intended to use a Baseline model as benchmarks for trained models. There is no rule for what is good or bad model's prediction. The criteria of model evaluation depends on the dataset and use case. A mean square error gives a values in units of the original dataset. For example, if model predicts the prices of apartments in Berlin, then MAE of 1000 is a very good result and market's players would desire to have a trained model to work on the real estate market. However, it is abysmal for a model that predicts the price of average lunch in Berlin's restaurant. Thus a simple predictor is needed to predict a future data so that a predicted values can be compared with the real values using same evaluation metrics as is used for RNN models.
+
+The Baseline in this thesis is similar to the reference model used in the work \cite{serhan_kalman} and represents the operation of the system without prediction. It is assumed that the prediction time is set equal to the M2P latency of 100 ms such that the prediction completely eliminates the latency. Implemented Baseline is a deterministic model, meaning that it produces an expected output given the same input. For LAT of 100 ms a prediction time N is equal to 20 samples. The position and rotation data $x_t$ is simply propagated N samples ahead in the Baseline prediction and set as the user position and rotation at time $x_t + N$, i.e. $Baseline(x_t) = x_{t+N}$. 
+\begin{figure}[htb]
+	\begin{center}
+		\includegraphics[width=1\textwidth, keepaspectratio]{gfx/base_zoom-x.pdf}
+		\caption{\label{fig:base_x} Outputs of Baseline Model for x-axis.}
+	\end{center}
+\end{figure}
+
+The Fig. \ref{fig:base_x} shows the first 500 real values and the corresponding output of the baseline for positional axis $x$. From the plot of the Baseline model outputs, it is clear that the model is 20-step behind reality. It copies with a given delay the falling trend and all fluctuations of the given axis.
+
+The Fig. \ref{fig:base_xyz} shows the 500 real values and the corresponding output of the baseline for all three positional axes $x, y, z$. The plot samples 500 elements starting from the 2500 row and thus no missing data is seen on Baseline output for the first 20 elements as it plotted in Fig. \ref{fig:base_x}. However, the Fig. \ref{fig:base_xyz} highlights the limitations of the usage of naive predictor that will deliver 2D image created from volumetric video content with a delay of 100 ms that is unappropriated delay for a human to experience in VR Application without physical consequences like motion sickness \cite{delay_sickness}. The mean square error for the all three positional axes $MAE = 0.067$ and it mean in average the distance between predicted by Baseline position to the real position is almost 7 cm. It is not crucial when an user looks on the big VV object, like a volumetric humans hologram, from the distance of 3-4 meters. But if an user want to interact with small VV objects presented in the VR environment, then this distance became a significant difference between what user will see (predicted position with a delay) and where the object was placed or user moved a head with a HMD on it. 
+
+\begin{figure}[htb]
+	\begin{center}
+		\includegraphics[width=1\textwidth, keepaspectratio]{gfx/base_zoom-xyz_position.pdf}
+		\caption{\label{fig:base_xyz} Outputs of Baseline Model for x, y and z axes.}
+	\end{center}
+\end{figure}
+
+
+
 
 \section{Experiments}
 \label{sec:eval:experiments}

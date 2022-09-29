@@ -137,19 +137,19 @@ class RNNRunner:
         self.pos_z_mean = None
 
         # ---------  MODEL HYPERPARAMETERS ----------#
-        self.reducing_learning_rate = False  # decreases LR every ls_epochs for lr_multiplicator
-        self.learning_rate = 1e-2
+        self.reducing_learning_rate = True  # decreases LR every ls_epochs for lr_multiplicator
+        self.learning_rate = 1e-4
         self.lr_epochs = 50
         self.lr_multiplicator = 0.5
-        self.weight_decay = 1e-6
+        self.weight_decay = 1e-12
 
         self.features = self._create_features(dataset_type)
         self.outputs = self._create_outputs(dataset_type)
         self.input_dim = len(self.features)
         self.output_dim = len(self.outputs)  # 3 position parameter + 4 rotation parameter
-        self.hidden_dim = 128  # number of features in hidden state
+        self.hidden_dim = 1024  # number of features in hidden state
         self.batch_size = 512
-        self.n_epochs = 500
+        self.n_epochs = 220
         self.seq_length_input = 20  # input length of timeseries from the past
 
         # -----  CREATE PYTORCH MODEL ----------#
