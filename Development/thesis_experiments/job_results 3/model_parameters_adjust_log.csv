@@ -1,0 +1,2 @@
+mae_euc,mae_ang,mae_geo,rmse_euc,rmse_ang,rmse_geo,LAT,epochs,hidden_dim,batch_size,model,seq_length_input,lr,lr_reducing,lr_epochs,lr_multiplicator,weight_decay
+n/a,11.812946613108537,1.8960111448561963,n/a,16.639660818459742,10.979246324864029,0.1,500,1024,512,lstm1,20,0.0001,True,50,0.5,1e-12
