@@ -92,13 +92,15 @@ This section describes the difference of prediction results done by a model LSTM
 \begin{itemize}
 	\item \textbf{Interpolated dataset:} Row dataset was interpolated so that missing values were inserted with linear interpolation for positional data and spherical linear interpolation for rotational data. 
 	\item \textbf{Flipped dataset:} Interpolated dataset with flipped negative quaternions so that neighboring quaternions representing same rotation without significant 4D vector space between them
-	\item \textbf{Normalized dataset:} Feature scaling (Min-max normalization) is applied on dataset's values to scale data in the range [0..1]. 
+	\item \textbf{Normalized dataset:} Feature scaling (Min-max normalization) is applied on dataset's positional values to scale data in the range [0..1]. 
 	\item \textbf{Position:} Only positional data $(x, y, z)$ as separate dataset to predict future position. 
 	\item \textbf{Rotation:} Only rotational data $(qx, qy, qz, qw)$ as separate dataset to predict future rotation. 
 	
 \end{itemize}
 
-Figures \ref{fig:interp1} and \ref{fig:interp2} shows the predictions of LSTM1 model on interpolated dataset. The mean square error for the all three positional axes $MAE = 0.019$m and root mean square error  $RMSE = 0.028$m meaning the average distance between predicted position and the real position reduced from 7 cm to 2 cm if LSTM1 on interpolated dataset is used instead of Baseline. For all four quaternion components calculated metrics  are: $MAE = 15.92^{\circ}$ and $RMSE =20.28^{\circ}$ .LSTM1 predicts the position on interpolated dataset worse than the Baseline model. The goal of the next experiment is to evaluate whether the flipping of negative quaternions can improve rotational prediction as it was expected on the preprocessing step.
+\input{datasets_plots}
+
+Figures \ref{fig:interp1} and \ref{fig:interp2} shows the predictions of LSTM1 model on interpolated dataset. The mean square error for the all three positional axes $MAE = 0.019$m and root mean square error  $RMSE = 0.028$m meaning the average distance between predicted position and the real position reduced from 7 cm to 2 cm if LSTM1 on interpolated dataset is used instead of Baseline. For all four quaternion components calculated metrics  are: $MAE = 15.92^{\circ}$ and $RMSE =20.28^{\circ}$. LSTM1 predicts the rotation on interpolated dataset worse than the Baseline model. The goal of the next experiment is to evaluate whether the flipping of negative quaternions can improve rotational prediction as it was expected on the preprocessing step.
 
 \begin{figure}[htb]
 	\begin{center}
@@ -114,7 +116,21 @@ Figures \ref{fig:interp1} and \ref{fig:interp2} shows the predictions of LSTM1 m
 	\end{center}
 \end{figure}
 
+\begin{figure}[h]
+	\begin{center}
+		\includegraphics[width=1\textwidth, keepaspectratio]{gfx/lstm1_flipped-xyz_position.pdf}
+		\caption{\label{fig:flip1} Outputs of LSTM1 Model on dataset with flipped negative quaternions for x, y and z axes.}
+	\end{center}
+\end{figure}
 
+\begin{figure}
+	\begin{center}
+		\includegraphics[width=1\textwidth, keepaspectratio]{gfx/lstm1_flipped-roll_pitch_yaw.pdf}
+		\caption{\label{fig:flip2} Outputs of LSTM1 Model on dataset with flipped negative quaternions for qx, qy, qz and qw axes.}
+	\end{center}
+\end{figure}
+
+Figures \ref{fig:flip1} and \ref{fig:flip2} shows the predictions of LSTM1 model n dataset with flipped negative quaternions. The mean square error for the all three positional axes $MAE = 0.011$m and root mean square error  $RMSE = 0.014$m meaning the average distance between predicted position and the real position reduced from 7 cm to 1.1 cm if LSTM1 on dataset with flipped negative quaternions is used instead of Baseline. For all four quaternion components calculated metrics  are: $MAE = 13.49^{\circ}$ and $RMSE =18.47^{\circ}$. Thus LSTM1 predicts the rotation on interpolated dataset slightly better than the Baseline model and there is also a ´n improvement comparing to prediction with interpolated dataset. The goal of the next experiment is to evaluate whether the normalization of positional data can improve evaluation metrics. 
 
 \subsubsection{Batch size}
 \label{sec:eval:experiments:early:batch}
