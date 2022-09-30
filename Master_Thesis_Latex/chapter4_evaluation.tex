@@ -102,7 +102,7 @@ This section describes the difference of prediction results done by a model LSTM
 
 Figures \ref{fig:interp1} and \ref{fig:interp2} shows the predictions of LSTM1 model on interpolated dataset. The mean square error for the all three positional axes $MAE_{pos} = 0.019$m and root mean square error  $RMSE_{pos} = 0.028$m meaning the average distance between predicted position and the real position reduced from 7 cm to 2 cm if LSTM1 on interpolated dataset is used instead of Baseline. For all four quaternion components calculated metrics  are: $MAE_{rot} = 16.92^{\circ}$ and $RMSE_{rot}  =23.28^{\circ}$. LSTM1 predicts the rotation on interpolated dataset worse than the Baseline model. The goal of the next experiment is to evaluate whether the flipping of negative quaternions can improve rotational prediction as it was expected on the preprocessing step.
 
-Figures \ref{fig:flip1} and \ref{fig:flip2} shows the predictions of LSTM1 model n dataset with flipped negative quaternions. The mean square error for the all three positional axes $MAE_{pos} = 0.011$m and root mean square error  $RMSE_{pos} = 0.014$m meaning the average distance between predicted position and the real position reduced from 7 cm to 1.1 cm if LSTM1 on dataset with flipped negative quaternions is used instead of Baseline. For all four quaternion components calculated metrics are: $MAE_{rot} = 13.49^{\circ}$ and $RMSE_{rot}  =18.47^{\circ}$. Thus LSTM1 predicts the rotation on interpolated dataset slightly better than the Baseline model and there is also an improvement comparing to prediction with interpolated dataset. Next experiments aim to evaluate whether the normalization of positional data and dataset division can improve evaluation metrics. 
+Figures \ref{fig:flip1} and \ref{fig:flip2} shows the predictions of LSTM1 model on dataset with flipped negative quaternions. The mean square error for the all three positional axes $MAE_{pos} = 0.011$m and root mean square error  $RMSE_{pos} = 0.014$m meaning the average distance between predicted position and the real position reduced from 7 cm to 1.1 cm if LSTM1 on dataset with flipped negative quaternions is used instead of Baseline. For all four quaternion components calculated metrics are: $MAE_{rot} = 13.49^{\circ}$ and $RMSE_{rot}  =18.47^{\circ}$. Thus LSTM1 predicts the rotation on interpolated dataset slightly better than the Baseline model and there is also an improvement comparing to prediction with interpolated dataset. Next experiments aim to evaluate whether the normalization of positional data and dataset division can improve evaluation metrics. 
 
 For the sake of place saving the plots of the rest datasets will not be added in the thesis. The division of dataset on pure positional dataset and pure rotational does not improve the prediction error. For positional dataset $MAE_{pos}$ increased to $0.078$m and root mean square error jumped to to $0.091$m what means that $MAE_{pos}$ error increased by $116.41\%$ and $RMSE_{pos}$ by $133,82\%$ compared to a Baseline. Surprisingly, opposed to the last experiment, in rotational dataset $MAE_{rot}$ decreased to $11.81^{\circ}$m and root mean square error reduced to $16.64^{\circ}$. It seems that for a prediction of the rotation the positional data can be eliminated from a dataset. The most interesting experiment done with a normalized dataset, Only position $(x, y, z)$ was scaled in range [0..1]. The $MAE_{pos}$ is slightly lower than Baseline's and is equal to $0.056$. This value must be considered as bad prediction because the better results are obtained with two previous datasets. Additionally, $RMSE_{pos}$ increased significantly to $0.197$ what is by $289\%$ worse than a Baseline prediction. However, it is surprising that rotational $MAE_{rot}$ decreased to $9.87^{\circ}$m and $RMSE_{rot}$ reduced to  $12.72^{\circ}$. 
 
@@ -143,11 +143,44 @@ Best values for weigh decay parameter of Adam optimizer set to  $1^{-12}$ for LS
 
 \subsection{Prediction with LSTM}
 \label{sec:eval:experiments:lstm}
-This section presents the results of best prediction using LSTM models and also shows the predictions with LSTM variants that considered to fail either to predict better than Baseline or to be used as improvement comparing to Baseline predictions. The role of different parameters such as batch size, learning rate and weight decay is described in section \ref{sec:eval:experiments:early}.
+This section presents the results of best prediction using LSTM models and also shows the predictions with LSTM variants that considered to fail either to predict better than Baseline or to be used as improvement comparing to Baseline predictions. The role of different parameters such as batch size, learning rate and weight decay is described in section \ref{sec:eval:experiments:early}. The training and evaluation is this and next sections are done on interpolated dataset with flipped negative quaternions. 
 
 During preprocessing step Euler angles (yaw, pitch, roll) were calculated from quaternions and these parameters are used for visualization purposes. The quaternions of model's predictions are also converted to Euler angles so that $MAE$ and $RMSE$ units in degrees are similar to plotted information. 
 
+The best prediction result with LSTM1 are already presented in figures \ref{fig:flip1} and \ref{fig:flip2} in section above. Thereby LSTM1 model has best performance on interpolated dataset with flipped negative quaternions and all evaluation metrics were improved. $MAE_{pos} = 0.011$m, $RMSE_{pos} = 0.014$m, $MAE_{rot} = 13.49^{\circ}$ and $RMSE_{rot}  =18.47^{\circ}$. Comparing to Baseline this means 80\% improvement of prediction for position and almost 10\% improvement for rotation. The average distance between predicted position and the real position reduced from 7 cm to 1.1 cm.
+\begin{figure}[t]
+	\begin{center}
+		\includegraphics[width=0.9\textwidth, keepaspectratio]{gfx/lstm2_relu-xyz_position.pdf}
+		\caption{\label{fig:lstm2-1} Outputs of LSTM2 model with ReLU activation function for x, y and z axes.}
+	\end{center}
+\end{figure}
 
+\begin{figure}
+	\begin{center}
+		\includegraphics[width=0.9\textwidth, keepaspectratio]{gfx/lstm2_relu-roll_pitch_yaw.pdf}
+		\caption{\label{fig:lstm2-2} Outputs of LSTM2 model with ReLU activation function for qx, qy, qz and qw axes.}
+	\end{center}
+\end{figure}
+
+Fig. \ref{fig:lstm2-1}, \ref{fig:lstm2-2} displays the same range of prediction outputs for LSTM2 model with $ReLU$ activation function. It was mentioned in section \ref{sec:impl:model:arch:lstm} that this architecture experimentally leads to higher evaluation errors comparing to LSTM1 model. Indeed,  $MAE_{pos} = 0.055$m, $RMSE_{pos} = 0.185$m, $MAE_{rot} = 22.86^{\circ}$ and $RMSE_{rot}  =30.88^{\circ}$. In Fig. \ref{fig:lstm2-1} and \ref{fig:lstm2-2} it is clearly to see that distance between predicted values and real values is larger compared to LSTM1 and is similar and somewhere worse than with Baseline model. Thus graphs for $roll$ and $pitch$ have bigger gaps between real and predicted values. The predictions for $x$ and $z$ axes do not exactly follow the trend of the graph and real and predicted values have obvious distance between plotted graphs. 
+
+
+\begin{figure}[t!]
+	\begin{center}
+		\includegraphics[width=0.9\textwidth, keepaspectratio]{gfx/lstm3_mish-xyz_position.pdf}
+		\caption{\label{fig:lstm3-1} Outputs of LSTM3 model with Mish activation function for x, y and z axes.}
+	\end{center}
+\end{figure}
+
+\begin{figure}[b!]
+	\begin{center}
+		\includegraphics[width=0.9\textwidth, keepaspectratio]{gfx/lstm3_mish-roll_pitch_yaw.pdf}
+		\caption{\label{fig:lstm3-2} Outputs of LSTM3 model with Mish activation function for qx, qy, qz and qw axes.}
+	\end{center}
+\end{figure}
+
+The same outputs for LSTM3 model with $ReLU$ activation function are illustrated in Fig. \ref{fig:lstm3-1}, \ref{fig:lstm3-2}. This architecture experimentally can improve the evaluation metrics comparing both to LSTM1 and Baseline models. The best metrics are as follows:  $MAE_{pos} = 0.012$m, $RMSE_{pos} = 0.014$m, $MAE_{rot} = 13.18^{\circ}$ and $RMSE_{rot}  =17.28^{\circ}$.
+ In Fig. \ref{fig:lstm2-1} and \ref{fig:lstm2-2}  The predictions for $x$ and $z$ can almost exactly follow the trend of the graph (that was is smaller $MAE$ means graphically) and real and predicted values have almost no obvious big distance between plotted graphs. There are also slight improvements of $roll$ and $pitch$ predictions but the evaluation metrics are still not low enough to allow predictions exactly repeat the graph of real values. 
 
 \subsection{Prediction with GRU}
 \label{sec:eval:experiments:gru}
