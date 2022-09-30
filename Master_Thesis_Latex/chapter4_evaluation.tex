@@ -118,7 +118,7 @@ Learning rate is a parameter of extended version of stochastic gradient Adam opt
 
 If learning rate is large then a correspondingly large modification of the weights $w_i$ happens on each epoch. In general too large learning rate overshoots the local minimum in a cost function.
 
-The small learning rate does not allow model to neither successfully learn patterns in the data nor generalize them on the validation data. The prediction on the test data done by a model trained with a small value of learning rate results in significant high error. Fig. \ref{fig:lr} shows the training and validation loss of the 150 epochs of training that finished with $MAE = 3.70$
+The small learning rate does not allow model to neither successfully learn patterns in the data nor generalize them on the validation data. The prediction on the test data done by a model trained with a small value of learning rate results in significant high error. Fig. \ref{fig:lr} shows the training and validation loss of the 150 epochs of training with learning rate of $1^{-6}$ that finished with $MAE = 3.70$. Model can neither learn on training data not predict the new data on validation dataset. 
 \begin{figure}[htb]
 	\begin{center}
 		\includegraphics[width=1\textwidth, keepaspectratio]{gfx/lstm1_lr_low.pdf}
@@ -143,8 +143,11 @@ Best values for weigh decay parameter of Adam optimizer set to  $1^{-12}$ for LS
 
 \subsection{Prediction with LSTM}
 \label{sec:eval:experiments:lstm}
+This section presents the results of best prediction using LSTM models and also shows the predictions with LSTM variants that considered to fail either to predict better than Baseline or to be used as improvement comparing to Baseline predictions. The role of different parameters such as batch size, learning rate and weight decay is described in section \ref{sec:eval:experiments:early}.
 
 During preprocessing step Euler angles (yaw, pitch, roll) were calculated from quaternions and these parameters are used for visualization purposes. The quaternions of model's predictions are also converted to Euler angles so that $MAE$ and $RMSE$ units in degrees are similar to plotted information. 
+
+
 
 \subsection{Prediction with GRU}
 \label{sec:eval:experiments:gru}
