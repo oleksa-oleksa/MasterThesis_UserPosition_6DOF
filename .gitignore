@@ -97,5 +97,6 @@ trained_models
 *stats*
 */.ipynb_checkpoints/*
 */notebooks/.ipynb_checkpoints
+*/notebooks/model_adjist.ipynb
 */gpu_jobs_results*/*
 **/*.numbers
