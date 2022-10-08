@@ -129,7 +129,7 @@ The small learning rate does not allow the model to neither successfully learn p
 In works \cite{delay_compensation_360, telepresence} by \textit{Aykut et al} the adaptively reducing learning rate is used. So that in the master thesis a learning rate decay scheduler was used to decrease the initial learning rate of $0.001$ every $50$ epochs by $50\%$. The values for learning rate, the amount of epochs to keep the value the same and the multiplier were found during experiments with grid parameters search. 
 
 \subsubsection{Weight decay}
-Adam optimizer has an additional term in the weight update rule that causes the weights to exponentially decay to zero, if no other update is scheduled. With weight decay after each update, the weights are multiplied by a factor less than 1. This prevents the weights from growing too large, and can be seen as gradient descent on a quadratic regularization term. Thus weight decay ss a regularisation technique used to avoid over-fitting. Indeed experiments showed, that relatively large weight decay equal to $1^{-4} .. 1^{-8}$ make it possible for a model to overtrain so that training loss permanently decreases but validation loss fluctuates on the hight level. Model can not generalize the learned patter and predict successfully future values on  never seen before data. 
+Adam optimizer has an additional term in the weight update rule that causes the weights to exponentially decay to zero, if no other update is scheduled. With weight decay after each update, the weights are multiplied by a factor less than 1. This prevents the weights from growing too large, and can be seen as gradient descent on a quadratic regularisation term. Thus weight decay is a regularisation technique used to avoid over-fitting. Indeed experiments showed that relatively large weight decay equal to $1^{-4} .. 1^{-8}$ make it possible for a model to overtrain so that training loss permanently decreases but validation loss fluctuates on the high level. Model can not generalise the learned pattern and predict successfully future values on never seen before data. 
 \begin{figure}[htb]
 	\begin{center}
 		\includegraphics[width=1\textwidth, keepaspectratio]{gfx/lstm1_weight_decay_high.pdf}
@@ -137,17 +137,17 @@ Adam optimizer has an additional term in the weight update rule that causes the 
 	\end{center}
 \end{figure}
 
-Fig. \ref{fig:wd} illustrates the both training and validation loss with large weigh decay set to $1^{-6}$ of Adam optimizer. For the illustrative goal to avoid an elimination the feeling of distance difference due to scale and to emphasize it, plot shows only 100 first epochs. It is to seen than validation loss remain on high lever and starts to increase.  
+Fig. \ref{fig:wd} illustrates both training and validation loss with large weight decay set to $1^{-6}$ of Adam optimizer. For the illustrative goal to avoid an elimination of the feeling of distance difference due to scale and to emphasise it, plot shows only 100 first epochs. It is seen that validation loss remains on high lever and starts to increase.  
 
-Best values for weigh decay parameter of Adam optimizer set to  $1^{-12}$ for LSTM and GRU model after parameter grid search on GPU cluster. 
+Best values for weight decay parameter of Adam optimizer set to  $1^{-12}$ for LSTM and GRU model after parameter grid search on GPU cluster.
 
 \subsection{Prediction with LSTM}
 \label{sec:eval:experiments:lstm}
-This section presents the results of best prediction using LSTM models and also shows the predictions with LSTM variants that considered to fail either to predict better than Baseline or to be used as improvement comparing to Baseline predictions. The role of different parameters such as batch size, learning rate and weight decay is described in section \ref{sec:eval:experiments:early}. The training and evaluation is this and next sections are done on interpolated dataset with flipped negative quaternions. 
+This section presents the results of best prediction using LSTM models and also shows the predictions with LSTM variants that are considered to fail either to predict better than Baseline or to be used as improvement compared to Baseline predictions. The role of different parameters such as batch size, learning rate and weight decay is described in section \ref{sec:eval:experiments:early}. The training and evaluation is this and next sections are done on an interpolated dataset with flipped negative quaternions. 
 
-During preprocessing step Euler angles (yaw, pitch, roll) were calculated from quaternions and these parameters are used for visualization purposes. The quaternions of model's predictions are also converted to Euler angles so that $MAE$ and $RMSE$ units in degrees are similar to plotted information. 
+During preprocessing step Euler angles (yaw, pitch, roll) were calculated from quaternions and these parameters are used for visualisation purposes. The quaternions of the model's predictions are also converted to Euler angles so that $MAE$ and $RMSE$ units in degrees are similar to plotted information. 
 
-The best prediction result with LSTM1 are already presented in figures \ref{fig:flip1} and \ref{fig:flip2} in section above. Thereby LSTM1 model has best performance on interpolated dataset with flipped negative quaternions and all evaluation metrics were improved. $MAE_{pos} = 0.011$m, $RMSE_{pos} = 0.014$m, $MAE_{rot} = 13.49^{\circ}$ and $RMSE_{rot}  =18.47^{\circ}$. Comparing to Baseline this means 80\% improvement of prediction for position and almost 10\% improvement for rotation. The average distance between predicted position and the real position reduced from 7 cm to 1.1 cm.
+The best prediction results with LSTM1 are already presented in figures \ref{fig:flip1} and \ref{fig:flip2} in the section above. Thereby LSTM1 model has best performance on interpolated dataset with flipped negative quaternions and all evaluation metrics were improved. $MAE_{pos} = 0.011$m, $RMSE_{pos} = 0.014$m, $MAE_{rot} = 13.49^{\circ}$ and $RMSE_{rot}  =18.47^{\circ}$. Compared to Baseline this means 80\% improvement of prediction for position and almost 10\% improvement for rotation. The average distance between predicted position and the real position reduced from 7 cm to 1.1 cm.
 \begin{figure}[t]
 	\begin{center}
 		\includegraphics[width=0.9\textwidth, keepaspectratio]{gfx/lstm2_relu-xyz_position.pdf}
@@ -162,8 +162,7 @@ The best prediction result with LSTM1 are already presented in figures \ref{fig:
 	\end{center}
 \end{figure}
 
-Fig. \ref{fig:lstm2-1}, \ref{fig:lstm2-2} displays the same range of prediction outputs for LSTM2 model with $ReLU$ activation function. It was mentioned in section \ref{sec:impl:model:arch:lstm} that this architecture experimentally leads to higher evaluation errors comparing to LSTM1 model. Indeed,  $MAE_{pos} = 0.055$m, $RMSE_{pos} = 0.185$m, $MAE_{rot} = 22.86^{\circ}$ and $RMSE_{rot}  =30.88^{\circ}$. In Fig. \ref{fig:lstm2-1} and \ref{fig:lstm2-2} it is clearly to see that distance between predicted values and real values is larger compared to LSTM1 and is similar and somewhere worse than with Baseline model. Thus graphs for $roll$ and $pitch$ have bigger gaps between real and predicted values. The predictions for $x$ and $z$ axes do not exactly follow the trend of the graph and real and predicted values have obvious distance between plotted graphs. 
-
+Fig. \ref{fig:lstm2-1}, \ref{fig:lstm2-2} displays the same range of prediction outputs for the LSTM2 model with the $ReLU$ activation function. It was mentioned in section \ref{sec:impl:model:arch:lstm} that this architecture experimentally leads to higher evaluation errors compared to LSTM1 model. Indeed,  $MAE_{pos} = 0.055$m, $RMSE_{pos} = 0.185$m, $MAE_{rot} = 22.86^{\circ}$ and $RMSE_{rot}  =30.88^{\circ}$. In Fig. \ref{fig:lstm2-1} and \ref{fig:lstm2-2} it is clear to see that distance between predicted values and real values is larger compared to LSTM1 and is similar and somewhere worse than with the Baseline model. Thus graphs for $roll$ and $pitch$ have bigger gaps between real and predicted values. The predictions for $x$ and $z$ axes do not exactly follow the trend of the graph and real and predicted values have obvious distance between plotted graphs. 
 
 \begin{figure}[t!]
 	\begin{center}
@@ -179,11 +178,11 @@ Fig. \ref{fig:lstm2-1}, \ref{fig:lstm2-2} displays the same range of prediction 
 	\end{center}
 \end{figure}
 
-The same outputs for LSTM3 model with $ReLU$ activation function are illustrated in Fig. \ref{fig:lstm3-1}, \ref{fig:lstm3-2}. This architecture experimentally can improve the evaluation metrics comparing both to LSTM1 and Baseline models. The best metrics are as follows:  $MAE_{pos} = 0.012$m, $RMSE_{pos} = 0.014$m, $MAE_{rot} = 13.18^{\circ}$ and $RMSE_{rot}  =17.28^{\circ}$.
+The same outputs for the LSTM3 model with $ReLU$ activation function are illustrated in Fig. \ref{fig:lstm3-1}, \ref{fig:lstm3-2}. This architecture experimentally can improve the evaluation metrics comparing both to LSTM1 and Baseline models. The best metrics are as follows:  $MAE_{pos} = 0.012$m, $RMSE_{pos} = 0.014$m, $MAE_{rot} = 13.18^{\circ}$ and $RMSE_{rot}  =17.28^{\circ}$.
 
-In Fig. \ref{fig:lstm2-1} and \ref{fig:lstm2-2}  The predictions for $x$ and $z$ can almost exactly follow the trend of the graph (that was is smaller $MAE$ means graphically) and real and predicted values have almost no obvious big distance between plotted graphs. There are also slight improvements of $roll$ and $pitch$ predictions but the evaluation metrics are still not low enough to allow predictions exactly repeat the graph of real values. 
+In Fig. \ref{fig:lstm2-1} and \ref{fig:lstm2-2}  The predictions for $x$ and $z$ can almost exactly follow the trend of the graph (that was is smaller $MAE$ means graphically) and real and predicted values have almost no obvious big distance between plotted graphs. There are also slight improvements of $roll$ and $pitch$ predictions but the evaluation metrics are still not low enough to allow predictions to exactly repeat the graph of real values. 
 
-A three-layered stacked LSTM4 model with introduced additional dropout added after all but last recurrent layer and Mish activation function has similar to LSTM2 positional error but the rotational error drastically increased to $MAE_{rot} = 42^{\circ}$ and $RMSE_{rot}  =48^{\circ}$. The more complex model not only requires significant more time to train bus also have problems to optimize parameters in a way that can optimally fit the training instances. 
+A three-layered stacked LSTM4 model with introduced additional dropout added after all but last recurrent layer and Mish activation function has similar to LSTM2 positional error but the rotational error drastically increased to $MAE_{rot} = 42^{\circ}$ and $RMSE_{rot}  =48^{\circ}$. The more complex model not only requires significantly more time to train but also has problems optimising parameters in a way that can optimally fit the training instances. 
 
 \subsection{Prediction with GRU}
 \label{sec:eval:experiments:gru}
