@@ -294,7 +294,7 @@ Models LSTM1 and LSTM3 are considered to be the best evaluated LSTM models that 
 
 \subsection{GRU Model}
 \label{sec:impl:model:arch:gru}
-Another approach called a gated recurrent unit (GRU) can adaptively capture dependencies of different time scales without having a separate memory cells \cite{empirical_evaluation}. It is similar to an LSTM, but only has two gates - a reset gate and an update gate. Although architecture does not provide an output gate, with fewer parameters it can generally easier and faster be trained than LSTM.  GRU Model can catch the long-term dependencies in the data obtained from HMD that are otherwise are hidden by the effect of short-term dependencies from the standard RNN models. This chapter decribes GRU model that implemented to predict future values with 6-DoF dataset obtained from HoloLens 2. \\
+Another approach called a gated recurrent unit (GRU) can adaptively capture dependencies of different time scales without having a separate memory cell \cite{empirical_evaluation}. It is similar to an LSTM, but only has two gates - a reset gate and an update gate. Although architecture does not provide an output gate, with fewer parameters it can generally be easier and faster to be trained than LSTM. GRU Model can catch the long-term dependencies in the data obtained from HMD that are otherwise hidden by the effect of short-term dependencies from the standard RNN models. This chapter describes GRU models that are implemented to predict future values with a 6-DoF dataset obtained from HoloLens 2. 
 
 \begin{figure}[htb]
 	\begin{center}
@@ -303,13 +303,14 @@ Another approach called a gated recurrent unit (GRU) can adaptively capture depe
 	\end{center}
 \end{figure}
 
-The GRU architecture is illustrated\footnote{Source: Prof. Dr. Tim Landgraf, Lecture 13: Recurrent Neural Networks, WS 20/21: Machine Learning} on Fig. \ref{fig:gru}. GRU avoids the vanishing gradient problem of a standard RNN with only two gates that decide what information should be passed to the final output. The update gate plugs $x_t$ into the network unit and multiplied with its own weight $W_{iz}$. The same multiplication is done with previous hidden state $h_(t-1)$ that has its own weight $W_{hz}$. Both results are added together and a sigmoid activation function is applied to squash the result between 0 and 1. The mathematical expression of this calculation is as following:
+The GRU architecture is illustrated\footnote{Source: Prof. Dr. Tim Landgraf, Lecture 13: Recurrent Neural Networks, WS 20/21: Machine Learning} in Fig. \ref{fig:gru}. GRU avoids the vanishing gradient problem of a standard RNN with only two gates that decide what information should be passed to the final output. The update gate plugs $x_t$ into the network unit and multiplies with its own weight $W_{iz}$. The same multiplication is done with the previous hidden state $h_(t-1)$ that has its own weight $W_{hz}$. Both results are added together and a sigmoid activation function is applied to squash the result between 0 and 1. The mathematical expression of this calculation is as following:
 \begin{equation}
 z_t = \sigma (W_{iz}x_t + b_{iz} + W_{hz}h_{t-1} + b_{hz})
 \end{equation}
-where  $z_t$ is an update gate, $h_{t}$  is the hidden state at time t, $h_{t-1}$ is the hidden state of the layer at time $t-1$ or the initial hidden state at time $0$, $\sigma$ is the sigmoid function. With these matrix multiplications model can determine how much of the past information from previous time steps needs to be passed to the next to predict future values. 
+where  $z_t$ is an update gate, $h_{t}$  is the hidden state at time t, $h_{t-1}$ is the hidden state of the layer at time $t-1$ or the initial hidden state at time $0$, $\sigma$ is the sigmoid function. With these matrix multiplications, the model can determine how much of the past information from previous time steps needs to be passed to the next to predict future values. 
 
-The reset gates does what its name means - gate can reset the state of the model and thus model decides how much of the past information to forget. It is an useful option when context changes in the historical data and previous values are not more relevant to produce future values. With powerful update gate the model can decide to copy all the information from the past and eliminate the risk of vanishing gradient. The formula of the reset gate is:
+The reset gate does what its name means - gate can reset the state of the model and thus the model decides how much of the past information to forget. It is a useful option when context changes in the historical data and previous values are not more relevant to produce future values. With a powerful update gate the model can decide to copy all the information from the past and eliminate the risk of vanishing gradient. The formula of the reset gate is:
+
 \begin{equation}
 r_t = \sigma (W_{ir}x_t + b_{ir} + W_{hr}h_{t-1} + b_{hr})
 \end{equation}
@@ -317,14 +318,14 @@ Both gates will affect the final output. A new memory content will use the reset
 \begin{equation}
 n_t = tahn (W_{in}x_t + b_{in} + r_t * W_{hn}h_{t-1} + b_{hn})
 \end{equation}
-As the last step, the network calculates vector which holds information for the current unit and passes $h_t$ to the network. The formula shows that update gates is used to determine what information from previous steps will be passed into the memory. Additionally, calculated recently new memory gate $n_t$ controls the amount from current data to be added into long memory.  That is done as follows:
+As the last step, the network calculates a vector which holds information for the current unit and passes $h_t$ to the network. The formula shows that the update gate is used to determine what information from previous steps will be passed into the memory. Additionally, recently calculated new memory gate $n_t$ controls the amount from current data to be added into long memory.  That is done as follows:
 \begin{equation}
 h_t = (1 - z_t) * n_t + z_t * h_{t-1}
 \end{equation}
 
-GRU model implementation, training loop and evaluation are done similar to LSTM in Python using PyTorch. Model has same input $[batch, sequence, features]$ with sequence equal to 20 last values and 10 features (3 positional, 4 rotation and 3 velocity columns). The batch size was increased to $2^{9}$. The hidden dimension  is 512 nodes. Same as with LSTM, Adam optimization, the extended version of stochastic gradient descent and nowadays common algorithm for ML tasks, used for GRU Model.  Adjustable learning rate is modified to decrease by 60\% from initial value of 0.0001 every 50 epochs. Weight decay kept the same value of $1e-12$ . 
+GRU model implementation, training loop and evaluation are done similar to LSTM in Python using PyTorch. Model has the same input $[batch, sequence, features]$ with sequence equal to 20 last values and 10 features (3 positional, 4 rotation and 3 velocity columns). The batch size was increased to $2^{9}$. The hidden dimension  is 512 nodes. Same as with LSTM, Adam optimization, the extended version of stochastic gradient descent and nowadays common algorithm for ML tasks, used for GRU Model.  Adjustable learning rate is modified to decrease by 60\% from initial value of 0.0001 every 50 epochs. Weight decay kept the same value of $1e-12$ . 
 
-The maximum number of epochs was set to 500, early stopping technique with same patience and delta as in LSTM was used to avoid overfitting. Model requires less epochs to learn and can predict better than LSTM. Although the error decreases very slowly after 150-200 epochs, the model converged to a smallest achievable error after 500 epochs. The model is overtrained with 1000 epochs if trained without early stopping technique.
+The maximum number of epochs was set to 500, an early stopping technique with the same patience and delta as in LSTM was used to avoid overfitting. Model requires less epochs to learn and can predict better than LSTM. Although the error decreases very slowly after 150-200 epochs, the model converges to a smallest achievable error after near 500 epochs. The model is overtrained with 1000 epochs if trained without early stopping technique.
 
 Different to LSTM Model, the best performance was achieved with pure GRU model without additional activation functions with simple one-layered architecture represented below:
 \begin{lstlisting}[caption={GRU1 with Sliding Window},captionpos=b]
@@ -345,13 +346,13 @@ Non-trainable params: 0
 =================================================================
 \end{lstlisting}
 
-From listing above is clear, that pure GRU1 has 25\% less trainable parameters as pure LSTM1 and twice less trainable parameters as LSTM3 that uses additional activation and linear functions. Moreover the result of prediction of future values are preciser than those obtained with LSTM1 and LSTM3 and has significant smaller the MAE and RMSE metrics (more information about results of prediction with LSTM and GRU models can be found in chapter \ref{sec:eval:experiments:lstm} and \ref{sec:eval:experiments:gru}). 
+From the listing above it is clear that pure GRU1 has 25\% less trainable parameters as pure LSTM1 and twice less trainable parameters as LSTM3 that uses additional activation and linear functions. Moreover the result of prediction of future values are preciser than those obtained with LSTM1 and LSTM3 and has significant smaller the MAE and RMSE metrics (more information about results of prediction with LSTM and GRU models can be found in chapter \ref{sec:eval:experiments:lstm} and \ref{sec:eval:experiments:gru}). 
 
-Additionally to GRU1 several different architectures were implemented and tested. The GRU2 model has $ReLU$-activation function and GRU3 has $Mish$-activation function. Similar to LSTM, using of $ReLU$ did not improved the predictions. Different to LSTM, using of $Mish$ also worsened the results.     
+Additionally to GRU1 several different architectures were implemented and tested. The GRU2 model has $ReLU$-activation function and GRU3 has $Mish$-activation function. Similar to LSTM, using $ReLU$ did not improve the predictions. Different from LSTM, the use of $Mish$ also worsened the results.     
 
-Different quite similar architectures using $Mish$ activation function were implemented and tested with parameters grid search on GPU Cluster. GRU31 using only one $Mish$ activation compared to LSTM3 and GRU3 with two activation layer accompanied with linear layers. GRU32 and GRU35 use additionally dropout layer(s) with different parameters and combinations with linear layer(s). In GRU33 adaptive max pooling over an input signal is done to in part to help over-fitting by providing an abstracted form of the representation. Both models performed worse then those one without dropout techniques even though it was tried to train the model longer for 1000 or 2000 epochs. Every architecture including GRU1 was also tried as 3-layered and 8-layered stacked GRU and all results similar to stacked LSTM were significant worse and took noticeable more computational time as 1-layered variants.
+Different quite similar architectures using the $Mish$ activation function were implemented and tested with parameters grid search on GPU Cluster. GRU31 uses only one $Mish$ activation compared to LSTM3 and GRU3 with two activation layers accompanied with linear layers. GRU32 and GRU35 use additional dropout layer(s) with different parameters and combinations with linear layer(s). In GRU33 adaptive max pooling over an input signal is done in part to help over-fitting by providing an abstracted form of the representation. Both models performed worse than those one without dropout techniques even though it was tried to train the model longer for 1000 or 2000 epochs. Every architecture including GRU1 was also tried as 3-layered and 8-layered stacked GRU and all results similar to stacked LSTM were significantly worse and took noticeable more computational time as 1-layered variants.
 
-Thus model GRU1 is considered as best evaluated model that predicts accurately the future values for LAT of 100 ms based on past 20 values (100 ms) in 6-DoF VR environment using sensor data from HMD.
+Thus model GRU1 is considered as the best evaluated model that accurately predicts the future values for LAT of 100 ms based on past 20 values (100 ms) in 6-DoF VR environment using sensor data from HMD.
 
 \subsection{Bidirectional GRU Model}
 \label{sec:impl:model:arch:bi-gru}
