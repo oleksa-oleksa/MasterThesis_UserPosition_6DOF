@@ -186,9 +186,9 @@ A three-layered stacked LSTM4 model with introduced additional dropout added aft
 
 \subsection{Prediction with GRU}
 \label{sec:eval:experiments:gru}
-This section presents only best result achieved with pure GRU model without additional activation functions with simple one-layered architecture. 
+This section presents the best result achieved with a pure GRU model without additional activation functions with simple one-layered architecture. 
 
-GRU1 is the best evaluated model. It results with smallest positional and rotational error. The evaluation metrics are: $MAE_{pos} = 0.009$m, $RMSE_{pos} = 0.011$m, $MAE_{rot} = 8.68^{\circ}$ and $RMSE_{rot}  =12.29^{\circ}$. Comparing to Baseline this means 87\% improvement of prediction for position and almost 40\% improvement for rotation. The average distance between predicted position and the real position reduced from 7 cm and GRU1 average error is less than 1 cm. 
+GRU1 is the best evaluated model. It results with the smallest positional and rotational error. The evaluation metrics are: $MAE_{pos} = 0.009$m, $RMSE_{pos} = 0.011$m, $MAE_{rot} = 8.68^{\circ}$ and $RMSE_{rot}  =12.29^{\circ}$. Compared to Baseline this means 87\% improvement of prediction for position and almost 40\% improvement for rotation. The average distance between predicted position and the real position is reduced from 7 cm and GRU1 average error is less than 1 cm.  
 \begin{figure}[b!]
 	\begin{center}
 		\includegraphics[width=0.8\textwidth, keepaspectratio]{gfx/gru1-xyz_position.pdf}
@@ -206,7 +206,7 @@ GRU1 results for rotation prediction on the full interpolated dataset with flipp
 	\end{center}
 \end{figure}
 
-Figures \ref{fig:gru1-1},  \ref{fig:gru1-2} and \ref{fig:gru1-3} plot predicted values over real for position data $(x, y, z)$. The range took so that first it is the same 500 samples near to the beginning of dataset as used for visualisation with previous models. Additionally to emphasize accuracy the 500 samples in the middle of dataset are taken and same amount of samples is chosen near the end of dataset. 
+Figures \ref{fig:gru1-1},  \ref{fig:gru1-2} and \ref{fig:gru1-3} plot predicted values over real for position data $(x, y, z)$. The range took so that first it is the same 500 samples near to the beginning of the dataset as used for visualisation with previous models. Additionally to emphasise accuracy the 500 samples in the middle of the dataset are taken and the same amount of samples is chosen near the end of the dataset. 
 \begin{figure}[t!]
 	\begin{center}
 		\includegraphics[width=0.8\textwidth, keepaspectratio]{gfx/gru1-xyz_position_21000.pdf}
@@ -221,15 +221,14 @@ Figures \ref{fig:gru1-1},  \ref{fig:gru1-2} and \ref{fig:gru1-3} plot predicted 
 		\label{fig:gru1-4}
 	\end{center}
 \end{figure}
-In Fig. \ref{fig:gru1-4} illustrates same 500 samples of rotational data. The evaluation metrics for rotation are still not low enough to allow predictions exactly repeat the graph of real values. Comparing to the results of LSTM1 on the full interpolated dataset with flipped negative quaternions, there is a visual improvement and reduction of the gap between the predicted- and real-graphs on the plotted range. Evaluation metrics for rotation are improved and root mean squared error significantly decreased. Because due the square operation applied to the mean error $RMSE$ metrics thus penalizes bigger error, it can be said, that GRU1 rotational prediction have less outliers with higher distance to a real data. 
+In Fig. \ref{fig:gru1-4} illustrates the same 500 samples of rotational data. The evaluation metrics for rotation are still not low enough to allow predictions to exactly repeat the graph of real values. Compared to the results of LSTM1 on the full interpolated dataset with flipped negative quaternions, there is a visual improvement and reduction of the gap between the predicted- and real-graphs on the plotted range. Evaluation metrics for rotation are improved and root mean squared error significantly decreased. The square operation is applied to the mean error and thus $RMSE$ penalises bigger errors. It can be said that GRU1 rotational predictions have less outliers with higher distance to real data.
 
- 
 \subsection{Prediction with Bidirectional GRU}
 \label{sec:eval:experiments:bi-gru}
-The bidirectional GRU was evaluated as a last RNN variant. The goal of this evaluation is to check whether the bidirectional GRU will perform on 6-DoF HoloLens dataset similar as is was described in the section \ref{sec:related:deep}. Indeed, experiments showed, that bidirectional GRU predicts worse than its unidirectional variant and even worse as LSTM model. The best result that Bi-GRU can produce after 500 epochs of training with 1024 hidden dimensions is only twice better then an output of a Baseline model. The best metrics are as follows:  $MAE_{pos} = 0.030$m, $RMSE_{pos} = 0.041$m, $MAE_{rot} = 30,19^{\circ}$ and $RMSE_{rot}  =33.78^{\circ}$. Fig. \ref{fig:grubi} shows the best prediction Bi-GRU could produce for a rotation and it is clear that the distance between real measured and predicted data is too significant to ba able to consider this results as good. The similar behavior is obtained for position but not plotted separately in the thesis. Additionally, Bi-GRU training took longer on GPU Cluster due the doubled hidden dimension size and on a local machine it is impossible to run algorithm and get results in reasonable time. 
+The bidirectional GRU was evaluated as the last RNN variant. The goal of this evaluation is to check whether the bidirectional GRU will perform on a 6-DoF HoloLens dataset similar as is described in the section \ref{sec:related:deep}. Indeed, experiments showed that bidirectional GRU predicts worse than its unidirectional variant and even worse as the LSTM model. The best result that Bi-GRU can produce after 500 epochs of training with 1024 hidden dimensions is only twice better for position than an output of a Baseline model. However the rotation predictions are even worse that a Baseline outputs.The best metrics are as follows: $MAE_{pos} = 0.030$m, $RMSE_{pos} = 0.041$m, $MAE_{rot} = 30,19^{\circ}$ and $RMSE_{rot}  =33.78^{\circ}$. Fig. \ref{fig:grubi} shows the best prediction Bi-GRU could produce for a rotation and it is clear that the distance between real measured and predicted data is too significant to be able to consider these results as good. The similar behaviour is obtained for position but not plotted separately in the thesis. Additionally, Bi-GRU training took longer on GPU Cluster due the doubled hidden dimension size and on a local machine it is impossible to run the algorithm and get results in reasonable time. 
 \begin{figure}[h!]
 	\begin{center}
-		\includegraphics[width=0.8\textwidth, keepaspectratio]{gfx/gru-bi1-roll_pitch_yaw.pdf}
+		\includegraphics[width=0.7\textwidth, keepaspectratio]{gfx/gru-bi1-roll_pitch_yaw.pdf}
 		\caption{Bidirectional GRU outputs for roll, pitch, yaw axes.}
 		\label{fig:grubi}
 	\end{center}
