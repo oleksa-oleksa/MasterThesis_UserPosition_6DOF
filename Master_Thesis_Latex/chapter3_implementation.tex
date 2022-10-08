@@ -124,7 +124,7 @@ As was mentioned in section \ref*{sec:impl:dataset:HL}, the raw sensor data obta
 	\caption{\label{tab:inter_data_pos}Interpolated positional data from HoloLens 2.}
 \end{table}
 
-\textit{Gül et al., 2020} obtained the similar raw dataset from same HMD and interpolated it to obtain temporally equidistant samples. Same as it was done in work \cite{serhan_kalman}, the position and velocity data were upsampled using linear interpolation. Spherical linear interpolation was used to interpolate between rotations represented by quaternions and  table \ref{tab:inter_data_rot} lists 20 first rows from the resulting dataset after upsampling the rotational data.
+\textit{Gül et al., 2020} obtained the similar raw dataset from the same HMD and interpolated it to obtain temporally equidistant samples. Same as it was done in work \cite{serhan_kalman}, the position and velocity data were upsampled using linear interpolation. Spherical linear interpolation was used to interpolate between rotations represented by quaternions and  table \ref{tab:inter_data_rot} lists 20 first rows from the resulting dataset after upsampling the rotational data.
 
 \begin{table}[!ht]
 	\footnotesize
@@ -163,19 +163,9 @@ As was mentioned in section \ref*{sec:impl:dataset:HL}, the raw sensor data obta
 	\end{center}
 \end{figure}
 
-After the interpolated dataset was plotted as figure \ref{fig:inter_data}, the important observations based on the sample trace could be done. While the user position data plots look appropriate for machine learning algorithms, the graph with orientation shows data that is not the perfect case for usage with machine learning technologies and could decrease the prediction rate. The real part $qw$ and the component $qy$ of quaternion have obviously discontinuous (sharp change of sign) making it hard for a predictor to learn. A orientation on quaternions is used in training, thus this data requires a few additionally preprocessing steps. Usually, when doing calculation with quaternions, quaternions must be normalized to a unit length in order to represent valid rotations \cite{principles_robot_motion_book}. The normalized quaternion can be calculated using formula:
-\begin{equation}
-U_g = \frac{q}{|| q ||} = \frac{w}{|| q ||} + i \cdot \frac{x}{|| q ||} + j \cdot \frac{y}{|| q ||} + k \cdot \frac{z}{|| q ||}
-\end{equation}
+After the interpolated dataset was plotted as figure \ref{fig:inter_data}, the important observations based on the sample trace could be done. While the user position data plots look appropriate for machine learning algorithms, the graph with orientation shows data that is not the perfect case for usage with machine learning technologies and could decrease the prediction rate. The real part $qw$ and the component $qy$ of quaternion have obviously discontinuous (sharp change of sign) making it hard for a predictor to learn. An orientation on quaternions is used in training, thus this data requires a few additionally preprocessing steps. Usually, when doing calculation with quaternions, quaternions must be normalised to a unit length in order to represent valid rotations \cite{principles_robot_motion_book}. During experiments with quaternions in the obtained dataset was detected that quaternion magnitudes $|| q ||$ are equal to 1. Thus the data came from a HMD already normalised, so that a quaternion in the dataset kept the orientation as it was during the user's movement with a magnitude equal to 1.0.
 
-where $|| q || $ is a magnitude and can be found with formula:
-\begin{equation}
-|| q || = \sqrt{w^2 + x^2 + y^2 + z^2 }
-\end{equation}
-
-During experiments with quaternions in dataset obtained from HoloLens 2, was detected that quaternion magnitudes $|| q ||$ in HoloLens dataset are equal to 1. Thus data came from HMD already normalized, so that a quaternion in dataset kept the orientation as it was during user's movement with a magnitude equal to 1.0.
-
-Next, quaternions between neighboring points in obtained dataset represent the very similar orientation made by user wearing HMD step by step. The orientation plot on figure \ref{fig:norm_data} has discontinuities that can be seen on $qw$ line. As a consequence of the discontinuity (sharp change of line from negative to positive area with the same amplitude) the two neighboring quaternions with similar rotation have significant 4D vector space between them. It makes prediction worse what can be proved by RMSE and MAE rotation metrics. Flipping the sign will not affect the rotation, but it will ensure that there are no large jumps in 4D vector space when the rotation difference in rotation space (SO(3)) is small. If negative component of quaternions will be flipped into positive then the dataset, representing same rotation without creating an artificial discontinuity in the space, will be available for model training. 
+Next, quaternions between neighbouring points in the obtained dataset represent the very similar orientation made by the user wearing HMD step by step. The orientation plot on figure \ref{fig:norm_data} has discontinuities that can be seen on $qw$ line. As a consequence of the discontinuity (sharp change of line from negative to positive area with the same amplitude) the two neighbouring quaternions with similar rotation have significant 4D vector space between them. It makes predictions worse than what can be proved by $RMSE$ and $MAE$ rotation metrics. Flipping the sign will not affect the rotation, but it will ensure that there are no large jumps in 4D vector space when the rotation difference in rotation space (SO(3)) is small. If the negative component of quaternions is flipped into positive then the dataset, representing the same rotation without creating an artificial discontinuity in the space, will be available for model training. 
 
 \begin{figure}[htb]
 	\begin{center}
@@ -184,7 +174,7 @@ Next, quaternions between neighboring points in obtained dataset represent the v
 	\end{center}
 \end{figure}
 
- The figure \ref{fig:compare} represents quaternions of the original interpolated dataset on the upper part of the plot and the normalized flipped quaternions on the lower part of the plot. The quaternion's components were flipped only if the if their real part became negative. Different to figure \ref{fig:norm_data} the limit of y-axis is set to [-1, 1] on figure \ref{fig:compare} so that the result of inverting of quaternion is easy co compare to original data. Figure \ref{fig:norm_data} shows plotted data with length of 20 seconds in range 162 - 182 s from both datasets.
+The figure \ref{fig:compare} represents quaternions of the original interpolated dataset on the upper part of the plot and the normalised flipped quaternions on the lower part of the plot. The quaternion's components were flipped only if their real part became negative. Different from figure \ref{fig:norm_data} the limit of y-axis is set to [-1, 1] on figure \ref{fig:compare} so that the result of inverting the quaternion is easy to compare to the original data. Figure \ref{fig:compare} shows plotted data with length of 20 seconds in range 162 - 182 s from both datasets.
 \begin{figure}[htb]
 	\begin{center}
 		\includegraphics[width=1\textwidth, keepaspectratio]{gfx/Fig-1556-compare.pdf}
@@ -192,7 +182,8 @@ Next, quaternions between neighboring points in obtained dataset represent the v
 	\end{center}
 \end{figure}
 
-Thus the two representations of quaternions were blended into one data set, omitting to discontinuities in the time series as can be seen presented on Figure \ref{fig:norm_data}. Indeed, the RMSE and MAE rotation metrics were improved when model was trained with dataset with quaternions without sharp sign changes. More information can be found in section \ref{sec:eval:experiments}.
+Thus the two representations of quaternions were blended into one data set, omitting discontinuities in the time series as can be seen presented on Figure \ref{fig:norm_data}. Indeed, the $RMSE$ and $MAE$ rotation metrics were improved when the model was trained with a dataset with quaternions without sharp sign changes. More information can be found in section \ref{sec:eval:experiments}.
+
 %''########################################
 
 \newpage
