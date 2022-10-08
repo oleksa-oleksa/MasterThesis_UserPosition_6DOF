@@ -354,15 +354,15 @@ Different quite similar architectures using the $Mish$ activation function were 
 
 Thus model GRU1 is considered as the best evaluated model that accurately predicts the future values for LAT of 100 ms based on past 20 values (100 ms) in 6-DoF VR environment using sensor data from HMD.
 
+%###########################################
 \subsection{Bidirectional GRU Model}
 \label{sec:impl:model:arch:bi-gru}
+The last RNN variant evaluated in this master thesis is a bidirectional GRU model. From related works it is known that despite the complex architecture and more historical data available for analysis and training, the prediction results do not exceed the results of a simple model. This section aims to check whether the results of prediction on 6-DoF dataset are similar to those from related works.
 
-The last RNN variant evaluated in this master thesis is a bidirectional GRU model. From related works is known that despite the complex architecture and more historical data available for analysis and training, the prediction results do not exceed the results of a simple model. This section aims the goal to check whether the results of prediction on 6-DoF dataset are similat to those from related works.
+A typical state in an RNN (simple RNN, GRU, or LSTM) relies on the past and the present events. A state at time $t$ depends on the states $x_1, x_2,..., x_{t-1}, x_t$. However, there can be situations where a prediction depends on the past, present, and future events. Theoretically if the future information will be available during the prediction, it can increase the prediction accuracy. For example, predicting a user's position in the future to be included in a sequence of movements might require us to look into the future, i.e. a particular future position at time $t$ could depend on a future event like turning right, left, accelerating or stopping. Bidirectional RNNs enable straight (past) and reverse traversal of input (future). Computationally Bi-RNNs are a combination of two simple RNNs for moving data beginning from the start of the data sequence, and parallel to that a backward moving occurs beginning from the end of the data sequence. Based on the type of used RNN blocks, Bi-RNN can either be simple RNNs, GRUs, or LSTMs. This section describes the usage if Bi-GRU Model because the best results were achieved with GRU1 Model and therefore no Bi-LSTM implementation was undertaken.
 
-A typical state in an RNN (simple RNN, GRU, or LSTM) relies on the past and the present events. A state at time $t$ depends on the states $x_1, x_2,..., x_{t-1}, x_t$. However, there can be situations where a prediction depends on the past, present, and future events. Theoretically if the future information will be available during the prediction, it can increase the prediction accuracy. For example, predicting a user position in the future to be included in a sequence of movements might require us to look into the future, i.e., particular future position at time $t$ could depend on a future event like turning right, left, accelerating or stopping. Bidirectional RNNs enables straight (past) and reverse traversal of input (future). Computationally Bi-RNNs are a combination of two simple RNNs for moving data beginning from the start of the data sequence, and parallel to that a backward moving occurs beginning from the end of the data sequence. Based on the type of used RNN blocks, Bi-RNN can either be simple RNNs, GRUs, or LSTMs. This section describes the usage if Bi-GRU Model because the best results were achieved with GRU1 Model and therefore no Bi-LSTM implementation was undertaken.
+A Bi-GRU has an additional hidden layer to accommodate the backward training process. At any given time $t$, the forward and backward hidden states are updated as follows:
 
-A Bi-GRU has an additional hidden layer to accommodate the backward training process. At any given time 
-$t$, the forward and backward hidden states are updated as follows:
 \begin{equation}
 A_t(Forward) = \sigma (W_{xa}^{forward}x_t + b_{a}^{forward} + W_{aa}^{forward}A_{t-1})
 \end{equation}
@@ -374,9 +374,9 @@ $\sigma$ is the activation function, W is the weight matrix, and b is the bias. 
 \begin{equation}
 O_t = H_t * W_{ay} + b_y
 \end{equation}
-During the training of Bi-GRU forward and backward passes happening simultaneously and thus updating the weights for the two processes could happen at the same point of time. If standard RNN Backpropagation Through Time algorithm would be applied to Bi-RNN, it could lead to erroneous results. Thus, modified algorithm is used for training a Bi-RNN to accommodate forward and backward passes separately. Thereby both the forward and backward passes together train bidirectional model. 
+During the training of Bi-GRU forward and backward passes happen simultaneously and thus updating the weights for the two processes could happen at the same point of time. If standard RNN Backpropagation Through Time algorithm would be applied to Bi-RNN, it could lead to erroneous results. Thus, a modified algorithm is used for training a Bi-RNN to accommodate forward and backward passes separately. Thereby both the forward and backward passes together train bidirectional model. 
 
-Model implementation done similar to GRU in Python with PyTorch. When parameter $bidirectional=True$ is specified in $nn.GRU$, PyTorch takes care about correctness of forward and backward passes and combines two GRU model by doubling the hidden dimension size. The output will be $(batch, seqeunce, hidden_size * 2)$ where the $hidden_size * 2$ features are the forward features concatenated with the backward features. The model is listed below: 
+Model implementation done similar to GRU in Python with PyTorch. When parameter $bidirectional=True$ is specified in $nn.GRU$, PyTorch takes care about correctness of forward and backward passes and combines two GRU models by doubling the hidden dimension size. The output will be $(batch, sequence, hidden_size * 2)$ where the $hidden_size * 2$ features are the forward features concatenated with the backward features. The model is listed below:
 \begin{lstlisting}[caption={Bidirectional GRU Model},captionpos=b]
 GRUModelBiDir1(
 (init_linear): Linear(in_features=10, out_features=10, bias=True)
@@ -396,13 +396,13 @@ Trainable params: 1,617,013
 Non-trainable params: 0
 \end{lstlisting}
 
-The interesting thing that PyTorch requires the initialisation of $h_0$ initial state to use doubled amount of layer dimension. This one layered GRU will be initialized in PyTorch as 2-layered. It was already proved by experiments on GPU Cluster that any combinations of stacked RNN Models leads to lower prediction accuracy. Anyway it is worth to evaluate whether the accommodated separately forward and backward passes could improve the model performance.  
+The interesting aspect is that PyTorch requires the initialisation of $h_0$ initial state to use a doubled amount of layer dimension. This one layered GRU will be initialised in PyTorch as 2-layered. It was already proved by experiments on GPU Cluster that any combination of stacked RNN Models leads to lower prediction accuracy. Anyway it is worth evaluating whether the accommodated separately forward and backward passes could improve the model performance.  
 \begin{lstlisting}[caption={Bidirectional GRU h0 Layer},captionpos=b]
 # Initializing hidden state for first input with zeros
 h0 = torch.zeros(self.layer_dim * 2, x.size(0), self.hidden_dim).requires_grad_()
 \end{lstlisting}
 
-Listing above shows GRUModelBiDir1 that was implemented and evaluated additionally with GRUModelBiDir2 model with $Mish$ activation function. Same as in work of \textit{Chang et al., 2020}, the Bi-GRU performs the worst among all models. The details of evaluation can be found the section \ref{sec:eval:experiments:bi-gru}.
+Listing above shows $GRUModelBiDir1$ that was implemented and evaluated additionally with $GRUModelBiDir2$ model with $Mish$ activation function. Same as in the work of \textit{Chang et al., 2020}, the Bi-GRU performs the worst among all models. The details of evaluation can be found in the section \ref{sec:eval:experiments:bi-gru}.
 
 %''######################################
 
