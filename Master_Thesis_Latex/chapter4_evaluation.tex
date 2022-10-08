@@ -6,13 +6,13 @@ Chapter describes the evaluation metrics and performed experiments, visualises p
 
 \section{Goal of evaluation}
 \label{sec:eval:goal}
-The goal of model evaluation is am estimation of the generalization accuracy of a model on future unseen data. This master thesis aims to evaluate whether RNN neural networks modification as LSTM, GRU and bidirectional variant are able to reduce the positional and rotation error for given look ahead time of 100 ms. This LAT is higher than normal acceptable latency in VR application and even higher that measured M2P latency in cloud streaming platform presented in work \cite{serhan_cloud_streaming}. Since the successfully trained best evaluated model is intended to be build in the server infrastructure, the goal of evaluation is to find out how using of RNN model can reduce the positional and rotational error and thus improve the quality of delivered from cloud server VV content by calculating the proper future 2D image from volumetric data.  
+The goal of model evaluation is an estimation of the generalisation accuracy of a model on future unseen data. This master thesis aims to evaluate whether RNN neural networks modification as LSTM, GRU and bidirectional variant are able to reduce the positional and rotation error for given look ahead time of 100 ms. This LAT is higher than normal acceptable latency in VR applications and even higher that measured M2P latency in cloud streaming platform presented in work \cite{serhan_cloud_streaming}. Since the successfully trained best evaluated model is intended to be build in the server infrastructure, the goal of evaluation is to find out how using of RNN model can reduce the positional and rotational error and thus improve the quality of delivered from cloud server VV content by calculating the proper future 2D image from volumetric data.  
 
-To evaluate all described above models, a Python-based application used for training and processing of the recorded via HoloLens 6-DoF datasets. Below, first Baseline model, the experimental setup and the evaluation metrics are discussed, before presenting the obtained results and discussing the limitations of evaluated models.
+To evaluate all described above models, a Python-based application used for training and processing of the records via HoloLens 6-DoF datasets. Below, the first Baseline model, the experimental setup and the evaluation metrics are discussed, before presenting the obtained results and discussing the limitations of evaluated models.
 
 \section{Evaluation metrics}
 \label{sec:eval:metrics}
-Evaluation metrics are used to measure the quality of the predictions made by machine learning model. This thesis similar to work \cite{serhan_kalman} uses two of the most common metrics Mean Absolute Error ($MAE$) and root mean squared error ($RMSE$).
+Evaluation metrics are used to measure the quality of the predictions made by machine learning models. This thesis similar to work \cite{serhan_kalman} uses two of the most common metrics Mean Absolute Error ($MAE$) and root mean squared error ($RMSE$).
 
 Mean Absolute Error ($MAE$): MAE measures the average error over the test sample of the absolute differences between prediction and actual observation without considering their direction. 
 \begin{equation}
@@ -34,7 +34,7 @@ where $p$ and $q$ are unit quaternions representing two rotations in the same ba
 
 \section{Baseline model}
 \label{sec:eval:baseline}
-To understand, how actually good evaluated model predicts and helps to reduce the M2P latency, some essentially a simple model that acts as a reference in a machine learning project must be implemented first. Baseline model can lack complexity and may have little predictive power. The LSTM and GRU model should predict much better than a Baseline model and thus comparing the metrics it can be understood how reasonable is the implementing and using of chosen approach. It is intended to use a Baseline model as benchmarks for trained models. There is no rule for what is good or bad model's prediction. The criteria of model evaluation depends on the dataset and use case. A mean square error gives a values in units of the original dataset. For example, if model predicts the prices of apartments in Berlin, then MAE of 1000 is a very good result and market's players would desire to have a trained model to work on the real estate market. However, it is abysmal for a model that predicts the price of average lunch in Berlin's restaurant. Thus a simple predictor is needed to predict a future data so that a predicted values can be compared with the real values using same evaluation metrics as is used for RNN models.
+To understand how an evaluated model predicts and helps to reduce the M2P latency, some essentially a simple model that acts as a reference in a machine learning project must be implemented first. A Baseline model can lack complexity and may have little predictive power. The LSTM and GRU model should predict much better than a Baseline model and thus by comparing the metrics it can be understood how reasonable it is to implement and use the chosen approach. It is intended to use a Baseline model as benchmarks for trained models. There is no rule for what is a good or bad model's prediction. The criteria of model evaluation depends on the dataset and use case. A mean square error gives a value in units of the original dataset. For example, if a model predicts the prices of apartments in Berlin, then MAE of 1000 is a very good result and market's players would desire to have a trained model to work on the real estate market. However, it is abysmal for a model that predicts the price of average lunch in Berlin's restaurant. Thus a simple predictor is needed to predict future data so that predicted values can be compared with the real values using the same evaluation metrics as is used for RNN models.
 
 The Baseline in this thesis is similar to the reference model used in the work \cite{serhan_kalman} and represents the operation of the system without prediction. It is assumed that the prediction time is set equal to the M2P latency of 100 ms such that the prediction completely eliminates the latency. Implemented Baseline is a deterministic model, meaning that it produces an expected output given the same input. For LAT of 100 ms a prediction time N is equal to 20 samples. The position and rotation data $x_t$ is simply propagated N samples ahead in the Baseline prediction and set as the user position and rotation at time $x_t + N$, i.e. $Baseline(x_t) = x_{t+N}$. 
 \begin{figure}[htb]
@@ -46,7 +46,7 @@ The Baseline in this thesis is similar to the reference model used in the work \
 
 The Fig. \ref{fig:base_x} shows the first 500 real values and the corresponding output of the baseline for positional axis $x$. From the plot of the Baseline model outputs, it is clear that the model is 20-step behind reality. It copies with a given delay the falling trend and all fluctuations of the given axis.
 
-The Fig. \ref{fig:base_xyz} shows the 500 real values and the corresponding output of the baseline for all three positional axes $x, y, z$. The plot samples 500 elements starting from the 2500 row and thus no missing data is seen on Baseline output for the first 20 elements as it plotted in Fig. \ref{fig:base_x}. However, the Fig. \ref{fig:base_xyz} highlights the limitations of the usage of naive predictor that will deliver 2D image created from volumetric video content with a delay of 100 ms that is unappropriated delay for a human to experience in VR application without physical consequences like motion sickness \cite{delay_sickness}. The mean square error for the all three positional axes $MAE_{pos} = 0.067$m and root mean square error  $RMSE_{pos} = 0.068$m meaning the average distance between predicted position and the real position is equal to almost 7 cm. It is not crucial when an user looks on the big VV object, like a volumetric humans hologram, from the distance of 3-4 meters. But if an user interacts with the small VV objects presented in the VR environment, then this distance became a significant difference between what user will see with a delay and where the VR object would be placed for delayed position. 
+The Fig. \ref{fig:base_xyz} shows the 500 real values and the corresponding output of the baseline for all three positional axes $x, y, z$. The plot samples 500 elements starting from the 2500 row and thus no missing data is seen on Baseline output for the first 20 elements as it is plotted in Fig. \ref{fig:base_x}. However, the Fig. \ref{fig:base_xyz} highlights the limitations of the usage of naive predictor that will deliver 2D image created from volumetric video content with a delay of 100 ms that is unappropriated delay for a human to experience in VR application without physical consequences like motion sickness \cite{delay_sickness}. The mean square error for the all three positional axes $MAE_{pos} = 0.067$m and root mean square error  $RMSE_{pos} = 0.068$m meaning the average distance between predicted position and the real position is equal to almost 7 cm. It is not crucial when a user looks at the big VV object, like a volumetric human hologram, from a distance of 3-4 metres. But if a user interacts with the small VV objects presented in the VR environment, then this distance becomes a significant difference between what user will see with a delay and where the VR object would be placed for delayed position.
 
 \begin{figure}[htb]
 	\begin{center}
@@ -55,7 +55,7 @@ The Fig. \ref{fig:base_xyz} shows the 500 real values and the corresponding outp
 	\end{center}
 \end{figure}
 
-It is worth to mention that in the case if real data is neither increasing nor decreasing in the given interval and fluctuates near the constant value, as it seen at $y$-axis, than the delay of the Baseline output is more not obvious when visualized due the overlapping of two graphs. In fact, the Baseline outputs have the same delay as those one with good visualized delay as, for example, $x$-axis.
+It is worth to mention that in the case if real data is neither increasing nor decreasing in the given interval and fluctuates near the constant value, as it seen at $y$-axis, than the delay of the Baseline output is more not obvious when visualised due the overlapping of two graphs. In fact, the Baseline outputs have the same delay as those with good visualised delay as, for example, $x$-axis.
 
 Fig. \ref{fig:base_quat_xyzw} shows the Baseline outputs for quaternions components $qx, qy, qz$ and $qw$. Same as with positional data, the same delay of 20 samples is present on rotational data. For all four quaternion components calculated metrics  are: $MAE_{rot} = 14.61^{\circ}$ and $RMSE_{rot} =21.24^{\circ}$.  
 
@@ -66,7 +66,7 @@ Fig. \ref{fig:base_quat_xyzw} shows the Baseline outputs for quaternions compone
 	\end{center}
 \end{figure}
 
-Because metrics of rotational data is measured in degrees, for visualization purposes, orientations are given in the Fig. \ref{fig:base_euler} as Euler angles (yaw, pitch, roll), although prediction is performed in the quaternion domain.
+Because metrics of rotational data are measured in degrees, for visualisation purposes, orientations are given in the Fig. \ref{fig:base_euler} as Euler angles (yaw, pitch, roll), although prediction is performed in the quaternion domain.
 
 \begin{figure}[htb]
 	\begin{center}
@@ -91,8 +91,8 @@ This section describes the difference of prediction results done by a model LSTM
 
 \begin{itemize}
 	\item \textbf{Interpolated dataset:} Row dataset was interpolated so that missing values were inserted with linear interpolation for positional data and spherical linear interpolation for rotational data. 
-	\item \textbf{Flipped dataset:} Interpolated dataset with flipped negative quaternions so that neighboring quaternions representing same rotation without significant 4D vector space between them
-	\item \textbf{Normalized dataset:} Feature scaling (Min-max normalization) is applied on dataset's positional values to scale data in the range [0..1]. 
+	\item \textbf{Flipped dataset:} Interpolated dataset with flipped negative quaternions so that neighbouring quaternions are representing same rotation without significant 4D vector space between them
+	\item \textbf{Normalised dataset:} Feature scaling (Min-max normalisation) is applied on the dataset's positional values to scale data in the range [0..1]. 
 	\item \textbf{Position:} Only positional data $(x, y, z)$ as separate dataset to predict future position. 
 	\item \textbf{Rotation:} Only rotational data $(qx, qy, qz, qw)$ as separate dataset to predict future rotation. 
 	
