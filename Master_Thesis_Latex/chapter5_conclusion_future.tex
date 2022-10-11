@@ -19,20 +19,24 @@ The Python application $UserPrediction6DOF$ is a result of this work and can be 
 
 \section{Analysis}
 \label{sec:conclusion:analysis}
-Same as in work of \textit{Chang et al., 2020}, the basic GRU performs the best among all models. We surmised that it could be possibly due to the short-term correlation of human actions, so it isn’t often required to consider the longterm complexity. In other words, Bi-LSTM network and TCN which architectures are more complex could be possibly overpredicted instead so that their prediction results aren’t as good as LSTM network in this case.
+Same as in work of \textit{Chang et al., 2020}, the basic GRU performs the best among all models. Work \cite{6DoF_Tracking} pointed that it could be possibly due to the short-term correlation of human actions, so it isn’t often required during prediction task to consider the longterm complexity. The important feature of LSTM is an ability to keep the existing memory via the introduced gates and thus to detect an important feature from an input sequence at early stage and carry this information (the existence of the feature) over a long distance. This results in ability to capture potential long-distance dependencies \cite{empirical_evaluation}. 
 
-The paper of \textit{Chung et al., 2014}  also provides an interesting comparison and evaluation of the performance of recurrent units LSTM and GRU on sequence modeling. Authors mentioned the ability of LSTM to keep the existing memory via the introduced gates and thus to detect an important feature from an input sequence at early stage, to easily carry this information (the existence of the feature) over a long distance, hence, capturing potential long-distance dependencies \cite{empirical_evaluation}. The GRU takes linear sum between the existing state and the newly computed state similar to the LSTM but does not have any mechanism to control the degree to which its state is exposed, but exposes the whole state each time \cite{empirical_evaluation}. \textit{Chung et al., 2014} emphasize the fact that any important feature, decided by either the forget gate of the LSTM unit or the update gate of the GRU, will not be overwritten but be maintained as it is \cite{empirical_evaluation}. LSTM unit controls the amount of the new memory content and does not have any separate control of the amount of information flowing from the previous time step. The GRU differs and controls the information flow from the previous activation when computing the new and does not independently control the amount of the candidate activation being added via update gate \cite{empirical_evaluation}.
+The GRU takes linear sum between the existing state and the newly computed state similar to the LSTM but does not have any mechanism to control the degree to which its state is exposed, but exposes the whole state each time \cite{empirical_evaluation}. \textit{Chung et al., 2014} emphasize the fact that any important feature, decided by either the forget gate of the LSTM unit or the update gate of the GRU, will not be overwritten but maintained as it is \cite{empirical_evaluation}. LSTM unit controls the amount of the new memory content and does not have any separate control of the amount of information flowing from the previous time step. The GRU differs and controls the information flow from the previous activation when computing the new and does not independently control the amount of the candidate activation being added via update gate \cite{empirical_evaluation}. 
 
+For the prediction of rotational data the positional data can be eliminated from a dataset. The key to this phenomena can lay in the user behavior during dataset recording. Because the users were told to keep their sight mainly on the volumetric object placed in VR environment, users tended to turn their head always in direction to a VV even if they walked far enough from the object. Observations of users during data recording showed that users usually prefer to move away from the object, looking at it, and then turn around 180 degrees and continue moving towards the object back or go around it from one side. Thus position data and rotation data can be split and only rotational data and velocity can be used to predict the rotation of the user in VR Application.
 
-It seems that for  prediction of rotational data the positional data can be eliminated from a dataset. The key to this phenomena can lay in the user behavior during 
+In contrast to the above, the rotation must be kept in a dataset for prediction the position. Elimination the rotation data or/and the velocity does not improve the prediction error compared to a Baseline and to the prediction on the full interpolated and flipped dataset.  
 
+GRU1 results for rotation prediction on the full interpolated dataset with flipped negative quaternions outperformed the results of experiment done with a dataset containing only rotational data. 
 
-GRU1 results for rotation prediction on the full interpolated dataset with flipped negative quaternions outperformed the results of experiment done with a dataset containing only rotational data. Recall that in that experiment $MAE_{rot}$ decreased to $11.81^{\circ}$m and root mean square error reduced to  $16.64^{\circ}$.
-
-
-\section{Limitations}
-\label{sec:conclusion:limitations}
+The evaluated LSTM and GRU model both significant improve the evaluation metrics. GRU model however performs the best and thus can be used for a reducing the Motion-to-Photon (M2P) latency by predicting the future user position and orientation for a look-ahead time (LAT) and sending the corresponding rendered view to a client. 
 
 \section{Suggestions for future work}
 \label{sec:conclusion:future}
+
+Only rotation with GRU, new parameters for rotation
+combining the gru with FFN
+eye gathering data from hololens
+research mode and data from accelerometer and gyro
+
 
