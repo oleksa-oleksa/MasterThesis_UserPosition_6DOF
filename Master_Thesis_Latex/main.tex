@@ -41,6 +41,7 @@
 \usepackage{subcaption}
 \usepackage{gensymb}
 \usepackage[utf8]{inputenc}
+\usepackage{pdfpages}
 
 
 %=====
@@ -168,7 +169,8 @@ maxnames=6
 % -------------------------
 % Front matter
 % --------------------------
-\pagenumbering{roman}			% roman page numbing (invisible for empty page style)
+%\pagenumbering{roman}			% roman page numbing (invisible for empty page style)
+\pagenumbering{gobble}
 \pagestyle{empty}				% no header or footers
 \input{titlepages}		% INCLUDE: all titlepages
 \cleardoublepage
@@ -177,7 +179,7 @@ maxnames=6
 %\setcounter{secnumdepth}{4}
 \clearpage
 
-\input{chapter00_erklaerung}
+\includepdf[pages=-]{Selbststaendigkeitserklaerung_signed.pdf}
 \input{chapter00_dank}
 \clearpage
 \tableofcontents				% display table of contents
@@ -199,8 +201,10 @@ maxnames=6
 \input{chapter4_evaluation}
 \input{chapter5_conclusion_future}
 
-\pagenumbering{Roman}
-\setcounter{page}{1}
+%\pagenumbering{Roman}
+%\setcounter{page}{1}
+\pagenumbering{gobble}
+
 % the IEEE Bibloigraphy style
 %\input{thebibliography}
 \cleardoublepage
